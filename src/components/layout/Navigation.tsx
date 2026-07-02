@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NAV_ITEMS } from '@/constants';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import atidetoLogo from '@/assets/atideto-logo.png';
 import PullMenu from './pull-chain/PullMenu';
 
@@ -34,17 +37,32 @@ export default function Navigation() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const checkUser = () => {
-      const user = localStorage.getItem('currentUser');
-      setCurrentUser(user ? JSON.parse(user) : null);
-    };
-    checkUser();
-    window.addEventListener('auth-change', checkUser);
-    window.addEventListener('storage', checkUser);
-    return () => {
-      window.removeEventListener('auth-change', checkUser);
-      window.removeEventListener('storage', checkUser);
-    };
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Fetch role/name from firestore if needed, but display name is available on user object
+        let role = 'student';
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            role = docSnap.data().role || 'student';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        
+        setCurrentUser({
+          uid: user.uid,
+          name: user.displayName || 'User',
+          email: user.email,
+          role: role
+        });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Standard Navigation for all other pages
@@ -116,9 +134,12 @@ export default function Navigation() {
                   </Link>
                   <hr className="border-white/5 my-1" />
                   <button
-                    onClick={() => {
-                      localStorage.removeItem('currentUser');
-                      window.dispatchEvent(new Event('auth-change'));
+                    onClick={async () => {
+                      try {
+                        await signOut(auth);
+                      } catch (err) {
+                        console.error('Failed to sign out', err);
+                      }
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors cursor-pointer"
                   >

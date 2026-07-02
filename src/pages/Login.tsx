@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import atidetoLogo from '@/assets/atideto-logo.png';
 import atidetoTextLogo from '@/assets/atideto-text-logo.png';
 
@@ -11,6 +15,9 @@ export default function Login() {
   const [submitted, setSubmitted] = useState(false);
   const [otp, setOtp] = useState('');
   const [otpStep, setOtpStep] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -32,18 +39,75 @@ export default function Login() {
 
   const strength = getPasswordStrength(form.password);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === 'register' && !otpStep) {
-      setOtpStep(true);
-      return;
+    setError('');
+    setLoading(true);
+
+    try {
+      if (mode === 'register') {
+        const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+        const user = userCredential.user;
+        
+        await updateProfile(user, { displayName: form.name });
+        await setDoc(doc(db, 'users', user.uid), {
+          name: form.name,
+          email: form.email,
+          role: form.role,
+          createdAt: new Date().toISOString()
+        });
+        
+        await sendEmailVerification(user);
+        setSubmitted(true);
+      } else if (mode === 'login') {
+        await signInWithEmailAndPassword(auth, form.email, form.password);
+        setSubmitted(true);
+        setTimeout(() => navigate('/dashboard'), 2000);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setSubmitted(true);
   };
 
-  const handleForgot = (e: React.FormEvent) => {
+  const handleGoogleAuth = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // If new user, save to firestore
+      if (mode === 'register') {
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          name: userCredential.user.displayName,
+          email: userCredential.user.email,
+          role: 'student',
+          createdAt: new Date().toISOString()
+        }, { merge: true });
+      }
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to authenticate with Google.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError('');
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, form.email);
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted && mode === 'forgot') {
@@ -121,50 +185,12 @@ export default function Login() {
 
         {/* Form Card */}
         <div className="rounded-2xl p-8" style={{ background: '#111111', border: '1px solid rgba(47,47,228,0.15)' }}>
-          {/* OTP Step for Registration */}
-          {otpStep && mode === 'register' ? (
-            <div className="space-y-4">
-              <div className="text-center mb-6">
-                <div className="text-3xl mb-3">📱</div>
-                <h3 className="text-white font-bold" >Verify Your Email</h3>
-                <p className="text-[#AFAFAF] text-sm mt-1">Enter the 6-digit code sent to {form.email}</p>
-              </div>
-              <div className="flex gap-2 justify-center">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <input
-                    key={i}
-                    maxLength={1}
-                    className="w-12 h-12 text-center text-white text-xl font-bold rounded-xl"
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val && e.target.nextElementSibling) {
-                        (e.target.nextElementSibling as HTMLInputElement).focus();
-                      }
-                      setOtp((prev) => {
-                        const arr = prev.split('');
-                        arr[i] = val;
-                        return arr.join('');
-                      });
-                    }}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={handleSubmit as any}
-                className="btn-primary w-full py-3.5 mt-4"
-              >
-                Verify & Complete Registration
-              </button>
-              <button
-                onClick={() => setOtpStep(false)}
-                className="w-full text-[#AFAFAF] text-sm hover:text-white transition-colors py-2"
-              >
-                ← Back
-              </button>
+          {error && (
+            <div className="mb-6 p-4 bg-[#D2042D]/10 border border-[#D2042D]/50 rounded-xl text-[#D2042D] text-sm text-center">
+              {error}
             </div>
-          ) : mode === 'forgot' ? (
+          )}
+          {mode === 'forgot' ? (
             <form onSubmit={handleForgot} className="space-y-4">
               <div>
                 <label className="text-[#AFAFAF] text-sm block mb-2">Email Address</label>
@@ -177,8 +203,8 @@ export default function Login() {
                   required
                 />
               </div>
-              <button type="submit" className="btn-primary w-full py-3.5">
-                Send Reset Link
+              <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 cursor-pointer disabled:opacity-40">
+                {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
               <button
                 type="button"
@@ -317,10 +343,10 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={mode === 'register' && form.password !== form.confirm && !!form.confirm}
-                className="btn-primary w-full py-3.5 text-base disabled:opacity-40"
+                disabled={loading || (mode === 'register' && form.password !== form.confirm && !!form.confirm)}
+                className="btn-primary w-full py-3.5 text-base disabled:opacity-40 cursor-pointer"
               >
-                {mode === 'login' ? 'Sign In →' : 'Create Account →'}
+                {loading ? 'Processing...' : (mode === 'login' ? 'Sign In →' : 'Create Account →')}
               </button>
             </form>
           )}
@@ -338,7 +364,8 @@ export default function Login() {
               {[{ icon: '🇬', label: 'Google' }, { icon: '🐙', label: 'GitHub' }].map((p) => (
                 <button
                   key={p.label}
-                  className="btn-outline py-3 flex items-center justify-center gap-2 text-sm"
+                  className="btn-outline py-3 flex items-center justify-center gap-2 text-sm cursor-pointer"
+                  onClick={p.label === 'Google' ? handleGoogleAuth : undefined}
                 >
                   <span>{p.icon}</span> {p.label}
                 </button>

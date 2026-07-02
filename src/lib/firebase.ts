@@ -1,26 +1,35 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
+// All sensitive keys are loaded from environment variables (VITE_ prefix required by Vite)
 const firebaseConfig = {
-  apiKey: "AIzaSyA9lhhLwyp6f3ReDXaLPauIuvpuP3RyUQU",
-  authDomain: "nitha-8f9f4.firebaseapp.com",
-  databaseURL: "https://nitha-8f9f4-default-rtdb.firebaseio.com",
-  projectId: "nitha-8f9f4",
-  storageBucket: "nitha-8f9f4.firebasestorage.app",
-  messagingSenderId: "332719594661",
-  appId: "1:332719594661:web:b28494271524377a38014c",
-  measurementId: "G-QR4GP78RY3"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Analytics conditionally (it might not be supported in some environments like SSR)
-let analytics = null;
+// Firebase Auth
+const auth = getAuth(app);
+
+// Firebase Firestore
+const db = getFirestore(app);
+
+// Firebase Analytics (conditional — not available in all environments)
+let analytics: ReturnType<typeof getAnalytics> | null = null;
 isSupported().then((supported) => {
   if (supported) {
     analytics = getAnalytics(app);
   }
 });
 
-export { app, analytics };
+export { app, auth, db, analytics };

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { INTERNSHIP_PROGRAMS, INTERNSHIP_CATEGORIES } from '@/constants';
 import { Link } from 'react-router-dom';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // --- Subcomponents for Right Panel ---
 
@@ -275,7 +277,9 @@ export default function InternshipExplorer() {
                           Applying for: <span className="text-[#00A3FF] font-semibold">{activeProgram.title}</span>
                         </p>
                       </div>
-                      {applyStep < 10 && (
+                    </div>
+
+                    {applyStep < 10 && (
                       <div className="w-full bg-white/5 rounded-full h-1 mb-8">
                         <div 
                           className="bg-[#0052FF] h-1 rounded-full transition-all duration-300"
@@ -711,8 +715,32 @@ export default function InternshipExplorer() {
                           </button>
                           <button 
                             type="button"
-                            onClick={() => {
-                              // Save user credentials mock and log them in!
+                            onClick={async () => {
+                              try {
+                                // Save application to Firebase Firestore
+                                await addDoc(collection(db, 'internship_applications'), {
+                                  createdAt: serverTimestamp(),
+                                  programId: activeProgram.id,
+                                  programTitle: activeProgram.title,
+                                  name: applyForm.name,
+                                  email: applyForm.email,
+                                  phone: `${applyForm.countryCode}${applyForm.phone}`,
+                                  resumeName: applyForm.resumeName || '',
+                                  college: applyForm.college,
+                                  degree: applyForm.degree,
+                                  stream: applyForm.stream,
+                                  graduationYear: applyForm.graduationYear,
+                                  startDate: applyForm.startDate,
+                                  endDate: applyForm.endDate,
+                                  paymentOption: applyForm.paymentOption,
+                                  status: 'pending',
+                                });
+                                console.log('Application saved to Firebase successfully!');
+                              } catch (error) {
+                                console.error('Error saving application:', error);
+                              }
+
+                              // Update local user state for nav profile
                               const mockUser = { name: applyForm.name, email: applyForm.email };
                               localStorage.setItem('currentUser', JSON.stringify(mockUser));
                               window.dispatchEvent(new Event('auth-change'));

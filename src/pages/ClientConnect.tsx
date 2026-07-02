@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 import ClientInformation from './client-connect/components/ClientInformation';
 import BusinessInformation from './client-connect/components/BusinessInformation';
@@ -141,25 +143,48 @@ export default function ClientConnect() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     
-    // Simulate API request processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    const generatedId = `ATD-${Date.now().toString().slice(-6)}`;
-    setRequestId(generatedId);
+    try {
+      const generatedId = `ATD-${Date.now().toString().slice(-6)}`;
+      
+      // Save to Firebase Firestore
+      await addDoc(collection(db, 'project_inquiries'), {
+        requestId: generatedId,
+        createdAt: serverTimestamp(),
+        // Client Info
+        name: data.name,
+        email: data.email,
+        countryCode: data.countryCode,
+        phone: data.phone,
+        // Business Info
+        company: data.company,
+        businessEmail: data.businessEmail,
+        website: data.website || '',
+        // Services
+        services: data.services,
+        otherServiceDetails: data.otherServiceDetails || '',
+        // Project Info
+        description: data.description,
+        designStatus: data.designStatus || '',
+        aiIntegrations: data.aiIntegrations || '',
+        techStack: data.techStack,
+        // Budget & Timeline
+        budget: data.budget,
+        customBudgetDetails: data.customBudgetDetails || '',
+        timeline: data.timeline,
+        customTimelineDetails: data.customTimelineDetails || '',
+        // Meeting
+        meetingType: data.meetingType,
+        meetingDate: data.meetingDate || '',
+        meetingTime: data.meetingTime || '',
+        // Meta
+        status: 'new',
+      });
 
-    // Mock storage in local database
-    const submissions = JSON.parse(localStorage.getItem('atideto_inquiries') || '[]');
-    submissions.push({
-      id: generatedId,
-      timestamp: new Date().toISOString(),
-      ...data,
-      attachments: data.attachments.map(f => ({ name: f.name, size: f.size, type: f.type })) // Save mock attachment details
-    });
-    localStorage.setItem('atideto_inquiries', JSON.stringify(submissions));
-
-    console.log("SUCCESSFULLY STORED PROJECT REQUEST IN DATABASE:", generatedId);
-    console.log("EMAIL TO CLIENT SENT (MOCK): A copy of this request has been sent to " + data.email);
-    console.log("EMAIL TO COMPANY SENT (MOCK): Alerting ATIDETO team of new proposal request.");
+      setRequestId(generatedId);
+      console.log("SUCCESSFULLY STORED PROJECT REQUEST IN FIREBASE:", generatedId);
+    } catch (error) {
+      console.error("Error saving to Firebase:", error);
+    }
 
     setIsSubmitting(false);
     setSubmitted(true);
