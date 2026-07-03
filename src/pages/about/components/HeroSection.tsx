@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion';
-import RibbonBackground from './RibbonBackground';
+import servicesBg from '@/assets/services_hero_bg.jpeg';
 
 export default function HeroSection() {
   return (
     <section 
       className="relative w-full min-h-[60vh] px-8 lg:px-16 py-16 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20 overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
     >
-      <RibbonBackground />
       
       <div className="relative z-10 flex flex-col items-center">
         <motion.div 

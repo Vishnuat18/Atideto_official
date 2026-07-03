@@ -12,7 +12,7 @@ import uiUxDesignImg from '@/assets/service cards/ui ux design.jpg';
 import webDevImg from '@/assets/service cards/web dev.jpg';
 
 import yokeshImg from '@/assets/team/yokesh.jpeg';
-import neevasImg from '@/assets/team/neevas.jpeg';
+import neevasImg from '@/assets/team/neevas.jpg';
 import samImg from '@/assets/team/sam.jpeg';
 import vishnuImg from '@/assets/team/vishnu_.png';
 import kiranImg from '@/assets/team/kiran.jpeg';

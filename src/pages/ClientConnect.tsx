@@ -13,7 +13,8 @@ import BudgetTime from './client-connect/components/BudgetTime';
 import MeetingType from './client-connect/components/MeetingType';
 import ReviewSubmit from './client-connect/components/ReviewSubmit';
 import ThankYouPage from './client-connect/components/ThankYouPage';
-import RibbonBackground from './about/components/RibbonBackground';
+import { formatClientEmail } from '@/lib/emailFormatter';
+import servicesBg from '@/assets/services_hero_bg.jpeg';
 
 const STEPS_TITLES = [
   'Client Information',
@@ -145,6 +146,10 @@ export default function ClientConnect() {
     
     try {
       const generatedId = `ATD-${Date.now().toString().slice(-6)}`;
+
+      // Generate formatted email from submitted data
+      const email = formatClientEmail(data as unknown as Record<string, any>);
+      console.log('Formatted email subject:', email.subject);
       
       // Save to Firebase Firestore
       await addDoc(collection(db, 'project_inquiries'), {
@@ -176,12 +181,32 @@ export default function ClientConnect() {
         meetingType: data.meetingType,
         meetingDate: data.meetingDate || '',
         meetingTime: data.meetingTime || '',
+        // Email data (for downstream email dispatch)
+        emailHtml: email.html,
+        emailText: email.text,
+        emailSubject: email.subject,
         // Meta
         status: 'new',
       });
 
       setRequestId(generatedId);
       console.log("SUCCESSFULLY STORED PROJECT REQUEST IN FIREBASE:", generatedId);
+
+      // Write to mail collection for Firebase Trigger Email extension
+      await addDoc(collection(db, 'mail'), {
+        to: [
+          'kiranbalasopatil33@gmail.com',
+          'vishnurajan24766@gmail.com',
+          'yogeshbrf2006@gmail.com',
+        ],
+        message: {
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+        },
+        createdAt: serverTimestamp(),
+      });
+      console.log("Email queued for delivery via Trigger Email extension");
     } catch (error) {
       console.error("Error saving to Firebase:", error);
     }
@@ -232,9 +257,15 @@ export default function ClientConnect() {
 
       {/* Hero Section with Ribbon Background */}
       {!submitted && (
-        <div className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5 mb-12">
-          <RibbonBackground />
-          
+        <div 
+          className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5 mb-12"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
           <header className="relative z-10 max-w-[1400px] mx-auto px-6 flex flex-col items-center text-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}

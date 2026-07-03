@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PlayCircle, Award, Briefcase, Clock, CheckCircle2, ChevronRight, Layers, Sparkles, Folder, Users, BarChart2 } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import InternshipExplorer from '@/components/InternshipExplorer';
-import RibbonBackground from './about/components/RibbonBackground';
+import servicesBg from '@/assets/services_hero_bg.jpeg';
 
 export default function Academy() {
   const [mounted, setMounted] = useState(false);
@@ -29,33 +29,19 @@ export default function Academy() {
         }
       `}</style>
       
-      {/* Background Ambience */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[#02040A]">
-        {/* Deep Noise Texture */}
-        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')" }} />
-        
-        {/* Moving Gradient Beams */}
-        <motion.div 
-          animate={{ x: [-200, 200, -200], opacity: [0.02, 0.05, 0.02] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[20%] left-[-10%] w-[50%] h-[30%] bg-[#00A3FF] rounded-full blur-[150px] rotate-45"
-        />
-        <motion.div 
-          animate={{ x: [200, -200, 200], opacity: [0.02, 0.04, 0.02] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[20%] right-[-10%] w-[50%] h-[30%] bg-[#8B5CF6] rounded-full blur-[150px] -rotate-45"
-        />
-        
-        {/* Grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]" 
-          style={{ backgroundImage: 'linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)', backgroundSize: '64px 64px' }}
-        />
-      </div>
+      {/* Static Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none bg-[#050505]" />
 
-      {/* Hero Section with Ribbon Background */}
-      <div className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5">
-        <RibbonBackground />
+      {/* Hero Section with Background Image */}
+      <div 
+        className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
         
         <header className="relative z-10 max-w-[1400px] mx-auto px-6 flex flex-col items-center text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
