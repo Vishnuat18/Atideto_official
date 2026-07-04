@@ -10,7 +10,7 @@ import PullMenu from './pull-chain/PullMenu';
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
   const location = useLocation();
   const [logoClicks, setLogoClicks] = useState(0);
 
@@ -38,17 +38,17 @@ export default function Navigation() {
       const currentScrollY = window.scrollY;
       setScrolled(currentScrollY > 20);
       
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
         setIsVisible(false); // scrolling down
       } else {
         setIsVisible(true); // scrolling up
       }
       
-      setLastScrollY(currentScrollY);
+      lastScrollY.current = currentScrollY;
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
 
 

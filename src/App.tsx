@@ -2,8 +2,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import Navigation from '@/components/layout/Navigation';
 import PreFooterCTA from '@/components/layout/PreFooterCTA';
@@ -22,8 +23,36 @@ import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
 
-const App = () => {
+const PageWrapper = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 15 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -15 }}
+    transition={{ duration: 0.3, ease: 'easeInOut' }}
+  >
+    {children}
+  </motion.div>
+);
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
+        <Route path="/services" element={<PageWrapper><Services /></PageWrapper>} />
+        <Route path="/academy" element={<PageWrapper><Academy /></PageWrapper>} />
+        <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+        <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+        <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
+        <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
+const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -35,17 +64,7 @@ const App = () => {
           <Navigation />
           <BackToTop />
 
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/academy" element={<Academy />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/client-connect" element={<ClientConnect />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/requirement-gathering" element={<RequirementGathering />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
 
           <PreFooterCTA />
           <Footer />

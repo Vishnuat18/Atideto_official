@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import atidetoLogo from '@/assets/atideto-logo.png';
 import atidetoTextLogo from '@/assets/atideto-text-logo.png';
 import loginBg from '@/assets/login/login.jpeg';
@@ -177,6 +179,15 @@ export default function Login() {
       {/* Layer 1: Form Container (Overlaid) */}
       <div className="relative z-10 flex h-full">
         
+        {/* Back to Home Button */}
+        <Link 
+          to="/" 
+          className="absolute top-6 left-6 md:top-10 md:left-10 flex items-center gap-2 text-[#AFAFAF] hover:text-white transition-colors duration-200 z-50 bg-black/20 hover:bg-black/40 px-4 py-2 rounded-lg backdrop-blur-md border border-white/5 hover:border-white/20"
+        >
+          <ArrowLeft size={16} />
+          <span className="text-sm font-medium tracking-wide">Back to Home</span>
+        </Link>
+
         {/* Left Side: Form Area */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-5 my-auto">

@@ -53,18 +53,18 @@ export default function Footer() {
             <h4 className="text-white font-medium mb-6 text-[15px]">Services</h4>
             <ul className="space-y-3.5">
               {[
-                'Web Development',
-                'Mobile App Development',
-                'UI / UX Design',
-                'Desktop Software',
-                'AI & Automation',
-                'Cloud Solutions',
-                'Data Analytics',
-                'Custom Solutions'
+                { label: 'Web Development', href: '/services' },
+                { label: 'Mobile App Development', href: '/services' },
+                { label: 'UI / UX Design', href: '/services' },
+                { label: 'Desktop Software', href: '/services' },
+                { label: 'AI & Automation', href: '/services' },
+                { label: 'Cloud Solutions', href: '/services' },
+                { label: 'Data Analytics', href: '/services' },
+                { label: 'Custom Solutions', href: '/services' }
               ].map((s) => (
-                <li key={s}>
-                  <Link to="#" className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
-                    {s}
+                <li key={s.label}>
+                  <Link to={s.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                    {s.label}
                   </Link>
                 </li>
               ))}
@@ -76,16 +76,16 @@ export default function Footer() {
             <h4 className="text-white font-medium mb-6 text-[15px]">Academy</h4>
             <ul className="space-y-3.5">
               {[
-                'All Courses',
-                'Internships',
-                'Certifications',
-                'Student Dashboard',
-                'Payment Options',
-                'Certificate Verify'
+                { label: 'All Courses', href: '/academy' },
+                { label: 'Internships', href: '/academy' },
+                { label: 'Certifications', href: '/academy' },
+                { label: 'Student Dashboard', href: '/login' },
+                { label: 'Payment Options', href: '/academy' },
+                { label: 'Certificate Verify', href: '/academy' }
               ].map((c) => (
-                <li key={c}>
-                  <Link to="#" className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
-                    {c}
+                <li key={c.label}>
+                  <Link to={c.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                    {c.label}
                   </Link>
                 </li>
               ))}
@@ -97,17 +97,17 @@ export default function Footer() {
             <h4 className="text-white font-medium mb-6 text-[15px]">Quick Links</h4>
             <ul className="space-y-3.5">
               {[
-                'Home',
-                'About Us',
-                'Services',
-                'Client Connect',
-                'Login / Register',
-                'Privacy Policy',
-                'Terms & Conditions'
+                { label: 'Home', href: '/' },
+                { label: 'About Us', href: '/about' },
+                { label: 'Services', href: '/services' },
+                { label: 'Client Connect', href: '/client-connect' },
+                { label: 'Login / Register', href: '/login' },
+                { label: 'Privacy Policy', href: '/' },
+                { label: 'Terms & Conditions', href: '/' }
               ].map((l) => (
-                <li key={l}>
-                  <Link to="#" className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
-                    {l}
+                <li key={l.label}>
+                  <Link to={l.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                    {l.label}
                   </Link>
                 </li>
               ))}
