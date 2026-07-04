@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '@/constants';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -11,6 +11,7 @@ export default function Navigation() {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const [logoClicks, setLogoClicks] = useState(0);
 
   useEffect(() => {
@@ -23,9 +24,9 @@ export default function Navigation() {
   const handleLogoClick = () => {
     setLogoClicks(prev => {
       const newCount = prev + 1;
-      if (newCount === 6) {
+      if (newCount === 3) {
         localStorage.setItem('adminUnlocked', 'true');
-        alert('Admin Login Unlocked');
+        navigate('/login');
         return 0;
       }
       return newCount;
