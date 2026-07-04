@@ -12,6 +12,26 @@ export default function Navigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
+  const [logoClicks, setLogoClicks] = useState(0);
+
+  useEffect(() => {
+    if (logoClicks > 0) {
+      const timer = setTimeout(() => setLogoClicks(0), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [logoClicks]);
+
+  const handleLogoClick = () => {
+    setLogoClicks(prev => {
+      const newCount = prev + 1;
+      if (newCount === 6) {
+        localStorage.setItem('adminUnlocked', 'true');
+        alert('Admin Login Unlocked');
+        return 0;
+      }
+      return newCount;
+    });
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,7 +107,7 @@ export default function Navigation() {
         />
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative z-10 w-full">
           {/* Logo */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="flex items-center group" onClick={handleLogoClick}>
             <img src={atidetoLogo} alt="ATIDETO Logo" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow-[0_0_8px_rgba(46,168,255,0.4)]" />
           </Link>
 

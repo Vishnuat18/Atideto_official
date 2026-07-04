@@ -95,7 +95,7 @@ export default function PreFooterCTA() {
   }
 
   return (
-    <div className="w-full bg-[#050505] pt-12 pb-12">
+    <div id="pre-footer-cta" className="w-full bg-[#050505] pt-12 pb-12">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="relative rounded-[24px] overflow-hidden border border-[#005DFF]/20 bg-[#020617] shadow-[0_0_40px_rgba(0,93,255,0.08)]">
           

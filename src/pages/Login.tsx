@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updateProfile, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import atidetoLogo from '@/assets/atideto-logo.png';
 import atidetoTextLogo from '@/assets/atideto-text-logo.png';
+import loginBg from '@/assets/login/login.jpeg';
+import signupBg from '@/assets/login/signup.jpeg';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -18,6 +20,15 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Disable body scroll when login page is mounted
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -153,57 +164,57 @@ export default function Login() {
   }
 
   return (
-    <div style={{ background: '#050505', minHeight: '100vh', paddingTop: '80px' }}>
-      <div className="max-w-md mx-auto px-6 py-16">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <img src={atidetoLogo} alt="ATIDETO Logo" className="h-16 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(46,168,255,0.4)]" />
-            <img src={atidetoTextLogo} alt="ATIDETO" className="h-8 w-auto object-contain" />
-          </div>
-          <p className="text-[#AFAFAF] text-sm mt-1">
-            {mode === 'login' ? 'Sign in to your account' : mode === 'register' ? 'Create your account' : 'Reset your password'}
-          </p>
-        </div>
+    <div className="fixed inset-0 z-[100] h-screen w-screen text-white font-sans overflow-hidden">
+      {/* Layer 0: Full Screen Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src={mode === 'login' ? loginBg : signupBg} 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        {/* Mode Tabs */}
-        {mode !== 'forgot' && (
-          <div className="flex rounded-xl overflow-hidden mb-8" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {(['login', 'register'] as Mode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setOtpStep(false); }}
-                className={`flex-1 py-3 text-sm font-medium transition-all duration-200 capitalize ${
-                  mode === m ? 'bg-[#2F2FE4] text-white' : 'text-[#AFAFAF] hover:text-white'
-                }`}
-              >
-                {m === 'login' ? 'Sign In' : 'Register'}
-              </button>
-            ))}
+      {/* Layer 1: Form Container (Overlaid) */}
+      <div className="relative z-10 flex h-full">
+        
+        {/* Left Side: Form Area */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md space-y-5 my-auto">
+          
+          {/* Logo / Header */}
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-4">
+              <span className="text-[#2F2FE4] text-4xl font-bold tracking-wide">adetito</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-2 tracking-wide">
+              {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-[#AFAFAF] text-sm">
+              {mode === 'login' 
+                ? 'Sign in to continue your learning journey' 
+                : 'Join Adetito and start your learning journey'}
+            </p>
           </div>
-        )}
 
-        {/* Form Card */}
-        <div className="rounded-2xl p-8" style={{ background: '#111111', border: '1px solid rgba(47,47,228,0.15)' }}>
           {error && (
             <div className="mb-6 p-4 bg-[#D2042D]/10 border border-[#D2042D]/50 rounded-xl text-[#D2042D] text-sm text-center">
               {error}
             </div>
           )}
+
           {mode === 'forgot' ? (
-            <form onSubmit={handleForgot} className="space-y-4">
-              <div>
-                <label className="text-[#AFAFAF] text-sm block mb-2">Email Address</label>
+            <form onSubmit={handleForgot} className="space-y-6">
+              <div className="relative">
                 <input
                   type="email"
-                  className="form-input"
-                  placeholder="your@email.com"
+                  placeholder="Enter your email"
+                  className="w-full bg-transparent border-b border-white/20 pb-3 text-base text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#2F2FE4] transition-all duration-300"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   required
                 />
               </div>
-              <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 cursor-pointer disabled:opacity-40">
+              <button type="submit" disabled={loading} className="w-full py-3.5 bg-[#2F2FE4] hover:bg-[#3A3DFF] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50">
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </button>
               <button
@@ -215,37 +226,35 @@ export default function Login() {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Role Selector (Register) */}
-              {mode === 'register' && (
-                <div>
-                  <label className="text-[#AFAFAF] text-sm block mb-2">Account Type</label>
-                  <div className="flex gap-3">
-                    {['student', 'admin'].map((r) => (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => update('role', r)}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 capitalize ${
-                          form.role === r
-                            ? 'bg-[#2F2FE4] text-white'
-                            : 'bg-white/5 text-[#AFAFAF] border border-white/10 hover:border-white/30'
-                        }`}
-                      >
-                        {r === 'student' ? '🎓 Student' : '👤 Admin'}
-                      </button>
-                    ))}
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              
+              {/* Role Selector (Hidden by default, unlocked via triple-click on home logo) */}
+              {mode === 'register' && localStorage.getItem('adminUnlocked') === 'true' && (
+                <div className="flex gap-3 mb-2">
+                  {['student', 'admin'].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => update('role', r)}
+                      className={`flex-1 py-2 border-b-2 text-sm font-medium transition-all duration-200 capitalize ${
+                        form.role === r
+                          ? 'border-[#2F2FE4] text-[#2F2FE4]'
+                          : 'border-transparent text-[#7D7D7D] hover:text-[#AFAFAF]'
+                      }`}
+                    >
+                      {r === 'student' ? 'Student' : 'Admin'}
+                    </button>
+                  ))}
                 </div>
               )}
 
-              {/* Name (Register) */}
+              {/* Name */}
               {mode === 'register' && (
-                <div>
-                  <label className="text-[#AFAFAF] text-sm block mb-2">Full Name</label>
+                <div className="relative">
                   <input
-                    className="form-input"
-                    placeholder="John Smith"
+                    type="text"
+                    placeholder="Enter your full name"
+                    className="w-full bg-transparent border-b border-white/20 pb-3 text-base text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#2F2FE4] transition-all duration-300"
                     value={form.name}
                     onChange={(e) => update('name', e.target.value)}
                     required
@@ -254,12 +263,11 @@ export default function Login() {
               )}
 
               {/* Email */}
-              <div>
-                <label className="text-[#AFAFAF] text-sm block mb-2">Email Address</label>
+              <div className="relative">
                 <input
                   type="email"
-                  className="form-input"
-                  placeholder="your@email.com"
+                  placeholder="Enter your email"
+                  className="w-full bg-transparent border-b border-white/20 pb-3 text-base text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#2F2FE4] transition-all duration-300"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   required
@@ -267,74 +275,31 @@ export default function Login() {
               </div>
 
               {/* Password */}
-              <div>
-                <label className="text-[#AFAFAF] text-sm block mb-2">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    className="form-input pr-12"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={(e) => update('password', e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#AFAFAF] hover:text-white transition-colors text-sm"
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                </div>
-
-                {/* Password Strength */}
-                {mode === 'register' && form.password && (
-                  <div className="mt-2">
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4].map((i) => (
-                        <div
-                          key={i}
-                          className="flex-1 h-1 rounded-full transition-all duration-300"
-                          style={{ background: i <= strength.score ? strength.color : 'rgba(255,255,255,0.1)' }}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-xs mt-1" style={{ color: strength.color }}>
-                      {strength.label}
-                    </p>
-                  </div>
-                )}
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className="w-full bg-transparent border-b border-white/20 pb-3 pr-12 text-base text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#2F2FE4] transition-all duration-300"
+                  value={form.password}
+                  onChange={(e) => update('password', e.target.value)}
+                  required
+                />
+                {/* Visual indicator for password strength can be added below if needed */}
               </div>
 
-              {/* Confirm Password (Register) */}
-              {mode === 'register' && (
-                <div>
-                  <label className="text-[#AFAFAF] text-sm block mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    className="form-input"
-                    placeholder="••••••••"
-                    value={form.confirm}
-                    onChange={(e) => update('confirm', e.target.value)}
-                    required
-                  />
-                  {form.confirm && form.password !== form.confirm && (
-                    <p className="text-xs text-[#D2042D] mt-1">Passwords do not match</p>
-                  )}
-                </div>
-              )}
 
-              {/* Remember Me & Forgot (Login) */}
+
+              {/* Options for Login */}
               {mode === 'login' && (
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="rounded" style={{ accentColor: '#2F2FE4' }} />
+                    <input type="checkbox" className="rounded border-white/20 bg-transparent text-[#2F2FE4] focus:ring-0 focus:ring-offset-0" />
                     <span className="text-[#AFAFAF] text-sm">Remember me</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setMode('forgot')}
-                    className="text-[#2F2FE4] hover:text-[#818cf8] text-sm transition-colors"
+                    className="text-[#2F2FE4] hover:text-[#5B5EFF] text-sm font-medium transition-colors"
                   >
                     Forgot password?
                   </button>
@@ -343,36 +308,59 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={loading || (mode === 'register' && form.password !== form.confirm && !!form.confirm)}
-                className="btn-primary w-full py-3.5 text-base disabled:opacity-40 cursor-pointer"
+                disabled={loading}
+                className="w-full py-3.5 bg-[#2F2FE4] hover:bg-[#3A3DFF] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 mt-4"
               >
-                {loading ? 'Processing...' : (mode === 'login' ? 'Sign In →' : 'Create Account →')}
+                {loading ? 'Processing...' : (mode === 'login' ? 'Sign In' : 'Create Account')}
               </button>
+
+              {/* Toggle Mode */}
+              <div className="text-center mt-6">
+                <span className="text-[#7D7D7D] text-sm">
+                  {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                  className="text-[#2F2FE4] hover:text-[#5B5EFF] text-sm font-medium transition-colors ml-1"
+                >
+                  {mode === 'login' ? 'Sign Up' : 'Sign In'}
+                </button>
+              </div>
+
             </form>
           )}
-        </div>
 
-        {/* Divider & Social */}
-        {mode !== 'forgot' && !otpStep && (
-          <>
-            <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-[#AFAFAF] text-xs">or continue with</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[{ icon: '🇬', label: 'Google' }, { icon: '🐙', label: 'GitHub' }].map((p) => (
+          {/* Social Auth */}
+          {mode !== 'forgot' && !otpStep && (
+            <div className="mt-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[#7D7D7D] text-xs uppercase tracking-wider">Or continue with</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+              <div className="flex justify-center">
                 <button
-                  key={p.label}
-                  className="btn-outline py-3 flex items-center justify-center gap-2 text-sm cursor-pointer"
-                  onClick={p.label === 'Google' ? handleGoogleAuth : undefined}
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  className="w-full py-3 border border-white/20 rounded-lg flex items-center justify-center gap-3 text-sm text-[#AFAFAF] hover:text-white hover:border-white/40 transition-colors"
                 >
-                  <span>{p.icon}</span> {p.label}
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  Continue with Google
                 </button>
-              ))}
+              </div>
             </div>
-          </>
-        )}
+          )}
+
+        </div>
+      </div>
+        {/* Spacer to keep form on the left half of the screen */}
+        <div className="hidden md:block md:w-1/2" />
       </div>
     </div>
   );
