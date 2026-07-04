@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NAV_ITEMS } from '@/constants';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import atidetoLogo from '@/assets/atideto-logo.png';
-import PullMenu from './pull-chain/PullMenu';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
