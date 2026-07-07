@@ -14,7 +14,7 @@ import MeetingType from './client-connect/components/MeetingType';
 import ReviewSubmit from './client-connect/components/ReviewSubmit';
 import ThankYouPage from './client-connect/components/ThankYouPage';
 import { formatClientEmail } from '@/lib/emailFormatter';
-import servicesBg from '@/assets/services_hero_bg.jpeg';
+import contactBg from '@/assets/hero/contact.png';
 
 const STEPS_TITLES = [
   'Client Information',
@@ -243,7 +243,7 @@ export default function ClientConnect() {
 
   return (
     <div 
-      className="min-h-screen pt-16 pb-20 relative text-white font-sans overflow-x-hidden flex flex-col justify-between selection:bg-[#5B5EFF]/30"
+      className="min-h-screen pb-20 relative text-white font-sans overflow-x-hidden flex flex-col justify-between selection:bg-[#5B5EFF]/30"
       style={{
         background: 'radial-gradient(circle at center, #08103E 0%, #050A30 30%, #050505 70%, #030303 100%)'
       }}
@@ -257,42 +257,40 @@ export default function ClientConnect() {
 
       {/* Hero Section with Ribbon Background */}
       {!submitted && (
-        <div 
-          className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5 mb-12"
+        <section 
+          className="relative min-h-screen w-full px-8 lg:px-16 pt-32 pb-8 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
           style={{
-            backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+            backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${contactBg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat'
           }}
         >
-          <header className="relative z-10 max-w-[1400px] mx-auto px-6 flex flex-col items-center text-center">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#5B5EFF]/30 bg-[#5B5EFF]/10 text-[#5B5EFF] text-xs font-bold tracking-[0.2em] uppercase mb-6"
-            >
-              Client Connect
-            </motion.div>
-            <motion.h1 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tight text-white"
-            >
-              Start Your <span className="text-[#5B5EFF]">Project</span>
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-[#AFAFAF] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
-            >
-              Tell us about your vision. We'll craft a tailored proposal and set up your dashboard within 24 hours.
-            </motion.p>
-          </header>
-        </div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-bold tracking-[0.2em] uppercase mb-6"
+          >
+            Client Connect
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white drop-shadow-2xl"
+          >
+            Start Your <span className="text-[#3B82F6]">Project</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-[#AFAFAF] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-medium"
+          >
+            Tell us about your vision. We'll craft a tailored proposal and set up your dashboard within 24 hours.
+          </motion.p>
+        </section>
       )}
 
       <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex-1 flex flex-col justify-center">

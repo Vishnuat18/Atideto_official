@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import HorizonBackground from './HorizonBackground';
+import footerBg from '@/assets/hero/footer.png';
 import { Linkedin, Instagram, Disc, Youtube, Phone, Mail, MapPin } from 'lucide-react';
 import atidetoLogo from '@/assets/atideto-logo.png';
 
@@ -11,12 +11,17 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden text-white font-sans border-t border-white/5">
-      {/* Animated Background */}
-      <HorizonBackground />
-      
-      {/* Dark overlay to ensure text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#020208] via-transparent to-[#020208]/80 -z-10 pointer-events-none" />
+    <footer 
+      className="relative overflow-hidden text-white font-sans border-t border-white/5"
+      style={{
+        backgroundImage: `linear-gradient(to top, #020208, transparent, rgba(2,2,8,0.8)), url(${footerBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Background Image is set in inline style above */}
+      <div className="absolute inset-0 bg-black/40 -z-10 pointer-events-none" />
 
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-6 py-16">

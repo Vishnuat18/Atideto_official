@@ -3,7 +3,7 @@ import { SERVICES } from '@/constants';
 import { AnimatePresence } from 'framer-motion';
 import ServiceCard from '@/components/services/ServiceCard';
 import ServiceModal from '@/components/services/ServiceModal';
-import servicesBg from '@/assets/services_hero_bg.jpeg';
+import servicesBg from '@/assets/hero/service.png';
 
 export default function Services() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,15 +17,15 @@ export default function Services() {
   }, []);
 
   return (
-    <div ref={containerRef} className="bg-[#050505] min-h-screen pt-16 relative text-[#F8FAFC] overflow-x-hidden">
+    <div ref={containerRef} className="bg-[#050505] min-h-screen relative text-[#F8FAFC] overflow-x-hidden">
       
       {/* Global Ambient Background */}
       <div className="fixed inset-0 bg-[#050505] -z-10" />
       
       <section 
-        className="relative w-full px-8 lg:px-16 py-24 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
+        className="relative min-h-screen w-full px-8 lg:px-16 pt-32 pb-8 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
         style={{ 
-          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${servicesBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'

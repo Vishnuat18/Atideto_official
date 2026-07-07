@@ -4,7 +4,8 @@ import { NAV_ITEMS } from '@/constants';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import atidetoLogo from '@/assets/atideto-logo.png';
+import atidetoLogo from '@/assets/atideto.png';
+import PullChain from './PullChain';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
@@ -54,7 +55,7 @@ export default function Navigation() {
 
 
 
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{uid: string, name: string, email: string | null, role: string} | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -182,18 +183,11 @@ export default function Navigation() {
               Let's Talk <span className="text-[#2EA8FF] font-bold">→</span>
             </Link>
           </div>
-
-          {/* Mobile Menu Hint */}
-          <div className="lg:hidden flex items-center gap-3">
-            <Link
-              to="/client-connect"
-              className="btn-primary text-xs px-4 py-2"
-            >
-              Contact
-            </Link>
-          </div>
         </div>
       </nav>
+
+      {/* Pull Chain Menu - visible on all screen sizes */}
+      <PullChain />
     </>
   );
 }

@@ -9,10 +9,10 @@ export default function PullChain() {
   const [isOpen, setIsOpen] = useState(false);
   const [pullAmount, setPullAmount] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [swayX, setSwayX] = useState(0);
   const [rotation, setRotation] = useState(0);
   
   const dragStartY = useRef(0);
+  const clickStartAmount = useRef(0);
   const location = useLocation();
 
   // Determine current page theme
@@ -30,16 +30,17 @@ export default function PullChain() {
   // Sway physics when idle
   useEffect(() => {
     let animationFrameId: number;
-    let startTime = Date.now();
+    const startTime = Date.now();
 
     const animateSway = () => {
       if (!isDragging) {
         const time = (Date.now() - startTime) / 1000;
-        // Sway decay if menu is open or recently released
-        const amplitude = isOpen ? 1 : 3.5;
-        const currentSway = Math.sin(time * 2) * amplitude;
-        setSwayX(currentSway);
-        setRotation(currentSway * 1.5);
+        const amplitude = isOpen ? 1 : 5; // degrees of rotation
+        const currentRotation = Math.sin(time * 2) * amplitude;
+        setRotation(currentRotation);
+      } else {
+        // While dragging, let the chain hang straight down towards the mouse
+        setRotation(0);
       }
       animationFrameId = requestAnimationFrame(animateSway);
     };
@@ -55,31 +56,25 @@ export default function PullChain() {
   const handleStart = (clientY: number) => {
     setIsDragging(true);
     dragStartY.current = clientY - pullAmount;
+    clickStartAmount.current = pullAmount;
   };
 
   const handleMove = (clientY: number) => {
     if (!isDragging) return;
     const deltaY = clientY - dragStartY.current;
-    // Constrain pull distance between 0 and 250px
     const constrainedY = Math.max(0, Math.min(250, deltaY));
     setPullAmount(constrainedY);
-    
-    // Rotate slightly during pulling
-    setRotation(constrainedY * 0.08);
-
-    // Dynamic sway response to drag speed/direction
-    setSwayX((constrainedY * 0.05));
   };
 
   const handleEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    // If pulled more than 130px, toggle the menu
-    if (pullAmount > 130) {
+    // If dragged more than 130px OR it was just a click (moved less than 5px)
+    if (pullAmount > 130 || Math.abs(pullAmount - clickStartAmount.current) < 5) {
       setIsOpen((prev) => !prev);
-      // Play soft click sound if supported
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -107,7 +102,7 @@ export default function PullChain() {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
 
-      if (dt > 0.1) return; // Ignore tab suspension jumps
+      if (dt > 0.1) return;
 
       const force = -stiffness * (current - target);
       const acceleration = force - damping * velocity;
@@ -126,11 +121,10 @@ export default function PullChain() {
     requestAnimationFrame(springStep);
   };
 
-  // Keyboard navigation & Mouse outside click listener
+  // Click outside to close
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       if (isOpen) {
-        // If clicking outside menu container or handle
         const target = e.target as HTMLElement;
         if (!target.closest('.pull-chain-container') && !target.closest('[style*="100px"]')) {
           setIsOpen(false);
@@ -142,15 +136,15 @@ export default function PullChain() {
     return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [isOpen]);
 
-  // Scroll swing listener
+  // Scroll swing
   useEffect(() => {
-    let scrollTimeout: any;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     const handleScrollSwing = () => {
       // Cause a temporary extra swing when scrolling
-      setSwayX((prev) => prev + (Math.random() > 0.5 ? 4 : -4));
+      setRotation((prev) => prev + (Math.random() > 0.5 ? 2 : -2));
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        setSwayX(0);
+        setRotation(0);
       }, 150);
     };
 
@@ -161,7 +155,7 @@ export default function PullChain() {
     };
   }, []);
 
-  // Listeners for document mousemove/mouseup to continue dragging outside component
+  // Document-level drag listeners
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => handleMove(e.clientY);
     const onMouseUp = () => handleEnd();
@@ -186,27 +180,27 @@ export default function PullChain() {
   }, [isDragging, pullAmount]);
 
   return (
-    <div className="pull-chain-container fixed top-0 right-0 z-50 h-screen pointer-events-none">
+    <div className="pull-chain-container fixed top-0 right-0 z-50 h-screen pointer-events-none lg:hidden">
       {/* Background Dim & Blur Overlay */}
       <BackgroundBlur isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
       {/* Interactive pull-chain group */}
       <div 
-        className="absolute top-0 pointer-events-auto"
-        style={{ right: 0, width: '140px', height: '400px' }}
+        className="absolute top-0 pointer-events-auto flex flex-col items-center"
+        style={{ 
+          right: '50px', // Anchor from right edge
+          width: '60px', 
+          transformOrigin: 'top center',
+          transform: `rotate(${rotation}deg)`
+        }}
         onMouseDown={(e) => handleStart(e.clientY)}
         onTouchStart={(e) => e.touches[0] && handleStart(e.touches[0].clientY)}
       >
-        {/* SVG Hanging Rope */}
-        <PullChainRope theme={theme} pullAmount={pullAmount} swayX={swayX} />
+        {/* Straight Rope */}
+        <PullChainRope pullAmount={pullAmount} />
 
         {/* ATIDETO Logo Handle */}
-        <PullChainHandle
-          theme={theme}
-          isDragging={isDragging}
-          pullAmount={pullAmount}
-          rotation={rotation}
-        />
+        <PullChainHandle isDragging={isDragging} />
       </div>
 
       {/* Floating Menu Dropdown */}

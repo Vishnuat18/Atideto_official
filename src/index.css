@@ -674,3 +674,42 @@
   stroke-dasharray: 8 6;
   animation: lineDashMove 1.8s linear infinite;
 }
+
+/* Pull Chain CSS for React App */
+.pull-chain-container {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    width: 40px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: top center;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 60;
+}
+
+.chain-link {
+    width: 10px;
+    height: 14px;
+    border: 2px solid #888;
+    border-radius: 50%;
+    margin: 1px 0;
+    background: linear-gradient(135deg, #ccc, #888, #ccc);
+}
+
+.chain-pull {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #e0e0e0, #888, #555);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.3);
+    cursor: pointer;
+    border: 1px solid #666;
+    margin-top: 2px;
+}
+
+.pull-chain-container.pulled {
+    transform: translateY(30px);
+}

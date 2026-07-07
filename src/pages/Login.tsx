@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import atidetoLogo from '@/assets/atideto-logo.png';
 import atidetoTextLogo from '@/assets/atideto-text-logo.png';
+import atidetoPng from '@/assets/atideto.png';
 import loginBg from '@/assets/login/login.jpeg';
 import signupBg from '@/assets/login/signup.jpeg';
 
@@ -125,7 +126,7 @@ export default function Login() {
 
   if (submitted && mode === 'forgot') {
     return (
-      <div style={{ background: '#050505', minHeight: '100vh', paddingTop: '80px' }} className="flex items-center justify-center">
+      <div className="fixed inset-0 z-[100] h-screen w-screen bg-[#050505] flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
           <div className="text-6xl mb-6">📧</div>
           <h2 className="text-white text-2xl font-bold mb-4" >Check Your Email</h2>
@@ -142,7 +143,7 @@ export default function Login() {
 
   if (submitted) {
     return (
-      <div style={{ background: '#050505', minHeight: '100vh', paddingTop: '80px' }} className="flex items-center justify-center">
+      <div className="fixed inset-0 z-[100] h-screen w-screen bg-[#050505] flex items-center justify-center">
         <div className="max-w-md mx-auto px-6 text-center">
           <div className="w-20 h-20 rounded-full bg-[#2F2FE4]/20 flex items-center justify-center text-4xl mx-auto mb-6 animate-pulseGlow">
             {mode === 'login' ? '✅' : '🎉'}
@@ -195,7 +196,7 @@ export default function Login() {
           {/* Logo / Header */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-              <span className="text-[#2F2FE4] text-4xl font-bold tracking-wide">adetito</span>
+              <img src={atidetoPng} alt="ATIDETO Logo" className="h-12 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(46,168,255,0.4)]" />
             </div>
             <h2 className="text-2xl font-bold mb-2 tracking-wide">
               {mode === 'login' ? 'Welcome Back' : 'Create Account'}

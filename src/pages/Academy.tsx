@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import InternshipExplorer from '@/components/InternshipExplorer';
-import servicesBg from '@/assets/services_hero_bg.jpeg';
+import academyBg from '@/assets/hero/academy.png';
 
 export default function Academy() {
   const [mounted, setMounted] = useState(false);
@@ -18,7 +18,7 @@ export default function Academy() {
   };
 
   return (
-    <div className="bg-[#05070B] min-h-screen pt-24 relative overflow-hidden text-white font-sans selection:bg-[#3B82F6]/30">
+    <div className="bg-[#05070B] min-h-screen relative overflow-hidden text-white font-sans selection:bg-[#3B82F6]/30">
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
@@ -33,37 +33,35 @@ export default function Academy() {
       <div className="absolute inset-0 z-0 pointer-events-none bg-[#050505]" />
 
       {/* Hero Section with Background Image */}
-      <div 
-        className="relative w-full overflow-hidden py-12 lg:py-20 border-b border-white/5"
+      <section 
+        className="relative min-h-screen w-full px-8 lg:px-16 pt-32 pb-8 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 60%, #050505 100%), url(${servicesBg})`,
+          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${academyBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center top',
           backgroundRepeat: 'no-repeat'
         }}
       >
-        
-        <header className="relative z-10 max-w-[1400px] mx-auto px-6 flex flex-col items-center text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
-            Our <span className="text-[#00A3FF] drop-shadow-[0_0_20px_rgba(0,163,255,0.4)]">Academy</span>
-          </h1>
-          <p className="text-lg text-white/50 max-w-2xl leading-relaxed relative">
-            Premium industry-aligned courses designed to take you from beginner to engineering leader. Build real-world projects and launch your career.
-            
-            {/* Custom Toast */}
-            <AnimatePresence>
-              {showToast && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="absolute left-1/2 -translate-x-1/2 -top-16 bg-[#1EA1F2] text-white px-6 py-2 rounded-full font-medium shadow-[0_0_20px_rgba(30,161,242,0.4)] whitespace-nowrap"
-                >
-                  Courses will be available soon!
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </p>
+        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white drop-shadow-2xl">
+          Our <span className="text-[#3B82F6]">Academy</span>
+        </h1>
+        <p className="text-[#AFAFAF] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-medium relative">
+          Premium industry-aligned courses designed to take you from beginner to engineering leader. Build real-world projects and launch your career.
+          
+          {/* Custom Toast */}
+          <AnimatePresence>
+            {showToast && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute left-1/2 -translate-x-1/2 -top-16 bg-[#1EA1F2] text-white px-6 py-2 rounded-full font-medium shadow-[0_0_20px_rgba(30,161,242,0.4)] whitespace-nowrap"
+              >
+                Courses will be available soon!
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </p>
 
           {/* Toggle Switch */}
           <div className="mt-10 relative flex w-full max-w-[420px] bg-white/[0.02] border border-white/5 rounded-full h-[56px] overflow-hidden backdrop-blur-md">
@@ -84,8 +82,7 @@ export default function Academy() {
               Courses
             </button>
           </div>
-        </header>
-      </div>
+      </section>
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 py-12 pb-24">
         {/* Main Content Area */}

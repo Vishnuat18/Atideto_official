@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SERVICES } from '@/constants';
 
-import WhatWeBuildVisual from '@/components/features/WhatWeBuildVisual';
-import WaveBackground from '@/components/layout/WaveBackground';
+import WhatWeBuildBento from '@/components/features/WhatWeBuildBento';
+import homeBg from '@/assets/hero/home.png';
 import CrystallineGrid from '@/components/layout/CrystallineGrid';
 import { Target, Zap, Shield, Globe, Headphones, TrendingUp } from 'lucide-react';
 
@@ -21,17 +21,7 @@ export default function Index() {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; delay: number; duration: number }>>([]);
 
-  useEffect(() => {
-    setParticles(
-      Array.from({ length: 20 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        delay: Math.random() * 8,
-        duration: 8 + Math.random() * 8}))
-    );
-  }, []);
 
   useEffect(() => {
     const handleMouse = (e: MouseEvent) => {
@@ -56,29 +46,18 @@ export default function Index() {
       {/* ── HERO ── */}
       <section 
         ref={heroRef} 
-        className="relative min-h-screen flex flex-col overflow-hidden bg-[#050505]"
+        className="relative min-h-screen flex flex-col overflow-hidden border-b border-[#3B82F6]/20"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${homeBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
       >
-        {/* Abstract blue & light violet wave background animation loop */}
-        <WaveBackground />
 
-        {/* Ambient floating dust particles (animated) */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-          {particles.map((p) => (
-            <div
-              key={p.id}
-              className="absolute w-1.5 h-1.5 rounded-full bg-[#2EA8FF]/40 blur-[0.5px]"
-              style={{
-                left: `${p.x}%`,
-                bottom: '-20px',
-                animation: `particleFloat ${p.duration}s ${p.delay}s linear infinite`,
-                opacity: 0.3}}
-            />
-          ))}
-        </div>
-
-        {/* Hero Centered Layout */}
-        <div className="flex-1 flex flex-col justify-center items-center w-full z-10 pt-32 pb-8">
-          <div className="relative max-w-5xl mx-auto px-6 w-full flex flex-col items-center text-center animate-fadeIn font-montserrat">
+        {/* Hero Left Aligned Layout */}
+        <div className="flex-1 flex flex-col justify-center w-full z-10 pt-32 pb-8">
+          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full flex flex-col items-start text-left animate-fadeIn font-montserrat">
             
             {/* Main Heading (Montserrat) */}
             <h1
@@ -94,13 +73,13 @@ export default function Index() {
 
             {/* Description */}
             <p
-              className="text-[#A7B3C7] text-[17px] md:text-[18px] leading-relaxed mb-10 max-w-[680px] font-montserrat mx-auto"
+              className="text-[#A7B3C7] text-[17px] md:text-[18px] leading-relaxed mb-10 max-w-[680px] font-montserrat mx-0"
             >
               We build intelligent software, AI automation, premium web experiences, mobile applications, cloud solutions, and scalable digital platforms that empower businesses to innovate, automate, and grow faster.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 font-montserrat">
+            <div className="flex flex-wrap justify-start gap-4 font-montserrat">
               <button
                 onClick={() => navigate('/client-connect')}
                 className="btn-electric rounded-xl text-[15px] font-semibold px-8 py-4 font-montserrat"
@@ -159,7 +138,8 @@ export default function Index() {
           </div>
 
           {/* Centerpiece 3D Crystal Visual with 6 Floating Cards */}
-          <WhatWeBuildVisual />
+          {/* Bento Grid */}
+          <WhatWeBuildBento />
 
           {/* Bottom CTA (Explore Our Services →) */}
           <div className="mt-12 text-center">
