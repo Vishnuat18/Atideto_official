@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TEAM_MEMBERS } from '@/constants';
-import { ArrowLeft, Github, Linkedin, Twitter, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Github, Linkedin, Twitter, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react';
 
 export default function MeetTheTeam() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  
+  // Mobile Carousel State
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const selectedMember = TEAM_MEMBERS.find(m => m.id === selectedId);
+
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % TEAM_MEMBERS.length);
+  const handlePrev = () => setCurrentIndex((prev) => (prev - 1 + TEAM_MEMBERS.length) % TEAM_MEMBERS.length);
+  const currentMember = TEAM_MEMBERS[currentIndex];
 
   return (
     <section className="relative py-12 px-4 md:px-8 z-20 min-h-[700px]">
@@ -31,156 +38,242 @@ export default function MeetTheTeam() {
         </motion.h2>
       </div>
 
-      <div className="relative w-full max-w-[1200px] mx-auto min-h-[600px] flex items-center justify-center mt-12">
+      <div className="relative w-full max-w-[1200px] mx-auto min-h-[500px] flex items-center justify-center mt-12">
         <AnimatePresence mode="wait">
           {!selectedId ? (
             <motion.div
-              key="accordion"
+              key="team-view"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex w-full h-[600px] gap-4 items-center justify-center px-4"
-              onMouseLeave={() => setHoveredId(null)}
+              className="w-full"
             >
-              {TEAM_MEMBERS.map((member, index) => {
-                const isActive = hoveredId === member.id;
+              {/* Desktop View (Accordion) */}
+              <div 
+                className="hidden md:flex w-full h-[600px] gap-4 items-center justify-center px-4"
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                {TEAM_MEMBERS.map((member, index) => {
+                  const isActive = hoveredId === member.id;
+                  const Y_OFFSETS = [0, -40, 30, 60, -80, 90, -120];
+                  
+                  return (
+                    <motion.div
+                      key={member.id}
+                      layoutId={`team-card-${member.id}`}
+                      onMouseEnter={() => setHoveredId(member.id)}
+                      onClick={() => setSelectedId(member.id)}
+                      className="relative overflow-hidden cursor-pointer group rounded-none h-[400px] flex-1"
+                      animate={{
+                        filter: isActive ? 'grayscale(0%) brightness(1.1)' : 'grayscale(100%) brightness(0.5)',
+                        y: Y_OFFSETS[index] || 0
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                      <motion.img 
+                        layoutId={`team-img-${member.id}`}
+                        src={member.image}
+                        alt={member.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <motion.div className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-center">
+                        <h3 className="text-white font-bold text-lg md:text-xl drop-shadow-[0_0_10px_rgba(0,0,0,1)] whitespace-nowrap">
+                          {member.name}
+                        </h3>
+                        <p className="text-[#60A5FA] text-sm mt-1 font-medium drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]">
+                          {member.role}
+                        </p>
+                      </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Mobile View (Carousel) */}
+              <div className="md:hidden relative w-full h-[450px] flex items-center justify-center px-2">
+                <button 
+                  onClick={handlePrev} 
+                  className="absolute left-0 z-30 p-2 md:p-3 rounded-full bg-black/50 text-white border border-white/20 hover:bg-[#00C6FF]/20 transition-colors cursor-pointer"
+                >
+                  <ChevronLeft size={24} />
+                </button>
                 
-                // Exact staggered offsets matching the user's sketch
-                const Y_OFFSETS = [0, -40, 30, 60, -80, 90, -120];
-                
-                return (
+                <AnimatePresence mode="wait">
                   <motion.div
-                    key={member.id}
-                    layoutId={`team-card-${member.id}`}
-                    onMouseEnter={() => setHoveredId(member.id)}
-                    onClick={() => setSelectedId(member.id)}
-                    className="relative overflow-hidden cursor-pointer group rounded-none h-[400px] flex-1"
-                    animate={{
-                      filter: isActive ? 'grayscale(0%) brightness(1.1)' : 'grayscale(100%) brightness(0.5)',
-                      y: Y_OFFSETS[index] || 0
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    key={currentMember.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-[80%] h-full rounded-3xl overflow-hidden border border-[#0052FF]/30 shadow-[0_0_30px_rgba(0,82,255,0.2)] cursor-pointer"
+                    onClick={() => setSelectedId(currentMember.id)}
                   >
                     <motion.img 
-                      layoutId={`team-img-${member.id}`}
-                      src={member.image}
-                      alt={member.name}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      layoutId={`team-img-${currentMember.id}`}
+                      src={currentMember.image} 
+                      alt={currentMember.name}
+                      className="absolute inset-0 w-full h-full object-cover" 
                     />
-                    
-                    {/* Dark gradient for text readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    <motion.div 
-                      className="absolute inset-0 flex flex-col items-center justify-end pb-8 text-center"
-                    >
-                      <h3 className="text-white font-bold text-lg md:text-xl drop-shadow-[0_0_10px_rgba(0,0,0,1)] whitespace-nowrap">
-                        {member.name}
-                      </h3>
-                      <p className="text-[#60A5FA] text-sm mt-1 font-medium drop-shadow-[0_0_5px_rgba(0,0,0,0.8)]">
-                        {member.role}
-                      </p>
-                    </motion.div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-0 inset-x-0 p-6 text-center pointer-events-none">
+                      <h3 className="text-white font-black text-2xl drop-shadow-md mb-1">{currentMember.name}</h3>
+                      <p className="text-[#00C6FF] font-bold text-sm tracking-wide uppercase drop-shadow-md">{currentMember.role}</p>
+                      
+                      <div className="mt-5 flex flex-wrap items-center justify-center gap-3 bg-black/60 border border-[#0052FF]/30 backdrop-blur-md rounded-full px-4 py-2 w-fit mx-auto shadow-[0_0_20px_rgba(0,82,255,0.2)] pointer-events-auto">
+                        {currentMember.social.linkedin && (
+                          <a href={currentMember.social.linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                            <Linkedin size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.github && (
+                          <a href={currentMember.social.github} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                            <Github size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.instagram && (
+                          <a href={currentMember.social.instagram} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#E1306C] transition-colors cursor-pointer">
+                            <Instagram size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.facebook && (
+                          <a href={currentMember.social.facebook} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#1877F2] transition-colors cursor-pointer">
+                            <Facebook size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.whatsapp && (
+                          <a href={currentMember.social.whatsapp} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#25D366] transition-colors cursor-pointer">
+                            <MessageCircle size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.email && (
+                          <a href={currentMember.social.email} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#00A3FF] transition-colors cursor-pointer">
+                            <Mail size={18} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </motion.div>
-                );
-              })}
+                </AnimatePresence>
+
+                <button 
+                  onClick={handleNext} 
+                  className="absolute right-0 z-30 p-2 md:p-3 rounded-full bg-black/50 text-white border border-white/20 hover:bg-[#00C6FF]/20 transition-colors cursor-pointer"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </div>
             </motion.div>
           ) : (
             <motion.div
               key="profile"
-              className="absolute inset-0 flex flex-col lg:flex-row items-stretch gap-8 max-w-[1200px] mx-auto w-full z-50"
+              className="relative w-full max-w-[1200px] mx-auto z-20 mt-8 md:mt-0"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              {/* Selected Profile View */}
-              <motion.div 
-                className="lg:w-[400px] flex-shrink-0 flex flex-col gap-6"
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
+              <button 
+                onClick={() => setSelectedId(null)}
+                className="absolute -top-14 md:-top-12 left-0 flex items-center gap-2 text-[#94A3B8] hover:text-white transition-colors z-50 cursor-pointer bg-black/40 md:bg-transparent px-4 py-2 md:p-0 rounded-full md:rounded-none backdrop-blur-md md:backdrop-blur-none"
               >
-                <button 
-                  onClick={() => setSelectedId(null)}
-                  className="flex items-center gap-2 text-[#94A3B8] hover:text-white transition-colors"
-                >
-                  <ArrowLeft size={20} /> Back to Team
-                </button>
+                <ArrowLeft size={20} /> Back to Team
+              </button>
 
-                <motion.div 
-                  layoutId={`team-card-${selectedId}`}
-                  className="w-full h-[500px] rounded-[32px] overflow-hidden relative shadow-[0_0_40px_rgba(59,130,246,0.3)] border border-white/10"
-                >
-                  <div className="absolute inset-0 bg-[#3B82F6] opacity-20 blur-3xl z-0 mix-blend-screen" />
-                  <motion.img 
-                    layoutId={`team-img-${selectedId}`}
-                    src={selectedMember!.image} 
-                    className="w-full h-full object-cover relative z-10"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#040608] via-transparent to-transparent z-10" />
-                </motion.div>
-              </motion.div>
-
-              {/* Profile Details Container */}
-              <motion.div 
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex-1 bg-[rgba(255,255,255,0.02)] backdrop-blur-xl border border-white/5 rounded-[32px] p-10 flex flex-col relative overflow-hidden"
-              >
-                {/* Decorative particle background */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-[#00C6FF]/10 blur-[100px] rounded-full pointer-events-none" />
-
-                <div className="flex justify-between items-start mb-8 relative z-10">
-                  <div>
-                    <h2 className="text-4xl md:text-5xl font-black text-white mb-2">{selectedMember!.name}</h2>
-                    <h3 className="text-2xl text-[#60A5FA] font-medium">{selectedMember!.role}</h3>
-                  </div>
-                  <div className="text-right hidden sm:block">
-                  </div>
+              <div className="relative w-full min-h-[550px] md:min-h-[600px] rounded-[24px] md:rounded-[32px] overflow-hidden bg-[#0A0F1C] border border-[#0052FF]/30 shadow-[0_0_50px_rgba(0,82,255,0.15)] flex flex-col p-6 md:p-12">
+                
+                {/* Top Tags Bar - Pill Shape */}
+                <div className="mx-auto w-fit mb-6 md:mb-8 rounded-full border border-[#0052FF]/30 flex flex-wrap items-center justify-center gap-2 md:gap-6 px-4 md:px-6 py-2 md:py-3 text-[9px] md:text-[11px] text-[#00A3FF]/80 font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase bg-[#0052FF]/10 shadow-inner z-0 relative">
+                  <span>Innovation</span> <span className="hidden md:inline">&bull;</span> <span>Leadership</span> <span className="hidden md:inline">&bull;</span> <span>Technology</span>
                 </div>
 
-                <p className="text-[#AFAFAF] text-lg leading-relaxed mb-10 relative z-10 max-w-2xl">
-                  {selectedMember!.bio}
-                </p>
+                {/* Background Shadow Text */}
+                <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none z-0">
+                  <h1 className="text-[5rem] sm:text-[10rem] md:text-[13rem] font-black text-[#0052FF]/10 leading-none tracking-tighter whitespace-nowrap px-4 w-full text-center truncate">
+                    {selectedMember!.role.split(' ')[0].toUpperCase()}
+                  </h1>
+                </div>
 
-                <div className="mt-auto pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
-                  <div className="flex flex-wrap gap-4">
-                    {selectedMember!.social.email && (
-                      <a href={selectedMember!.social.email} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#EA4335] hover:border-[#EA4335] transition-all"><Mail size={20} /></a>
-                    )}
-                    {selectedMember!.social.phone && (
-                      <a href={selectedMember!.social.phone} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#34A853] hover:border-[#34A853] transition-all"><Phone size={20} /></a>
-                    )}
-                    {selectedMember!.social.whatsapp && (
-                      <a href={selectedMember!.social.whatsapp} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all"><MessageCircle size={20} /></a>
-                    )}
-                    {selectedMember!.social.linkedin && (
-                      <a href={selectedMember!.social.linkedin} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0A66C2] hover:border-[#0A66C2] transition-all"><Linkedin size={20} /></a>
-                    )}
-                    {selectedMember!.social.github && (
-                      <a href={selectedMember!.social.github} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#333333] hover:border-[#333333] transition-all"><Github size={20} /></a>
-                    )}
-                    {selectedMember!.social.twitter && (
-                      <a href={selectedMember!.social.twitter} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#1DA1F2] hover:border-[#1DA1F2] transition-all"><Twitter size={20} /></a>
-                    )}
-                    {selectedMember!.social.instagram && (
-                      <a href={selectedMember!.social.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:border-transparent transition-all"><Instagram size={20} /></a>
-                    )}
-                    {selectedMember!.social.facebook && (
-                      <a href={selectedMember!.social.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition-all"><Facebook size={20} /></a>
-                    )}
+                {/* Central Image overlay */}
+                <div className="absolute inset-x-0 bottom-0 top-32 md:top-12 flex items-end justify-center pointer-events-none z-10 md:opacity-100">
+                  <motion.img
+                    layoutId={`team-img-${selectedId}`} 
+                    src={(selectedMember as any).detailImage || selectedMember!.image}
+                    className="h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-full scale-110 md:scale-[1.2] origin-bottom"
+                  />
+                </div>
+
+                {/* Mobile Gradient Overlay for text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1C] via-[#0A0F1C]/80 to-transparent z-10 md:hidden pointer-events-none" />
+
+                {/* Top Section */}
+                <div className="relative z-20 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left gap-4 md:gap-4 mt-4 md:mt-0">
+                  {/* Left: Name & Role */}
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-wider mb-1 drop-shadow-[0_0_15px_rgba(0,163,255,0.4)]">
+                      {selectedMember!.name}
+                    </h2>
+                    <p className="text-[#00C6FF] font-bold text-sm md:text-base tracking-widest uppercase drop-shadow-md">{selectedMember!.role}</p>
                   </div>
                   
-                  {selectedMember!.social.email && (
-                    <a href={selectedMember!.social.email} className="px-8 py-4 rounded-full bg-white text-black font-bold tracking-wide transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] whitespace-nowrap inline-flex items-center justify-center">
-                      Contact {selectedMember!.name.split(' ')[0]}
-                    </a>
-                  )}
-                  {!selectedMember!.social.email && selectedMember!.social.phone && (
-                    <a href={selectedMember!.social.phone} className="px-8 py-4 rounded-full bg-white text-black font-bold tracking-wide transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] whitespace-nowrap inline-flex items-center justify-center">
-                      Contact {selectedMember!.name.split(' ')[0]}
-                    </a>
-                  )}
+                  {/* Right: Quote / Tagline (Hidden on mobile for space) */}
+                  <div className="hidden md:block text-right max-w-[250px]">
+                    <p className="text-white/70 text-sm md:text-base leading-relaxed drop-shadow-md font-serif italic tracking-wide">
+                      "Building solutions that scale. Visuals that convert. Driving digital excellence."
+                    </p>
+                  </div>
                 </div>
-              </motion.div>
+
+                {/* Bottom Section */}
+                <div className="relative z-20 mt-auto pt-32 md:pt-64 flex flex-col md:flex-row justify-between items-center md:items-end gap-6 md:gap-8 text-center md:text-left">
+                  
+                  {/* Left Side: Socials and Bio */}
+                  <div className="flex flex-col items-center md:items-start gap-4 md:gap-5 max-w-2xl">
+                    {/* Social Icons Pill */}
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 bg-black/40 md:bg-[#0A0F1C]/80 border border-[#0052FF]/30 backdrop-blur-md rounded-full px-4 py-2 w-fit shadow-[0_0_20px_rgba(0,82,255,0.2)]">
+                      {selectedMember!.social.linkedin && (
+                        <a href={selectedMember!.social.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                          <Linkedin size={18} />
+                        </a>
+                      )}
+                      {selectedMember!.social.github && (
+                        <a href={selectedMember!.social.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                          <Github size={18} />
+                        </a>
+                      )}
+                      {selectedMember!.social.instagram && (
+                        <a href={selectedMember!.social.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-[#E1306C] transition-colors cursor-pointer">
+                          <Instagram size={18} />
+                        </a>
+                      )}
+                      {selectedMember!.social.facebook && (
+                        <a href={selectedMember!.social.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-[#1877F2] transition-colors cursor-pointer">
+                          <Facebook size={18} />
+                        </a>
+                      )}
+                      {selectedMember!.social.whatsapp && (
+                        <a href={selectedMember!.social.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-[#25D366] transition-colors cursor-pointer">
+                          <MessageCircle size={18} />
+                        </a>
+                      )}
+                      {selectedMember!.social.email && (
+                        <a href={selectedMember!.social.email} className="flex items-center gap-2 px-2 py-1 text-white/80 hover:text-[#00A3FF] transition-colors cursor-pointer">
+                          <Mail size={18} />
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Bio / Role & Responsibilities */}
+                    <p className="text-white/80 md:text-white/70 text-sm leading-relaxed drop-shadow-lg">
+                      {selectedMember!.bio}
+                    </p>
+                  </div>
+
+                  {/* Right Side: Giant Role Text (Hidden on very small screens) */}
+                  <h3 className="hidden sm:block text-3xl md:text-5xl lg:text-6xl font-black text-[#0052FF]/80 md:text-[#00A3FF] uppercase tracking-tighter md:text-right leading-none drop-shadow-[0_0_20px_rgba(0,163,255,0.3)] pb-2">
+                    {selectedMember!.role.split(',')[0]}
+                  </h3>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -10,6 +10,7 @@ import atidetoTextLogo from '@/assets/atideto-text-logo.png';
 import atidetoPng from '@/assets/atideto.png';
 import loginBg from '@/assets/login/login.jpeg';
 import signupBg from '@/assets/login/signup.jpeg';
+import SEO from '@/components/seo/SEO';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -166,6 +167,11 @@ export default function Login() {
 
   return (
     <div className="fixed inset-0 z-[100] h-screen w-screen text-white font-sans overflow-hidden">
+      <SEO 
+        title={mode === 'login' ? 'Sign In | ATIDETO' : 'Create Account | ATIDETO'}
+        description="Sign in to your ATIDETO account or create a new one to access the platform."
+        url="https://atideto.onspace.app/login"
+      />
       {/* Layer 0: Full Screen Background Image */}
       <div className="absolute inset-0 z-0">
         <img 

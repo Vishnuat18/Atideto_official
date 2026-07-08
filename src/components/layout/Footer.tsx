@@ -26,14 +26,14 @@ export default function Footer() {
       <div className="absolute inset-0 bg-black/40 -z-10 pointer-events-none" />
 
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
           {/* Brand & Socials */}
-          <div className="lg:col-span-1 flex flex-col items-start">
-            <Link to="/" className="flex items-center group mb-6">
-              <img src={atidetoLogo} alt="ATIDETO Logo" className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110" />
+          <div className="col-span-2 md:col-span-3 lg:col-span-1 flex flex-col items-start mb-2 md:mb-0">
+            <Link to="/" className="flex items-center group mb-5">
+              <img src={atidetoLogo} alt="ATIDETO Logo" className="h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-110" />
             </Link>
-            <p className="text-[#a0a0a0] text-sm leading-relaxed mb-6">
+            <p className="text-[#a0a0a0] text-[13px] leading-relaxed mb-6 max-w-[280px]">
               Building digital experiences that empower businesses to grow and scale.
             </p>
             <div className="flex gap-4">
@@ -47,18 +47,18 @@ export default function Footer() {
                   key={Social.label}
                   href={Social.href}
                   aria-label={Social.label}
-                  className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-[#a0a0a0] hover:text-white hover:border-white/30 transition-all duration-300"
+                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[#a0a0a0] hover:text-white hover:border-white/30 transition-all duration-300"
                 >
-                  <Social.icon size={16} />
+                  <Social.icon size={14} />
                 </a>
               ))}
             </div>
           </div>
 
           {/* Services */}
-          <div>
-            <h4 className="text-white font-medium mb-6 text-[15px]">Services</h4>
-            <ul className="space-y-3.5">
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold mb-5 text-[14px]">Services</h4>
+            <ul className="space-y-3">
               {[
                 { label: 'Web Development', href: '/services' },
                 { label: 'Mobile App Development', href: '/services' },
@@ -70,7 +70,7 @@ export default function Footer() {
                 { label: 'Custom Solutions', href: '/services' }
               ].map((s) => (
                 <li key={s.label}>
-                  <Link to={s.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                  <Link to={s.href} className="text-[#a0a0a0] hover:text-white text-[12px] transition-colors duration-200">
                     {s.label}
                   </Link>
                 </li>
@@ -79,9 +79,9 @@ export default function Footer() {
           </div>
 
           {/* Academy */}
-          <div>
-            <h4 className="text-white font-medium mb-6 text-[15px]">Academy</h4>
-            <ul className="space-y-3.5">
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold mb-5 text-[14px]">Academy</h4>
+            <ul className="space-y-3">
               {[
                 { label: 'All Courses', href: '/academy' },
                 { label: 'Internships', href: '/academy' },
@@ -91,7 +91,7 @@ export default function Footer() {
                 { label: 'Certificate Verify', href: '/academy' }
               ].map((c) => (
                 <li key={c.label}>
-                  <Link to={c.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                  <Link to={c.href} className="text-[#a0a0a0] hover:text-white text-[12px] transition-colors duration-200">
                     {c.label}
                   </Link>
                 </li>
@@ -100,9 +100,9 @@ export default function Footer() {
           </div>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="text-white font-medium mb-6 text-[15px]">Quick Links</h4>
-            <ul className="space-y-3.5">
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold mb-5 text-[14px]">Quick Links</h4>
+            <ul className="space-y-3">
               {[
                 { label: 'Home', href: '/' },
                 { label: 'About Us', href: '/about' },
@@ -113,7 +113,7 @@ export default function Footer() {
                 { label: 'Terms & Conditions', href: '/' }
               ].map((l) => (
                 <li key={l.label}>
-                  <Link to={l.href} className="text-[#a0a0a0] hover:text-white text-[13px] transition-colors duration-200">
+                  <Link to={l.href} className="text-[#a0a0a0] hover:text-white text-[12px] transition-colors duration-200">
                     {l.label}
                   </Link>
                 </li>
@@ -122,26 +122,26 @@ export default function Footer() {
           </div>
 
           {/* Contact Us */}
-          <div>
-            <h4 className="text-white font-medium mb-6 text-[15px]">Contact Us</h4>
-            <ul className="space-y-5">
-              <li className="flex items-center gap-3 text-[#a0a0a0] text-[13px]">
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center shrink-0">
-                  <Phone size={14} />
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold mb-5 text-[14px]">Contact Us</h4>
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3 text-[#a0a0a0] text-[12px]">
+                <div className="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Phone size={12} />
                 </div>
-                +91 12345 67890
+                <span className="mt-1">+91 9087284053</span>
               </li>
-              <li className="flex items-center gap-3 text-[#a0a0a0] text-[13px]">
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center shrink-0">
-                  <Mail size={14} />
+              <li className="flex items-start gap-3 text-[#a0a0a0] text-[12px]">
+                <div className="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Mail size={12} />
                 </div>
-                hello@atideto.com
+                <span className="mt-1 break-all">atideto.in@gmail.com</span>
               </li>
-              <li className="flex items-center gap-3 text-[#a0a0a0] text-[13px] leading-tight">
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center shrink-0">
-                  <MapPin size={14} />
+              <li className="flex items-start gap-3 text-[#a0a0a0] text-[12px] leading-relaxed">
+                <div className="w-7 h-7 rounded-full border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin size={12} />
                 </div>
-                Salem, Tamil Nadu, India
+                <span className="mt-1">Salem, Tamil Nadu, India</span>
               </li>
             </ul>
           </div>

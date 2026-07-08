@@ -11,6 +11,14 @@ import mobileAppDevImg from '@/assets/service cards/mobile app dev.jpg';
 import uiUxDesignImg from '@/assets/service cards/ui ux design.jpg';
 import webDevImg from '@/assets/service cards/web dev.jpg';
 
+import yokeshDetailImg from '@/assets/Team_atideto/yokesh-removebg-preview.png';
+import neevasDetailImg from '@/assets/Team_atideto/neevas-removebg-preview.png';
+import samDetailImg from '@/assets/Team_atideto/sam-removebg-preview.png';
+import vishnuDetailImg from '@/assets/Team_atideto/vishnu_-removebg-preview.png';
+import kiranDetailImg from '@/assets/Team_atideto/kiran-removebg-preview.png';
+import sanjayDetailImg from '@/assets/Team_atideto/sanjay-removebg-preview.png';
+import sachinDetailImg from '@/assets/Team_atideto/sachin-removebg-preview.png';
+
 import yokeshImg from '@/assets/team/yokesh.jpeg';
 import neevasImg from '@/assets/team/neevas.jpg';
 import samImg from '@/assets/team/sam.jpeg';
@@ -300,7 +308,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: 'https://www.linkedin.com/in/vishnu-r-a41884300/',
       github: 'https://github.com/Vishnuat18'
     },
-    image: vishnuImg
+    image: vishnuImg,
+    detailImage: vishnuImg
   },
   {
     id: '2',
@@ -315,7 +324,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       instagram: 'https://instagram.com/mr_cotton_candy_30',
       facebook: 'https://www.facebook.com/share/1HQhn3yenG/'
     },
-    image: neevasImg
+    image: neevasImg,
+    detailImage: neevasDetailImg
   },
   {
     id: '3',
@@ -329,11 +339,12 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: 'https://www.linkedin.com/in/yogesh-s-8559a32a4',
       github: 'https://github.com/yogeshbrf'
     },
-    image: yokeshImg
+    image: yokeshImg,
+    detailImage: yokeshDetailImg
   },
   {
     id: '4',
-    name: 'Sanjay Senthil Kumar S',
+    name: 'Sanjay',
     role: 'Designer & Video Editor',
     bio: 'Award-winning UI/UX designer crafting experiences that convert. Worked with 100+ brands globally.',
     social: { 
@@ -343,12 +354,13 @@ export const TEAM_MEMBERS: TeamMember[] = [
       instagram: 'https://instagram.com/stylish_ismart_sanjay',
       facebook: 'https://www.facebook.com/search/top/?q=Sanjay%20Sanjeev'
     },
-    image: sanjayImg
+    image: sanjayImg,
+    detailImage: sanjayDetailImg
   },
   {
     id: '5',
     name: 'Kiran Balaso Patil',
-    role: 'Full Stack Developer',
+    role: 'CPO, Atideto',
     bio: 'Cloud infrastructure expert specializing in Kubernetes and AWS. Ensures our systems are globally available, secure, and highly scalable.',
     social: { 
       email: 'mailto:kiranbalasopatil33@gmail.com',
@@ -357,7 +369,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: 'https://www.linkedin.com/in/kiran-balaso-patil-851a43351',
       github: 'https://github.com/KiranBalasoPatil3052006'
     },
-    image: kiranImg
+    image: kiranImg,
+    detailImage: kiranDetailImg
   },
   {
     id: '6',
@@ -371,7 +384,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       linkedin: 'https://www.linkedin.com/in/sam-abishek-74983541a',
       instagram: 'https://www.instagram.com/vva_kiddo_sam'
     },
-    image: samImg
+    image: samImg,
+    detailImage: samDetailImg
   },
   {
     id: '7',
@@ -382,7 +396,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
       phone: 'tel:+918778457688',
       whatsapp: 'https://wa.me/918778457688'
     },
-    image: sachinImg
+    image: sachinImg,
+    detailImage: sachinDetailImg
   }
 ];
 

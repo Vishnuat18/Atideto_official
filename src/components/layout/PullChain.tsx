@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import PullChainRope from './pull-chain/PullChainRope';
 import PullChainHandle from './pull-chain/PullChainHandle';
 import PullMenu from './pull-chain/PullMenu';
@@ -184,28 +185,39 @@ export default function PullChain() {
       {/* Background Dim & Blur Overlay */}
       <BackgroundBlur isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
-      {/* Interactive pull-chain group */}
-      <div 
-        className="absolute top-0 pointer-events-auto flex flex-col items-center"
-        style={{ 
-          right: '50px', // Anchor from right edge
-          width: '60px', 
-          transformOrigin: 'top center',
-          transform: `rotate(${rotation}deg)`
-        }}
-        onMouseDown={(e) => handleStart(e.clientY)}
-        onTouchStart={(e) => e.touches[0] && handleStart(e.touches[0].clientY)}
-      >
-        {/* Straight Rope */}
-        <PullChainRope pullAmount={pullAmount} />
+      {/* Container holding the menu and the chain in a column */}
+      <div className="fixed top-0 right-4 z-50 pointer-events-none flex flex-col items-end w-72">
+        {/* The Menu (slides up/down by changing height) */}
+        <motion.div
+          className="w-full pointer-events-auto origin-top"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{
+            height: isOpen ? 'auto' : 0,
+            opacity: isOpen ? 1 : 0.9,
+          }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          style={{ overflow: 'hidden' }}
+        >
+          <PullMenu isOpen={isOpen} onClose={() => setIsOpen(false)} theme={theme} />
+        </motion.div>
 
-        {/* ATIDETO Logo Handle */}
-        <PullChainHandle isDragging={isDragging} />
-      </div>
+        {/* The Interactive Pull Chain */}
+        <div 
+          className="pointer-events-auto flex flex-col items-center mr-6"
+          style={{ 
+            width: '60px', 
+            transformOrigin: 'top center',
+            transform: `translateY(${isOpen ? 0 : pullAmount}px) rotate(${rotation}deg)`
+          }}
+          onMouseDown={(e) => handleStart(e.clientY)}
+          onTouchStart={(e) => e.touches[0] && handleStart(e.touches[0].clientY)}
+        >
+          {/* Straight Rope */}
+          <PullChainRope pullAmount={isOpen ? 0 : pullAmount} />
 
-      {/* Floating Menu Dropdown */}
-      <div className="pointer-events-auto">
-        <PullMenu isOpen={isOpen} onClose={() => setIsOpen(false)} theme={theme} />
+          {/* ATIDETO Logo Handle */}
+          <PullChainHandle isDragging={isDragging} />
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { User, Shield, Key, LogOut } from 'lucide-react';
-import { signOut, updateProfile, updatePassword } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import SEO from '@/components/seo/SEO';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -61,6 +61,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-32 pb-20 px-6 md:px-12">
+      <SEO title="Profile | ATIDETO" description="Manage your ATIDETO profile." noindex={true} />
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row gap-10">
         
         {/* Sidebar */}

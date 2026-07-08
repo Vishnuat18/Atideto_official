@@ -4,6 +4,7 @@ import { Users, GraduationCap, Video, BookOpen, BarChart3, CheckCircle2, DollarS
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
+import SEO from '@/components/seo/SEO';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-32 pb-20 px-6 md:px-12">
+      <SEO title="Dashboard | ATIDETO" description="Your personal ATIDETO dashboard." noindex={true} />
       <div className="max-w-7xl mx-auto">
         
         {/* Header */}

@@ -1,6 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import notFoundBg from '@/assets/login/404.jpeg';
+import SEO from '@/components/seo/SEO';
 
 const NotFound = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const NotFound = () => {
 
   return (
     <main className="relative min-h-[100vh] flex flex-col items-center justify-center pt-24 pb-12 px-4 text-white font-sans overflow-hidden">
+      <SEO title="404 - Page Not Found | ATIDETO" description="The page you are looking for does not exist." noindex={true} />
       {/* Background Image scoped only to this section */}
       <div className="absolute inset-0 z-0">
         <img 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import SEO from '@/components/seo/SEO';
 import { motion } from 'framer-motion';
 import InternshipExplorer from '@/components/InternshipExplorer';
 import academyBg from '@/assets/hero/academy.png';
@@ -19,6 +20,12 @@ export default function Academy() {
 
   return (
     <div className="bg-[#05070B] min-h-screen relative overflow-hidden text-white font-sans selection:bg-[#3B82F6]/30">
+      <SEO 
+        title="ATIDETO Academy | Tech Internships & Courses"
+        description="Join ATIDETO Academy for premium industry-aligned courses and internships. Build real-world projects and launch your tech career."
+        url="https://atideto.onspace.app/academy"
+        keywords="tech academy, internships, software engineering, learn to code, ATIDETO courses"
+      />
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;

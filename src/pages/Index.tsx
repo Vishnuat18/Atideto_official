@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SEO from '@/components/seo/SEO';
 import { SERVICES } from '@/constants';
 
 import WhatWeBuildBento from '@/components/features/WhatWeBuildBento';
 import homeBg from '@/assets/hero/home.png';
 import CrystallineGrid from '@/components/layout/CrystallineGrid';
 import { Target, Zap, Shield, Globe, Headphones, TrendingUp } from 'lucide-react';
+import ContactFormSection from './home/components/ContactFormSection';
 
 const WHY_US = [
   { icon: Target, title: 'Precision Engineering', desc: 'Every line of code crafted with intention, tested with rigor.' },
@@ -43,6 +45,11 @@ export default function Index() {
 
   return (
     <div style={{ background: '#050505', minHeight: '100vh' }}>
+      <SEO 
+        title="ATIDETO | Premium Software, Web, Mobile & AI Solutions"
+        description="We build intelligent software, AI automation, premium web experiences, mobile applications, and scalable digital platforms."
+        url="https://atideto.onspace.app/"
+      />
       {/* ── HERO ── */}
       <section 
         ref={heroRef} 
@@ -55,9 +62,9 @@ export default function Index() {
         }}
       >
 
-        {/* Hero Left Aligned Layout */}
+        {/* Hero Responsive Layout (Centered on Mobile, Left on Desktop) */}
         <div className="flex-1 flex flex-col justify-center w-full z-10 pt-32 pb-8">
-          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full flex flex-col items-start text-left animate-fadeIn font-montserrat">
+          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full flex flex-col items-center text-center lg:items-start lg:text-left animate-fadeIn font-montserrat">
             
             {/* Main Heading (Montserrat) */}
             <h1
@@ -73,22 +80,22 @@ export default function Index() {
 
             {/* Description */}
             <p
-              className="text-[#A7B3C7] text-[17px] md:text-[18px] leading-relaxed mb-10 max-w-[680px] font-montserrat mx-0"
+              className="text-[#A7B3C7] text-[16px] md:text-[18px] leading-relaxed mb-10 max-w-[680px] font-montserrat mx-auto lg:mx-0"
             >
               We build intelligent software, AI automation, premium web experiences, mobile applications, cloud solutions, and scalable digital platforms that empower businesses to innovate, automate, and grow faster.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap justify-start gap-4 font-montserrat">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-4 font-montserrat w-full sm:w-auto">
               <button
                 onClick={() => navigate('/client-connect')}
-                className="btn-electric rounded-xl text-[15px] font-semibold px-8 py-4 font-montserrat"
+                className="btn-electric rounded-xl text-[15px] font-semibold px-8 py-4 font-montserrat w-full sm:w-auto"
               >
                 Get Started →
               </button>
               <button
                 onClick={() => navigate('/services')}
-                className="btn-outline rounded-xl text-[15px] font-semibold px-8 py-4 glass font-montserrat"
+                className="btn-outline rounded-xl text-[15px] font-semibold px-8 py-4 glass font-montserrat w-full sm:w-auto"
               >
                 Explore Services
               </button>
@@ -192,6 +199,9 @@ export default function Index() {
 
       {/* ── TESTIMONIALS ── */}
       {/* <TestimonialsSection /> */}
+      
+      {/* ── CONTACT FORM ── */}
+      <ContactFormSection />
 
       <section className="py-24 relative overflow-hidden">
         {/* Enormous crystalline grid background */}

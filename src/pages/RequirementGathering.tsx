@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SERVICES } from '@/constants';
+import SEO from '@/components/seo/SEO';
 
 export default function RequirementGathering() {
   const [searchParams] = useSearchParams();
@@ -69,13 +70,17 @@ export default function RequirementGathering() {
 
   return (
     <div style={{ background: '#050505', minHeight: '100vh', paddingTop: '80px' }}>
+      <SEO 
+        title="Project Requirements | ATIDETO"
+        description="Tell us about your project requirements and we'll analyze your needs to prepare a detailed proposal."
+        url="https://atideto.onspace.app/requirement-gathering"
+      />
       {/* Header */}
       <section className="py-16 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="relative max-w-4xl mx-auto px-6">
           {preselected && (
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-4xl">{preselected.icon}</span>
               <div>
                 <span className="section-tag" style={{ marginBottom: 0 }}>
                   {preselected.title}
@@ -140,7 +145,7 @@ export default function RequirementGathering() {
                   <option value="">Select a service</option>
                   {SERVICES.map((s) => (
                     <option key={s.id} value={s.title} style={{ background: '#111' }}>
-                      {s.icon} {s.title}
+                      {s.title}
                     </option>
                   ))}
                 </select>

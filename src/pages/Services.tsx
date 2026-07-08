@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { SERVICES } from '@/constants';
+import SEO from '@/components/seo/SEO';
 import { AnimatePresence } from 'framer-motion';
 import ServiceCard from '@/components/services/ServiceCard';
 import ServiceModal from '@/components/services/ServiceModal';
@@ -18,6 +19,11 @@ export default function Services() {
 
   return (
     <div ref={containerRef} className="bg-[#050505] min-h-screen relative text-[#F8FAFC] overflow-x-hidden">
+      <SEO 
+        title="Our Services | ATIDETO"
+        description="Explore ATIDETO's premium services: Web Development, Mobile Apps, AI Solutions, Cloud Infrastructure, and UI/UX Design."
+        url="https://atideto.onspace.app/services"
+      />
       
       {/* Global Ambient Background */}
       <div className="fixed inset-0 bg-[#050505] -z-10" />
@@ -39,11 +45,10 @@ export default function Services() {
         </p>
       </section>
 
-      {/* Horizontal Scroll Area */}
+      {/* Services Grid Area */}
       <div 
         ref={scrollRef}
-        className="flex flex-nowrap overflow-x-auto overflow-y-hidden px-8 pb-32 pt-12 gap-8 relative z-10 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        style={{ scrollBehavior: 'smooth' }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto px-8 pb-32 pt-12 relative z-10 w-full"
       >
         {SERVICES.map((service, index) => (
           <ServiceCard

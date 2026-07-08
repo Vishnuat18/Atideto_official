@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import SEO from '@/components/seo/SEO';
 
 import HeroSection from './about/components/HeroSection';
 import CompanyStory from './about/components/CompanyStory';
@@ -15,6 +16,11 @@ export default function About() {
 
   return (
     <div className="bg-[#05070B] min-h-screen relative overflow-hidden font-sans text-white selection:bg-[#3B82F6] selection:text-white">
+      <SEO 
+        title="About Us | ATIDETO"
+        description="Learn about ATIDETO's journey, our mission, and the expert team behind our premium software solutions."
+        url="https://atideto.onspace.app/about"
+      />
       
       {/* Removed Background Ambience as requested */}
 

@@ -15,6 +15,7 @@ import ReviewSubmit from './client-connect/components/ReviewSubmit';
 import ThankYouPage from './client-connect/components/ThankYouPage';
 import { formatClientEmail } from '@/lib/emailFormatter';
 import contactBg from '@/assets/hero/contact.png';
+import SEO from '@/components/seo/SEO';
 
 const STEPS_TITLES = [
   'Client Information',
@@ -248,6 +249,11 @@ export default function ClientConnect() {
         background: 'radial-gradient(circle at center, #08103E 0%, #050A30 30%, #050505 70%, #030303 100%)'
       }}
     >
+      <SEO 
+        title="Start Your Project | ATIDETO"
+        description="Tell us about your vision. We'll craft a tailored proposal and set up your project dashboard within 24 hours."
+        url="https://atideto.onspace.app/client-connect"
+      />
       {/* Subtle vignette and noise textures */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.6))] pointer-events-none z-0" />
       <div 
