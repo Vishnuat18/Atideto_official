@@ -6,9 +6,11 @@ import atidetoLogo from '@/assets/atideto-logo.png';
 export default function Footer() {
   const location = useLocation();
   
-  if (location.pathname === '/about') {
+  if (location.pathname === '/login') {
     return null;
   }
+  
+  // Removed /about check to show Footer on About page
 
   return (
     <footer 

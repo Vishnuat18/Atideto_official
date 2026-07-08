@@ -5,7 +5,7 @@ import HeroSection from './about/components/HeroSection';
 import CompanyStory from './about/components/CompanyStory';
 import MeetTheTeam from './about/components/MeetTheTeam';
 import TechStack from './about/components/TechStack';
-import CallToAction from './about/components/CallToAction';
+
 
 export default function About() {
   useEffect(() => {
@@ -27,8 +27,7 @@ export default function About() {
         <MeetTheTeam />
         <div className="w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
         <TechStack />
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
-        <CallToAction />
+
       </main>
 
     </div>

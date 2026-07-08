@@ -90,9 +90,11 @@ export default function PreFooterCTA() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  if (location.pathname === '/about') {
+  if (location.pathname === '/login') {
     return null;
   }
+  
+  // Removed /about check to show CTA on About page
 
   return (
     <div id="pre-footer-cta" className="w-full bg-[#050505] pt-12 pb-12">

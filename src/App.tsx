@@ -23,12 +23,13 @@ import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
 
-const PageWrapper = ({ children }: { children: React.ReactNode }) => (
+const PageWrapper = ({ children, isOverlay }: { children: React.ReactNode, isOverlay?: boolean }) => (
   <motion.div
     initial={{ opacity: 0, y: 15 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -15 }}
     transition={{ duration: 0.3, ease: 'easeInOut' }}
+    className={isOverlay ? "relative z-[200]" : "relative z-0"}
   >
     {children}
   </motion.div>
@@ -44,7 +45,7 @@ const AnimatedRoutes = () => {
         <Route path="/academy" element={<PageWrapper><Academy /></PageWrapper>} />
         <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
         <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
-        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
         <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
