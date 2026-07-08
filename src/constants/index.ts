@@ -290,72 +290,98 @@ export const COURSES: Course[] = [
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: '1',
-    name: 'Yokesh',
-    role: 'AI Engineer',
-    bio: 'Specialist in generative AI and neural network architecture. Leads the automation division, integrating cutting-edge models into enterprise solutions.',
-    skills: ['Machine Learning', 'TensorFlow', 'NLP', 'Computer Vision'],
-    experience: '6 Years',
-    social: { linkedin: '#', github: '#', twitter: '#' },
-    image: yokeshImg
+    name: 'Vishnu R',
+    role: 'CEO, Atideto',
+    bio: 'Full-stack architect specializing in scalable cloud systems and modern web frameworks.',
+    social: { 
+      email: 'mailto:vishnurajan24766@gmail.com',
+      phone: 'tel:+916379000598',
+      whatsapp: 'https://wa.me/916379000598',
+      linkedin: 'https://www.linkedin.com/in/vishnu-r-a41884300/',
+      github: 'https://github.com/Vishnuat18'
+    },
+    image: vishnuImg
   },
   {
     id: '2',
-    name: 'Neevas',
-    role: 'Co Founder',
+    name: 'Neevas Nagil AR',
+    role: 'Co-Founder & CFO',
     bio: 'Visionary technologist with extensive experience building enterprise software and driving product strategy.',
-    skills: ['System Architecture', 'Product Strategy', 'Leadership'],
-    experience: '8 Years',
-    social: { linkedin: '#', github: '#' },
+    social: { 
+      email: 'mailto:Neevasramesh2020@gmail.com',
+      phone: 'tel:+919363600534',
+      whatsapp: 'https://wa.me/919363600534',
+      linkedin: 'https://www.linkedin.com/in/neevas-ramesh-6a3146366',
+      instagram: 'https://instagram.com/mr_cotton_candy_30',
+      facebook: 'https://www.facebook.com/share/1HQhn3yenG/'
+    },
     image: neevasImg
   },
   {
     id: '3',
-    name: 'Sam',
-    role: 'Founder',
-    bio: 'Founder and visionary passionate about democratizing tech education and building scalable digital ecosystems.',
-    skills: ['Business Strategy', 'Product Vision', 'Leadership'],
-    experience: '10 Years',
-    social: { linkedin: '#', twitter: '#' },
-    image: samImg
+    name: 'Yokesh S',
+    role: 'AI Engineer & UI/UX Designer',
+    bio: 'Specialist in generative AI and neural network architecture. Leads the automation division, integrating cutting-edge models into enterprise solutions.',
+    social: { 
+      email: 'mailto:yogeshbrf2006@gmail.com',
+      phone: 'tel:+919384444413',
+      whatsapp: 'https://wa.me/919384444413',
+      linkedin: 'https://www.linkedin.com/in/yogesh-s-8559a32a4',
+      github: 'https://github.com/yogeshbrf'
+    },
+    image: yokeshImg
   },
   {
     id: '4',
-    name: 'Vishnu',
-    role: 'Full stack Developer',
-    bio: 'Full-stack architect specializing in scalable cloud systems and modern web frameworks.',
-    skills: ['React', 'Node.js', 'Cloud Architecture', 'TypeScript'],
-    experience: '5 Years',
-    social: { linkedin: '#', github: '#', twitter: '#' },
-    image: vishnuImg
+    name: 'Sanjay Senthil Kumar S',
+    role: 'Designer & Video Editor',
+    bio: 'Award-winning UI/UX designer crafting experiences that convert. Worked with 100+ brands globally.',
+    social: { 
+      email: 'mailto:sanjaysanjeev2289@gmail.com',
+      phone: 'tel:+919092472289',
+      whatsapp: 'https://wa.me/919092472289',
+      instagram: 'https://instagram.com/stylish_ismart_sanjay',
+      facebook: 'https://www.facebook.com/search/top/?q=Sanjay%20Sanjeev'
+    },
+    image: sanjayImg
   },
   {
     id: '5',
-    name: 'Kiran',
-    role: 'System Architect',
+    name: 'Kiran Balaso Patil',
+    role: 'Full Stack Developer',
     bio: 'Cloud infrastructure expert specializing in Kubernetes and AWS. Ensures our systems are globally available, secure, and highly scalable.',
-    skills: ['AWS', 'Kubernetes', 'Docker', 'Security'],
-    experience: '7 Years',
-    social: { linkedin: '#', github: '#' },
+    social: { 
+      email: 'mailto:kiranbalasopatil33@gmail.com',
+      phone: 'tel:+918610641610',
+      whatsapp: 'https://wa.me/918610641610',
+      linkedin: 'https://www.linkedin.com/in/kiran-balaso-patil-851a43351',
+      github: 'https://github.com/KiranBalasoPatil3052006'
+    },
     image: kiranImg
   },
   {
     id: '6',
-    name: 'Sanjay',
-    role: 'Designer & Editor',
-    bio: 'Award-winning UI/UX designer crafting experiences that convert. Worked with 100+ brands globally.',
-    skills: ['UI/UX', 'Design Systems', 'Motion Design', 'Video Editing'],
-    experience: '4 Years',
-    social: { linkedin: '#', twitter: '#' },
-    image: sanjayImg
+    name: 'Sam Abishek',
+    role: 'Founder, Atideto',
+    bio: 'Founder and visionary passionate about democratizing tech education and building scalable digital ecosystems.',
+    social: { 
+      email: 'mailto:vipsamabishek444@gmail.com',
+      phone: 'tel:+919087284053',
+      whatsapp: 'https://wa.me/919087284053',
+      linkedin: 'https://www.linkedin.com/in/sam-abishek-74983541a',
+      instagram: 'https://www.instagram.com/vva_kiddo_sam'
+    },
+    image: samImg
   },
   {
     id: '7',
     name: 'Sachin',
     role: 'Client Manager',
     bio: 'Dedicated client manager ensuring transparent communication, honest timelines, and accountable delivery.',
-    skills: ['Client Relations', 'Agile', 'Project Management'],
-    experience: '5 Years',
-    social: { linkedin: '#', twitter: '#' },
+    social: { 
+      phone: 'tel:+918778457688',
+      whatsapp: 'https://wa.me/918778457688'
+    },
     image: sachinImg
   }
 ];
@@ -482,8 +508,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'web-dev',
     title: 'Web Development Internship',
-    duration: '1–3 Months',
-    description: 'Learn the fundamentals of responsive web design using HTML, CSS, and modern JavaScript.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['HTML5', 'CSS3', 'JavaScript', 'DOM'],
     category: 'Programming',
     icon: webDevIntImg
@@ -491,8 +517,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'python',
     title: 'Python Internship',
-    duration: '1–3 Months',
-    description: 'Dive into backend development, automation, and scripting using Python and popular frameworks.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['Python', 'Django', 'Flask', 'Automation'],
     category: 'Programming',
     icon: pythonIntImg
@@ -500,8 +526,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'core-java',
     title: 'Core Java',
-    duration: '2–3 Months',
-    description: 'Strengthen your programming logic with deep dives into Core Java concepts and object-oriented programming.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['OOPs', 'Data Structures', 'Multithreading'],
     category: 'Programming',
     icon: javaIntImg
@@ -509,8 +535,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'data-science',
     title: 'Data Science Internship',
-    duration: '3 Months',
-    description: 'Explore data analysis, machine learning algorithms, and data visualization techniques.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['Python', 'Machine Learning', 'Pandas', 'SQL'],
     category: 'AI & Data',
     icon: dataScienceIntImg
@@ -518,8 +544,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'digital-marketing',
     title: 'Digital Marketing Internship',
-    duration: '1 Month',
-    description: 'Master SEO, SEM, content marketing, and social media strategies for the digital era.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['SEO', 'Google Ads', 'Social Media', 'Analytics'],
     category: 'Marketing',
     icon: digitalMarketingIntImg
@@ -527,8 +553,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'app-dev',
     title: 'App Development Internship',
-    duration: '3 Months',
-    description: 'Build high-performance mobile applications for Android and iOS using modern frameworks.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['Flutter', 'React Native', 'Android', 'iOS'],
     category: 'Programming',
     icon: appDevIntImg
@@ -536,8 +562,8 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'cyber-security',
     title: 'Cyber Security Internship',
-    duration: '1–3 Months',
-    description: 'Learn network security, ethical hacking, vulnerability assessment, and threat mitigation.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['Ethical Hacking', 'Network Security', 'Linux'],
     category: 'Security',
     icon: cyberSecurityIntImg
@@ -545,17 +571,17 @@ export const INTERNSHIP_PROGRAMS = [
   {
     id: 'cloud',
     title: 'Cloud Internship',
-    duration: '2–3 Months',
-    description: 'Gain hands-on experience with cloud infrastructure, deployment, and AWS/Azure services.',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['AWS', 'Azure', 'Docker', 'DevOps'],
     category: 'Cloud',
     icon: cloudIntImg
   },
   {
     id: 'ui-ux',
-    title: 'UI/UX Internship',
-    duration: '1–2 Months',
-    description: 'Design intuitive, accessible, and stunning user interfaces and experiences for web and mobile.',
+    title: 'UI / UX Design Internship',
+    duration: 'Custom Duration',
+    description: '',
     skills: ['Figma', 'Wireframing', 'Prototyping', 'Research'],
     category: 'Design',
     icon: uiUxIntImg

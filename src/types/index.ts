@@ -29,12 +29,15 @@ export interface TeamMember {
   name: string;
   role: string;
   bio: string;
-  skills: string[];
-  experience: string;
   social: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
     linkedin?: string;
     github?: string;
     twitter?: string;
+    instagram?: string;
+    facebook?: string;
   };
   image: string;
 }

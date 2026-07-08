@@ -90,7 +90,7 @@ export default function PreFooterCTA() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  if (location.pathname === '/login') {
+  if (location.pathname === '/login' || location.pathname === '/dashboard' || location.pathname === '/profile') {
     return null;
   }
   

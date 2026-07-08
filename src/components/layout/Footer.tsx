@@ -6,7 +6,7 @@ import atidetoLogo from '@/assets/atideto-logo.png';
 export default function Footer() {
   const location = useLocation();
   
-  if (location.pathname === '/login') {
+  if (location.pathname === '/login' || location.pathname === '/dashboard' || location.pathname === '/profile') {
     return null;
   }
   

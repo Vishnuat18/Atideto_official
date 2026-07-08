@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TEAM_MEMBERS } from '@/constants';
-import { ArrowLeft, Github, Linkedin, Twitter } from 'lucide-react';
+import { ArrowLeft, Github, Linkedin, Twitter, Mail, Phone, MessageCircle, Instagram, Facebook } from 'lucide-react';
 
 export default function MeetTheTeam() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -134,8 +134,6 @@ export default function MeetTheTeam() {
                     <h3 className="text-2xl text-[#60A5FA] font-medium">{selectedMember!.role}</h3>
                   </div>
                   <div className="text-right hidden sm:block">
-                    <div className="text-white font-bold text-3xl font-space">{selectedMember!.experience}</div>
-                    <div className="text-[#94A3B8] text-sm uppercase tracking-widest">Experience</div>
                   </div>
                 </div>
 
@@ -143,33 +141,44 @@ export default function MeetTheTeam() {
                   {selectedMember!.bio}
                 </p>
 
-                <div className="mb-10 relative z-10">
-                  <h4 className="text-white text-sm font-bold tracking-[0.2em] uppercase mb-4 opacity-70">Core Capabilities</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {selectedMember!.skills.map((skill) => (
-                      <span key={skill} className="px-5 py-2.5 rounded-full bg-[rgba(59,130,246,0.1)] border border-[#3B82F6]/30 text-[#60A5FA] font-medium text-sm shadow-[inset_0_0_10px_rgba(59,130,246,0.1)]">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
                 <div className="mt-auto pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
-                  <div className="flex gap-4">
-                    {selectedMember!.social.linkedin && (
-                      <a href={selectedMember!.social.linkedin} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"><Linkedin size={20} /></a>
+                  <div className="flex flex-wrap gap-4">
+                    {selectedMember!.social.email && (
+                      <a href={selectedMember!.social.email} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#EA4335] hover:border-[#EA4335] transition-all"><Mail size={20} /></a>
                     )}
-                    {selectedMember!.social.twitter && (
-                      <a href={selectedMember!.social.twitter} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"><Twitter size={20} /></a>
+                    {selectedMember!.social.phone && (
+                      <a href={selectedMember!.social.phone} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#34A853] hover:border-[#34A853] transition-all"><Phone size={20} /></a>
+                    )}
+                    {selectedMember!.social.whatsapp && (
+                      <a href={selectedMember!.social.whatsapp} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#25D366] hover:border-[#25D366] transition-all"><MessageCircle size={20} /></a>
+                    )}
+                    {selectedMember!.social.linkedin && (
+                      <a href={selectedMember!.social.linkedin} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0A66C2] hover:border-[#0A66C2] transition-all"><Linkedin size={20} /></a>
                     )}
                     {selectedMember!.social.github && (
-                      <a href={selectedMember!.social.github} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#3B82F6] hover:border-[#3B82F6] transition-all"><Github size={20} /></a>
+                      <a href={selectedMember!.social.github} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#333333] hover:border-[#333333] transition-all"><Github size={20} /></a>
+                    )}
+                    {selectedMember!.social.twitter && (
+                      <a href={selectedMember!.social.twitter} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#1DA1F2] hover:border-[#1DA1F2] transition-all"><Twitter size={20} /></a>
+                    )}
+                    {selectedMember!.social.instagram && (
+                      <a href={selectedMember!.social.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-gradient-to-tr hover:from-[#f09433] hover:via-[#dc2743] hover:to-[#bc1888] hover:border-transparent transition-all"><Instagram size={20} /></a>
+                    )}
+                    {selectedMember!.social.facebook && (
+                      <a href={selectedMember!.social.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#1877F2] hover:border-[#1877F2] transition-all"><Facebook size={20} /></a>
                     )}
                   </div>
                   
-                  <button className="px-8 py-4 rounded-full bg-white text-black font-bold tracking-wide transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                    Contact {selectedMember!.name.split(' ')[0]}
-                  </button>
+                  {selectedMember!.social.email && (
+                    <a href={selectedMember!.social.email} className="px-8 py-4 rounded-full bg-white text-black font-bold tracking-wide transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] whitespace-nowrap inline-flex items-center justify-center">
+                      Contact {selectedMember!.name.split(' ')[0]}
+                    </a>
+                  )}
+                  {!selectedMember!.social.email && selectedMember!.social.phone && (
+                    <a href={selectedMember!.social.phone} className="px-8 py-4 rounded-full bg-white text-black font-bold tracking-wide transition-transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] whitespace-nowrap inline-flex items-center justify-center">
+                      Contact {selectedMember!.name.split(' ')[0]}
+                    </a>
+                  )}
                 </div>
               </motion.div>
             </motion.div>

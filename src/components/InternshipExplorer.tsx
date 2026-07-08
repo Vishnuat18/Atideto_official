@@ -6,9 +6,11 @@ import {
   MessageSquare, HelpCircle, ChevronDown, Compass, Download, ArrowRight, Check, Calendar
 } from 'lucide-react';
 import { INTERNSHIP_PROGRAMS, INTERNSHIP_CATEGORIES } from '@/constants';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 // --- Subcomponents for Right Panel ---
 
@@ -32,6 +34,9 @@ const DeepMindVisual = ({ icon }: { icon: string }) => {
 };
 
 export default function InternshipExplorer() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeId, setActiveId] = useState(INTERNSHIP_PROGRAMS[0].id);
   const [isApplying, setIsApplying] = useState(false);
@@ -47,7 +52,8 @@ export default function InternshipExplorer() {
     stream: '',
     graduationYear: '',
     startDate: '',
-    endDate: '',
+    duration: '30',
+    reportIncluded: false,
     paymentOption: 'Pay Now'
   });
 
@@ -128,16 +134,7 @@ export default function InternshipExplorer() {
                         <h3 className={`font-bold text-[14px] leading-snug mb-1 transition-colors ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
                           {prog.title}
                         </h3>
-                        <p className="text-[11px] text-white/50 line-clamp-1">
-                          {prog.description}
-                        </p>
                       </div>
-                    </div>
-
-                    <div className={`shrink-0 px-3 py-1 rounded border text-[11px] font-semibold transition-colors ${
-                      isActive ? 'bg-[#00A3FF]/10 border-[#00A3FF]/30 text-[#00A3FF] shadow-[0_0_10px_rgba(0,163,255,0.2)]' : 'bg-transparent border-white/20 text-white/50 group-hover:border-white/40 group-hover:text-white/80'
-                    }`}>
-                      {prog.duration}
                     </div>
                   </motion.button>
                 )
@@ -171,9 +168,6 @@ export default function InternshipExplorer() {
                       <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
                         {activeProgram.title}
                       </h2>
-                      <p className="text-[15px] text-white/60 leading-relaxed">
-                        Learn to build enterprise-grade applications using industry-standard tools. Perfect for students who want to become job-ready professionals.
-                      </p>
                     </div>
 
                     <div className="shrink-0 xl:pr-10">
@@ -181,10 +175,9 @@ export default function InternshipExplorer() {
                     </div>
                   </div>
 
-                  {/* 4 Stats Cards */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                  {/* 3 Stats Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
                     {[
-                      { l: 'Duration', v: activeProgram.duration, i: Clock },
                       { l: 'Projects', v: '5+ Real-world', i: Folder },
                       { l: 'Live Classes', v: 'Included', i: Users },
                       { l: 'Certificate', v: 'Industry Verified', i: Award }
@@ -251,7 +244,17 @@ export default function InternshipExplorer() {
 
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-4 mt-auto pt-4 border-t border-white/5">
-                    <button onClick={() => setIsApplying(true)} className="flex items-center gap-2 px-8 py-3.5 bg-[#0052FF] hover:bg-[#0040cc] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(0,82,255,0.3)]">
+                    <button 
+                      onClick={() => {
+                        if (!user) {
+                          toast.error('First create account to apply.');
+                          navigate('/login');
+                          return;
+                        }
+                        setIsApplying(true);
+                      }} 
+                      className="flex items-center gap-2 px-8 py-3.5 bg-[#0052FF] hover:bg-[#0040cc] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(0,82,255,0.3)]"
+                    >
                       Apply Now <ArrowRight className="w-4 h-4" />
                     </button>
                     <button className="flex items-center gap-2 px-8 py-3.5 bg-transparent border border-white/20 hover:border-white/40 text-white font-semibold rounded-full transition-all">
@@ -590,13 +593,13 @@ export default function InternshipExplorer() {
                       </div>
                     )}
 
-                    {/* Step 8: Internship Schedule (From-To Date) */}
+                    {/* Step 8: Internship Duration & Schedule */}
                     {applyStep === 8 && (
                       <div className="space-y-6 flex-1 animate-fadeIn">
                         <div className="bg-[#0A0F1C] border border-[#00A3FF]/20 rounded-2xl p-5 mb-4">
-                          <h4 className="text-white font-bold text-[14px] mb-1">Select Dates</h4>
+                          <h4 className="text-white font-bold text-[14px] mb-1">Select Duration & Options</h4>
                           <p className="text-white/60 text-[12px] leading-relaxed">
-                            Specify the dates you wish to begin and complete your internship.
+                            Includes Certification of completion and attendance tracking.
                           </p>
                         </div>
 
@@ -614,16 +617,35 @@ export default function InternshipExplorer() {
                             </div>
                           </div>
                           <div className="flex flex-col space-y-2 mt-4">
-                            <label className="text-sm font-semibold text-white/70">To Date (End)</label>
-                            <div className="relative">
-                              <Calendar className="absolute left-0 top-1 w-5 h-5 text-[#0052FF] pointer-events-none" />
-                              <input 
-                                type="date" 
-                                value={applyForm.endDate}
-                                onChange={(e) => setApplyForm({...applyForm, endDate: e.target.value})}
-                                className="w-full bg-transparent border-b border-white/15 pb-2 pl-8 text-[16px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer scheme-dark appearance-none"
-                              />
-                            </div>
+                            <label className="text-sm font-semibold text-white/70">Duration</label>
+                            <select
+                              value={applyForm.duration}
+                              onChange={(e) => setApplyForm({...applyForm, duration: e.target.value})}
+                              className="w-full bg-[#050505] border-b border-white/15 pb-2 text-[16px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer appearance-none"
+                            >
+                              <option value="7" className="bg-[#050505] text-white">7 Days (₹500)</option>
+                              <option value="15" className="bg-[#050505] text-white">15 Days (₹1000)</option>
+                              <option value="30" className="bg-[#050505] text-white">1 Month / 30 Days (₹2000)</option>
+                              <option value="60" className="bg-[#050505] text-white">2 Months (₹4000)</option>
+                              <option value="90" className="bg-[#050505] text-white">3 Months (₹6000)</option>
+                              <option value="120" className="bg-[#050505] text-white">4 Months (₹8000)</option>
+                              <option value="150" className="bg-[#050505] text-white">5 Months (₹10000)</option>
+                              <option value="180" className="bg-[#050505] text-white">6 Months (₹12000)</option>
+                            </select>
+                          </div>
+
+                          <div className="mt-4 flex items-start gap-3">
+                            <input 
+                              type="checkbox" 
+                              id="reportIncluded"
+                              checked={applyForm.reportIncluded}
+                              onChange={(e) => setApplyForm({...applyForm, reportIncluded: e.target.checked})}
+                              className="mt-1 w-4 h-4 rounded cursor-pointer accent-[#0052FF]"
+                            />
+                            <label htmlFor="reportIncluded" className="text-sm text-white/80 cursor-pointer">
+                              Add Internship Report & Project Report (Optional) 
+                              <span className="block text-[#00A3FF] font-medium mt-1">+ ₹200</span>
+                            </label>
                           </div>
                         </div>
 
@@ -637,7 +659,7 @@ export default function InternshipExplorer() {
                           </button>
                           <button 
                             type="button"
-                            disabled={!applyForm.startDate || !applyForm.endDate}
+                            disabled={!applyForm.startDate}
                             onClick={() => setApplyStep(9)}
                             className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                           >
@@ -684,7 +706,23 @@ export default function InternshipExplorer() {
                           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
                             <div className="flex justify-between items-center pb-2 border-b border-white/5 text-[14px]">
                               <span className="text-white/60">Program Fee</span>
-                              <span className="text-white font-bold">₹1,999</span>
+                              <span className="text-white font-bold">
+                                ₹{(() => {
+                                  let base = 2000;
+                                  if (applyForm.duration === '7') base = 500;
+                                  else if (applyForm.duration === '15') base = 1000;
+                                  else if (applyForm.duration === '30') base = 2000;
+                                  else if (applyForm.duration === '60') base = 4000;
+                                  else if (applyForm.duration === '90') base = 6000;
+                                  else if (applyForm.duration === '120') base = 8000;
+                                  else if (applyForm.duration === '150') base = 10000;
+                                  else if (applyForm.duration === '180') base = 12000;
+                                  
+                                  if (applyForm.reportIncluded) base += 200;
+                                  
+                                  return base.toLocaleString('en-IN');
+                                })()}
+                              </span>
                             </div>
                             <div className="space-y-3 pt-1">
                               <label className="text-xs font-semibold text-white/50 block">Payment Method Summary</label>
@@ -722,6 +760,7 @@ export default function InternshipExplorer() {
                                   createdAt: serverTimestamp(),
                                   programId: activeProgram.id,
                                   programTitle: activeProgram.title,
+                                  userId: user?.uid,
                                   name: applyForm.name,
                                   email: applyForm.email,
                                   phone: `${applyForm.countryCode}${applyForm.phone}`,
@@ -731,7 +770,8 @@ export default function InternshipExplorer() {
                                   stream: applyForm.stream,
                                   graduationYear: applyForm.graduationYear,
                                   startDate: applyForm.startDate,
-                                  endDate: applyForm.endDate,
+                                  duration: applyForm.duration,
+                                  reportIncluded: applyForm.reportIncluded,
                                   paymentOption: applyForm.paymentOption,
                                   status: 'pending',
                                 });
@@ -739,11 +779,6 @@ export default function InternshipExplorer() {
                               } catch (error) {
                                 console.error('Error saving application:', error);
                               }
-
-                              // Update local user state for nav profile
-                              const mockUser = { name: applyForm.name, email: applyForm.email };
-                              localStorage.setItem('currentUser', JSON.stringify(mockUser));
-                              window.dispatchEvent(new Event('auth-change'));
                               
                               setApplyStep(10);
                             }}

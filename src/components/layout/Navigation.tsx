@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '@/constants';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useAuth } from '@/hooks/useAuth';
 import atidetoLogo from '@/assets/atideto.png';
 import PullChain from './PullChain';
 
@@ -13,26 +13,6 @@ export default function Navigation() {
   const lastScrollY = useRef(0);
   const location = useLocation();
   const navigate = useNavigate();
-  const [logoClicks, setLogoClicks] = useState(0);
-
-  useEffect(() => {
-    if (logoClicks > 0) {
-      const timer = setTimeout(() => setLogoClicks(0), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [logoClicks]);
-
-  const handleLogoClick = () => {
-    setLogoClicks(prev => {
-      const newCount = prev + 1;
-      if (newCount === 3) {
-        localStorage.setItem('adminUnlocked', 'true');
-        navigate('/login');
-        return 0;
-      }
-      return newCount;
-    });
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,36 +35,7 @@ export default function Navigation() {
 
 
 
-  const [currentUser, setCurrentUser] = useState<{uid: string, name: string, email: string | null, role: string} | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Fetch role/name from firestore if needed, but display name is available on user object
-        let role = 'student';
-        try {
-          const docRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            role = docSnap.data().role || 'student';
-          }
-        } catch (e) {
-          console.error(e);
-        }
-        
-        setCurrentUser({
-          uid: user.uid,
-          name: user.displayName || 'User',
-          email: user.email,
-          role: role
-        });
-      } else {
-        setCurrentUser(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const { user: currentUser } = useAuth();
 
   // Standard Navigation for all other pages
   return (
@@ -108,7 +59,7 @@ export default function Navigation() {
         />
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative z-10 w-full">
           {/* Logo */}
-          <Link to="/" className="flex items-center group" onClick={handleLogoClick}>
+          <Link to="/" className="flex items-center group">
             <img src={atidetoLogo} alt="ATIDETO Logo" className="h-10 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 filter drop-shadow-[0_0_8px_rgba(46,168,255,0.4)]" />
           </Link>
 

@@ -20,6 +20,9 @@ import ClientConnect from './pages/ClientConnect';
 import Login from './pages/Login';
 import RequirementGathering from './pages/RequirementGathering';
 import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
+import ProtectedRoute from '@/components/layout/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -47,6 +50,8 @@ const AnimatedRoutes = () => {
         <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
         <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
         <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
+        <Route path="/dashboard" element={<ProtectedRoute><PageWrapper><Dashboard /></PageWrapper></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
         <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
       </Routes>
     </AnimatePresence>
