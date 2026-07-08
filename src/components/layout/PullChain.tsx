@@ -63,8 +63,7 @@ export default function PullChain() {
   const handleMove = (clientY: number) => {
     if (!isDragging) return;
     const deltaY = clientY - dragStartY.current;
-    // Limit drag to a small distance so it feels like a real switch, not gummy
-    const constrainedY = Math.max(0, Math.min(50, deltaY));
+    const constrainedY = Math.max(0, Math.min(250, deltaY));
     setPullAmount(constrainedY);
   };
 
@@ -82,8 +81,8 @@ export default function PullChain() {
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
       osc.start();
       osc.stop(audioCtx.currentTime + 0.1);
@@ -91,12 +90,12 @@ export default function PullChain() {
       // AudioContext browser policy
     }
 
-    // Spring return animation - stiffer for a crisp feel
+    // Spring return animation
     let current = pullAmount;
     const target = 0;
     let velocity = 0;
-    const stiffness = 400;
-    const damping = 25;
+    const stiffness = 180;
+    const damping = 12;
     let lastTime = performance.now();
 
     const springStep = (now: number) => {
