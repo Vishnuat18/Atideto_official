@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 
 const DeepMindVisual = ({ icon }: { icon: string }) => {
   return (
-    <div className="relative flex items-center justify-center p-4">
+    <div className="relative flex items-center justify-center p-2 lg:p-4">
       {/* Center Floating Image with Shadow */}
       <motion.div 
         animate={{ y: [-15, 15, -15] }}
@@ -26,7 +26,7 @@ const DeepMindVisual = ({ icon }: { icon: string }) => {
         <img 
           src={icon} 
           alt="Internship Logo" 
-          className="w-32 h-32 lg:w-40 lg:h-40 object-contain drop-shadow-[0_20px_30px_rgba(0,163,255,0.3)] hover:drop-shadow-[0_20px_40px_rgba(0,163,255,0.6)] transition-all duration-300" 
+          className="w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain drop-shadow-[0_20px_30px_rgba(0,163,255,0.3)] hover:drop-shadow-[0_20px_40px_rgba(0,163,255,0.6)] transition-all duration-300" 
         />
       </motion.div>
     </div>
@@ -39,6 +39,7 @@ export default function InternshipExplorer() {
   
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeId, setActiveId] = useState(INTERNSHIP_PROGRAMS[0].id);
+  const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [applyStep, setApplyStep] = useState(0);
   const [applyForm, setApplyForm] = useState({
@@ -67,12 +68,15 @@ export default function InternshipExplorer() {
     <div className="w-full relative z-10 text-white font-sans">
       
       {/* 1. Filters */}
-      <div className="text-center mb-10">
+      <div className={`text-center mb-10 ${showMobileDetails ? 'hidden lg:block' : 'block'}`}>
         <div className="flex flex-wrap justify-center gap-3">
           {INTERNSHIP_CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => {
+                setActiveCategory(cat);
+                setShowMobileDetails(false);
+              }}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                 activeCategory === cat
                   ? 'bg-[#0052FF] text-white shadow-[0_0_20px_rgba(0,82,255,0.4)] border border-[#0052FF]'
@@ -89,8 +93,8 @@ export default function InternshipExplorer() {
       <div className="flex flex-col lg:flex-row gap-8 mb-24 items-stretch">
         
         {/* Left Panel (35%) */}
-        <div className="w-full lg:w-[35%] flex flex-col h-[600px] lg:h-auto overflow-hidden">
-          <div className="flex flex-col gap-3 relative h-full overflow-y-auto custom-scrollbar pr-2 pb-10 lg:pb-0">
+        <div className={`w-full lg:w-[35%] flex flex-col h-auto lg:h-auto overflow-hidden ${showMobileDetails ? 'hidden lg:flex' : 'flex'}`}>
+          <div className="grid grid-cols-2 lg:flex lg:flex-col gap-4 relative h-full overflow-y-auto custom-scrollbar pr-2 pb-10 lg:pb-0">
             <AnimatePresence>
               {filteredPrograms.map((prog) => {
                 const isActive = prog.id === activeId;
@@ -104,9 +108,10 @@ export default function InternshipExplorer() {
                     onClick={() => {
                       setActiveId(prog.id);
                       setIsApplying(false);
+                      setShowMobileDetails(true);
                     }}
                     whileHover={{ scale: 1.02 }}
-                    className={`relative w-full p-4 rounded-[16px] text-left transition-all duration-300 overflow-hidden flex items-center justify-between group ${
+                    className={`relative w-full p-5 rounded-[20px] transition-all duration-300 overflow-hidden flex flex-col items-center justify-center text-center lg:flex-row lg:items-center lg:text-left gap-4 group ${
                       isActive 
                         ? 'bg-[#0B1221] border border-[#00A3FF]/50 shadow-[0_0_20px_rgba(0,163,255,0.15)]' 
                         : 'bg-white/[0.02] border border-white/10 hover:bg-white/[0.04] hover:border-white/20'
@@ -116,22 +121,22 @@ export default function InternshipExplorer() {
                     {isActive && (
                       <motion.div 
                         layoutId="activeGlowLeft"
-                        className="absolute inset-0 bg-gradient-to-r from-[#00A3FF]/10 to-transparent pointer-events-none" 
+                        className="absolute inset-0 bg-gradient-to-b lg:bg-gradient-to-r from-[#00A3FF]/10 to-transparent pointer-events-none" 
                       />
                     )}
                     {isActive && (
                       <motion.div 
                         layoutId="activeLeftBarLeft"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1/2 bg-[#00A3FF] rounded-r-full shadow-[0_0_10px_#00A3FF]" 
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-1/2 bg-[#00A3FF] rounded-r-full shadow-[0_0_10px_#00A3FF] hidden lg:block" 
                       />
                     )}
 
-                    <div className="relative z-10 flex items-center gap-4 flex-1 pr-4">
-                      <div className={`w-10 h-10 shrink-0 flex items-center justify-center ${isActive ? 'drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]' : 'opacity-80 group-hover:opacity-100 transition-opacity'}`}>
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center gap-4 flex-1 lg:pr-4">
+                      <div className={`w-12 h-12 shrink-0 flex items-center justify-center ${isActive ? 'drop-shadow-[0_0_10px_rgba(0,163,255,0.4)]' : 'opacity-80 group-hover:opacity-100 transition-opacity'}`}>
                         <img src={prog.icon as string} alt={prog.title} className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1">
-                        <h3 className={`font-bold text-[14px] leading-snug mb-1 transition-colors ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
+                        <h3 className={`font-bold text-[13px] lg:text-[14px] leading-snug transition-colors ${isActive ? 'text-white' : 'text-white/80 group-hover:text-white'}`}>
                           {prog.title}
                         </h3>
                       </div>
@@ -144,7 +149,7 @@ export default function InternshipExplorer() {
         </div>
 
         {/* Right Panel (65%) */}
-        <div className="w-full lg:w-[65%] bg-[#050914] border border-white/5 rounded-[24px] shadow-2xl overflow-hidden relative">
+        <div className={`w-full lg:w-[65%] bg-[#050914] border border-white/5 rounded-[24px] shadow-2xl overflow-hidden relative ${showMobileDetails ? 'flex' : 'hidden lg:flex'}`}>
           
           <AnimatePresence mode="wait">
             <motion.div
@@ -153,34 +158,43 @@ export default function InternshipExplorer() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="p-8 lg:p-10 relative z-10 h-full flex flex-col"
+              className="p-8 lg:p-10 relative z-10 h-full flex flex-col w-full"
             >
+              {/* Mobile Back Button */}
+              {showMobileDetails && (
+                <button
+                  onClick={() => {
+                    setShowMobileDetails(false);
+                    setIsApplying(false);
+                  }}
+                  className="lg:hidden mb-6 flex items-center gap-2 text-[#00A3FF] hover:text-white font-semibold text-sm transition-colors cursor-pointer self-start"
+                >
+                  &larr; Back to Internships
+                </button>
+              )}
               
               {/* Render Details OR Application Form */}
               {!isApplying ? (
                 <>
                   {/* Header inside Right Panel */}
-                  <div className="flex flex-col xl:flex-row gap-8 mb-10 items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 text-[#00A3FF] text-[10px] font-bold tracking-[0.2em] uppercase mb-4">
-                        <Sparkles className="w-3 h-3" /> Featured Internship
-                      </div>
-                      <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+                  <div className="flex flex-row gap-4 md:gap-8 mb-10 items-center justify-start">
+                    <div className="shrink-0">
+                      <DeepMindVisual icon={activeProgram.icon as string} />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
                         {activeProgram.title}
                       </h2>
                     </div>
-
-                    <div className="shrink-0 xl:pr-10">
-                      <DeepMindVisual icon={activeProgram.icon as string} />
-                    </div>
                   </div>
 
-                  {/* 3 Stats Cards */}
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                  {/* 4 Stats Cards */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                     {[
                       { l: 'Projects', v: '5+ Real-world', i: Folder },
                       { l: 'Live Classes', v: 'Included', i: Users },
-                      { l: 'Certificate', v: 'Industry Verified', i: Award }
+                      { l: 'Certificate', v: 'Industry Verified', i: Award },
+                      { l: 'Duration', v: 'Flexible', i: Clock }
                     ].map(stat => (
                       <div key={stat.l} className="bg-[#0A0F1C] border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center text-center group hover:bg-[#00A3FF]/5 hover:border-[#00A3FF]/20 transition-all hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,163,255,0.05)]">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-transparent border border-[#00A3FF]/30 text-[#00A3FF] group-hover:shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-shadow">
@@ -242,6 +256,28 @@ export default function InternshipExplorer() {
                     </div>
                   </div>
 
+                  {/* Career & Mentorship Perks */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div className="flex items-start gap-4 p-4 lg:p-5 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 rounded-2xl hover:border-white/10 transition-all">
+                      <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                        <Briefcase className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-[14px] mb-1">Placement Assistance</h4>
+                        <p className="text-white/60 text-[12px] leading-relaxed">Dedicated support for resume building and interview prep.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 p-4 lg:p-5 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 rounded-2xl hover:border-white/10 transition-all">
+                      <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20">
+                        <HelpCircle className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold text-[14px] mb-1">1-on-1 Mentorship</h4>
+                        <p className="text-white/60 text-[12px] leading-relaxed">Live doubt clearing sessions with industry experts.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-4 mt-auto pt-4 border-t border-white/5">
                     <button 
@@ -266,7 +302,16 @@ export default function InternshipExplorer() {
                   <div className="h-full flex flex-col">
                     {/* Multi-step Application Wizard Header */}
                     <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-                      <div>
+                      <div className="w-full">
+                        <button 
+                          onClick={() => {
+                            setIsApplying(false);
+                            setApplyStep(0);
+                          }}
+                          className="mb-4 flex items-center gap-1.5 text-xs text-[#00A3FF] hover:underline cursor-pointer"
+                        >
+                          &larr; Cancel & Back to Details
+                        </button>
                         <h2 className="text-xl font-bold text-white mb-1">
                           {(() => {
                             if (applyStep === 0) return "1. Personal Information";

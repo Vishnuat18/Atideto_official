@@ -63,7 +63,8 @@ export default function PullChain() {
   const handleMove = (clientY: number) => {
     if (!isDragging) return;
     const deltaY = clientY - dragStartY.current;
-    const constrainedY = Math.max(0, Math.min(250, deltaY));
+    // Limit drag to a small distance so it feels like a real switch, not gummy
+    const constrainedY = Math.max(0, Math.min(50, deltaY));
     setPullAmount(constrainedY);
   };
 
@@ -71,32 +72,31 @@ export default function PullChain() {
     if (!isDragging) return;
     setIsDragging(false);
 
-    // If dragged more than 130px OR it was just a click (moved less than 5px)
-    if (pullAmount > 130 || Math.abs(pullAmount - clickStartAmount.current) < 5) {
-      setIsOpen((prev) => !prev);
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
-      } catch (e) {
-        // AudioContext browser policy
-      }
+    // Toggle menu state on any release (drag release or simple click/tap)
+    setIsOpen((prev) => !prev);
+    
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {
+      // AudioContext browser policy
     }
 
-    // Spring return animation
+    // Spring return animation - stiffer for a crisp feel
     let current = pullAmount;
     const target = 0;
     let velocity = 0;
-    const stiffness = 180;
-    const damping = 12;
+    const stiffness = 400;
+    const damping = 25;
     let lastTime = performance.now();
 
     const springStep = (now: number) => {
@@ -156,27 +156,19 @@ export default function PullChain() {
     };
   }, []);
 
-  // Document-level drag listeners
+  // Document-level drag listeners using PointerEvents
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => handleMove(e.clientY);
-    const onMouseUp = () => handleEnd();
-    const onTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) handleMove(e.touches[0].clientY);
-    };
-    const onTouchEnd = () => handleEnd();
+    const onPointerMove = (e: PointerEvent) => handleMove(e.clientY);
+    const onPointerUp = () => handleEnd();
 
     if (isDragging) {
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-      document.addEventListener('touchmove', onTouchMove);
-      document.addEventListener('touchend', onTouchEnd);
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
     };
   }, [isDragging, pullAmount]);
 
@@ -203,17 +195,20 @@ export default function PullChain() {
 
         {/* The Interactive Pull Chain */}
         <div 
-          className="pointer-events-auto flex flex-col items-center mr-6"
+          className="pointer-events-auto flex flex-col items-center mr-6 cursor-grab active:cursor-grabbing"
           style={{ 
             width: '60px', 
             transformOrigin: 'top center',
-            transform: `translateY(${isOpen ? 0 : pullAmount}px) rotate(${rotation}deg)`
+            transform: `translateY(${pullAmount}px) rotate(${rotation}deg)`,
+            touchAction: 'none'
           }}
-          onMouseDown={(e) => handleStart(e.clientY)}
-          onTouchStart={(e) => e.touches[0] && handleStart(e.touches[0].clientY)}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            handleStart(e.clientY);
+          }}
         >
           {/* Straight Rope */}
-          <PullChainRope pullAmount={isOpen ? 0 : pullAmount} />
+          <PullChainRope pullAmount={pullAmount} />
 
           {/* ATIDETO Logo Handle */}
           <PullChainHandle isDragging={isDragging} />

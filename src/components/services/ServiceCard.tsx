@@ -19,7 +19,7 @@ export default function ServiceCard({ index, service, onClick }: ServiceCardProp
   return (
     <motion.div 
       layoutId={`card-${service.id}`}
-      className="group relative flex-shrink-0 w-full h-[520px] md:h-[560px] rounded-[28px] overflow-hidden bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] transition-all duration-700 ease-out hover:border-[#60A5FA]/40 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)] hover:-translate-y-2 backdrop-blur-md cursor-pointer"
+      className="group relative flex-shrink-0 w-[85vw] md:w-[calc((100vw-8rem)/2)] lg:w-[calc((100vw-10rem)/4)] h-[520px] md:h-[560px] rounded-[28px] overflow-hidden bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.08)] transition-all duration-700 ease-out hover:border-[#60A5FA]/40 hover:shadow-[0_0_40px_rgba(59,130,246,0.2)] hover:-translate-y-2 backdrop-blur-md cursor-pointer"
       style={{ WebkitMaskImage: '-webkit-radial-gradient(white, black)' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

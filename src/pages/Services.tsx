@@ -12,9 +12,31 @@ export default function Services() {
   const [selectedService, setSelectedService] = useState<any>(null);
 
   useEffect(() => {
-    // Scroll behavior is now handled natively by CSS (overflow-x-auto)
-    // allowing vertical scrolling to move the page up/down and
-    // horizontal scrolling (trackpad/shift+scroll) to move cards left/right.
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Check if user is scrolling vertically
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        const isScrollableRight = container.scrollLeft < (container.scrollWidth - container.clientWidth - 10);
+        const isScrollableLeft = container.scrollLeft > 10;
+
+        if (e.deltaY > 0 && isScrollableRight) {
+          // Scroll horizontally right instead of vertical page scroll
+          container.scrollLeft += e.deltaY * 1.5;
+          e.preventDefault();
+        } else if (e.deltaY < 0 && isScrollableLeft) {
+          // Scroll horizontally left instead of vertical page scroll
+          container.scrollLeft += e.deltaY * 1.5;
+          e.preventDefault();
+        }
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   return (
@@ -45,10 +67,11 @@ export default function Services() {
         </p>
       </section>
 
-      {/* Services Grid Area */}
+      {/* Horizontal Scroll Area */}
       <div 
         ref={scrollRef}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto px-8 pb-32 pt-12 relative z-10 w-full"
+        className="flex flex-nowrap overflow-x-auto overflow-y-hidden px-8 pb-32 pt-12 gap-8 relative z-10 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        style={{ scrollBehavior: 'smooth' }}
       >
         {SERVICES.map((service, index) => (
           <ServiceCard
