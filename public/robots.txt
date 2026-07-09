@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dashboard
 Disallow: /profile
 
-Sitemap: https://atideto.onspace.app/sitemap.xml
+Sitemap: https://atideto.in/sitemap.xml

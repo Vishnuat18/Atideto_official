@@ -48,7 +48,62 @@ export default function Index() {
       <SEO 
         title="ATIDETO | Premium Software, Web, Mobile & AI Solutions"
         description="We build intelligent software, AI automation, premium web experiences, mobile applications, and scalable digital platforms."
-        url="https://atideto.onspace.app/"
+        url="https://atideto.in/"
+        schema={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "LocalBusiness",
+              "@id": "https://atideto.in",
+              "name": "ATIDETO",
+              "url": "https://atideto.in",
+              "logo": "https://atideto.in/assets/atideto-logo.png",
+              "image": "https://atideto.in/assets/home.png",
+              "description": "ATIDETO is a premium software company delivering web, mobile, AI, and cloud solutions, alongside a world-class tech academy.",
+              "telephone": "+916379000598",
+              "email": "mailto:vishnurajan24766@gmail.com",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "",
+                "addressLocality": "Salem",
+                "addressRegion": "Tamil Nadu",
+                "postalCode": "",
+                "addressCountry": "IN"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "13.0827",
+                "longitude": "80.2707"
+              },
+              "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday"
+                ],
+                "opens": "09:00",
+                "closes": "18:00"
+              },
+              "sameAs": [
+                "https://www.linkedin.com/company/atideto",
+                "https://github.com/Vishnuat18"
+              ]
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://atideto.in/#website",
+              "url": "https://atideto.in",
+              "name": "ATIDETO",
+              "publisher": {
+                "@id": "https://atideto.in/#organization"
+              }
+            }
+          ]
+        }}
       />
       {/* ── HERO ── */}
       <section 

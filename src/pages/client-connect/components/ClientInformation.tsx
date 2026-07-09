@@ -63,6 +63,8 @@ export default function ClientInformation({ register, errors }: ClientInfoProps)
           {/* Country Code */}
           <div className="w-[120px] relative">
             <select
+              id="countryCode"
+              aria-label="Country Code"
               className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 cursor-pointer"
               {...register('countryCode')}
               defaultValue="+91"

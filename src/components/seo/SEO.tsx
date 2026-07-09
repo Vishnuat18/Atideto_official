@@ -8,16 +8,18 @@ interface SEOProps {
   url?: string;
   type?: string;
   noindex?: boolean;
+  schema?: object | object[];
 }
 
 export default function SEO({
   title,
   description,
   keywords = 'ATIDETO, software development, web development, mobile apps, AI automation, tech academy',
-  image = 'https://atideto.onspace.app/og-image.jpg',
-  url = 'https://atideto.onspace.app',
+  image = 'https://atideto.in/og-image.jpg',
+  url = 'https://atideto.in',
   type = 'website',
   noindex = false,
+  schema,
 }: SEOProps) {
   return (
     <Helmet>
@@ -53,6 +55,13 @@ export default function SEO({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
+
+      {/* Structured Data (JSON-LD) */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
     </Helmet>
   );
 }

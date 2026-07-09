@@ -4,6 +4,7 @@ import SEO from '@/components/seo/SEO';
 import { motion } from 'framer-motion';
 import InternshipExplorer from '@/components/InternshipExplorer';
 import academyBg from '@/assets/hero/academy.png';
+import { COURSES, INTERNSHIP_PROGRAMS } from '@/constants';
 
 export default function Academy() {
   const [mounted, setMounted] = useState(false);
@@ -18,13 +19,59 @@ export default function Academy() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
+  const academySchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://atideto.in/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Academy",
+            "item": "https://atideto.in/academy"
+          }
+        ]
+      },
+      ...COURSES.map(course => ({
+        "@type": "Course",
+        "name": course.title,
+        "description": course.description,
+        "provider": {
+          "@type": "LocalBusiness",
+          "@id": "https://atideto.in/#organization",
+          "name": "ATIDETO Academy",
+          "url": "https://atideto.in/academy"
+        }
+      })),
+      ...INTERNSHIP_PROGRAMS.map(prog => ({
+        "@type": "Course",
+        "name": `${prog.title} Internship`,
+        "description": `Industry-aligned tech internship in ${prog.title} at ATIDETO Academy.`,
+        "provider": {
+          "@type": "LocalBusiness",
+          "@id": "https://atideto.in/#organization",
+          "name": "ATIDETO Academy",
+          "url": "https://atideto.in/academy"
+        }
+      }))
+    ]
+  };
+
   return (
     <div className="bg-[#05070B] min-h-screen relative overflow-hidden text-white font-sans selection:bg-[#3B82F6]/30">
       <SEO 
         title="ATIDETO Academy | Tech Internships & Courses"
         description="Join ATIDETO Academy for premium industry-aligned courses and internships. Build real-world projects and launch your tech career."
-        url="https://atideto.onspace.app/academy"
+        url="https://atideto.in/academy"
         keywords="tech academy, internships, software engineering, learn to code, ATIDETO courses"
+        schema={academySchema}
       />
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {

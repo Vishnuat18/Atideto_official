@@ -44,7 +44,39 @@ export default function Services() {
       <SEO 
         title="Our Services | ATIDETO"
         description="Explore ATIDETO's premium services: Web Development, Mobile Apps, AI Solutions, Cloud Infrastructure, and UI/UX Design."
-        url="https://atideto.onspace.app/services"
+        url="https://atideto.in/services"
+        schema={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Home",
+                  "item": "https://atideto.in/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Services",
+                  "item": "https://atideto.in/services"
+                }
+              ]
+            },
+            ...SERVICES.map(s => ({
+              "@type": "Service",
+              "name": s.title,
+              "description": s.description,
+              "provider": {
+                "@type": "LocalBusiness",
+                "@id": "https://atideto.in/#organization",
+                "name": "ATIDETO"
+              }
+            }))
+          ]
+        }}
       />
       
       {/* Global Ambient Background */}

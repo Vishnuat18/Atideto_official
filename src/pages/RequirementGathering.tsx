@@ -73,7 +73,7 @@ export default function RequirementGathering() {
       <SEO 
         title="Project Requirements | ATIDETO"
         description="Tell us about your project requirements and we'll analyze your needs to prepare a detailed proposal."
-        url="https://atideto.onspace.app/requirement-gathering"
+        url="https://atideto.in/requirement-gathering"
       />
       {/* Header */}
       <section className="py-16 relative overflow-hidden">
@@ -112,20 +112,20 @@ export default function RequirementGathering() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Full Name *</label>
-                    <input className="form-input" placeholder="John Smith" value={form.name} onChange={(e) => update('name', e.target.value)} required />
+                    <label htmlFor="fullName" className="text-[#AFAFAF] text-sm block mb-2">Full Name *</label>
+                    <input id="fullName" className="form-input" placeholder="John Smith" value={form.name} onChange={(e) => update('name', e.target.value)} required />
                   </div>
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Company</label>
-                    <input className="form-input" placeholder="Company Name" value={form.company} onChange={(e) => update('company', e.target.value)} />
+                    <label htmlFor="company" className="text-[#AFAFAF] text-sm block mb-2">Company</label>
+                    <input id="company" className="form-input" placeholder="Company Name" value={form.company} onChange={(e) => update('company', e.target.value)} />
                   </div>
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Email *</label>
-                    <input className="form-input" type="email" placeholder="john@company.com" value={form.email} onChange={(e) => update('email', e.target.value)} required />
+                    <label htmlFor="email" className="text-[#AFAFAF] text-sm block mb-2">Email *</label>
+                    <input id="email" className="form-input" type="email" placeholder="john@company.com" value={form.email} onChange={(e) => update('email', e.target.value)} required />
                   </div>
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Phone</label>
-                    <input className="form-input" placeholder="+1 (555) 000-0000" value={form.phone} onChange={(e) => update('phone', e.target.value)} />
+                    <label htmlFor="phone" className="text-[#AFAFAF] text-sm block mb-2">Phone</label>
+                    <input id="phone" className="form-input" placeholder="+1 (555) 000-0000" value={form.phone} onChange={(e) => update('phone', e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -135,7 +135,9 @@ export default function RequirementGathering() {
                 <h3 className="text-white font-bold mb-4" >
                   ⚙️ Selected Service
                 </h3>
+                <label htmlFor="service-select" className="sr-only">Selected Service</label>
                 <select
+                  id="service-select"
                   className="form-input"
                   value={form.service}
                   onChange={(e) => update('service', e.target.value)}
@@ -158,8 +160,9 @@ export default function RequirementGathering() {
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Business Description *</label>
+                    <label htmlFor="description" className="text-[#AFAFAF] text-sm block mb-2">Business Description *</label>
                     <textarea
+                      id="description"
                       className="form-input"
                       rows={4}
                       placeholder="Describe your business and what problem this project will solve..."
@@ -170,8 +173,9 @@ export default function RequirementGathering() {
                     />
                   </div>
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Required Features</label>
+                    <label htmlFor="features" className="text-[#AFAFAF] text-sm block mb-2">Required Features</label>
                     <textarea
+                      id="features"
                       className="form-input"
                       rows={3}
                       placeholder="List specific features, integrations, or technical requirements..."
@@ -190,8 +194,9 @@ export default function RequirementGathering() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Budget Range</label>
+                    <label htmlFor="budget" className="text-[#AFAFAF] text-sm block mb-2">Budget Range</label>
                     <select
+                      id="budget"
                       className="form-input"
                       value={form.budget}
                       onChange={(e) => update('budget', e.target.value)}
@@ -204,8 +209,9 @@ export default function RequirementGathering() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-[#AFAFAF] text-sm block mb-2">Timeline</label>
+                    <label htmlFor="timeline" className="text-[#AFAFAF] text-sm block mb-2">Timeline</label>
                     <select
+                      id="timeline"
                       className="form-input"
                       value={form.timeline}
                       onChange={(e) => update('timeline', e.target.value)}

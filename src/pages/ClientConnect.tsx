@@ -252,7 +252,7 @@ export default function ClientConnect() {
       <SEO 
         title="Start Your Project | ATIDETO"
         description="Tell us about your vision. We'll craft a tailored proposal and set up your project dashboard within 24 hours."
-        url="https://atideto.onspace.app/client-connect"
+        url="https://atideto.in/client-connect"
       />
       {/* Subtle vignette and noise textures */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.6))] pointer-events-none z-0" />
@@ -317,9 +317,9 @@ export default function ClientConnect() {
               </button>
 
               {/* Step Title */}
-              <h1 className="text-[28px] md:text-[52px] font-bold text-white text-center leading-tight tracking-tight px-4 flex-1">
+              <h2 className="text-[28px] md:text-[52px] font-bold text-white text-center leading-tight tracking-tight px-4 flex-1">
                 {STEPS_TITLES[step]}
-              </h1>
+              </h2>
 
               {/* Next Arrow */}
               <button

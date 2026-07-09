@@ -168,9 +168,9 @@ export default function Login() {
   return (
     <div className="fixed inset-0 z-[100] h-screen w-screen text-white font-sans overflow-hidden">
       <SEO 
-        title={mode === 'login' ? 'Sign In | ATIDETO' : 'Create Account | ATIDETO'}
-        description="Sign in to your ATIDETO account or create a new one to access the platform."
-        url="https://atideto.onspace.app/login"
+        title="Login | ATIDETO"
+        description="Access your custom project dashboard and client portal at ATIDETO."
+        url="https://atideto.in/login"
       />
       {/* Layer 0: Full Screen Background Image */}
       <div className="absolute inset-0 z-0">
