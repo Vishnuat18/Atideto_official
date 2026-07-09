@@ -116,6 +116,39 @@ export default function MeetTheTeam() {
                     <div className="absolute bottom-0 inset-x-0 p-6 text-center pointer-events-none">
                       <h3 className="text-white font-black text-2xl drop-shadow-md mb-1">{currentMember.name}</h3>
                       <p className="text-[#00C6FF] font-bold text-sm tracking-wide uppercase drop-shadow-md">{currentMember.role}</p>
+                      
+                      <div className="mt-5 flex flex-wrap items-center justify-center gap-3 bg-black/60 border border-[#0052FF]/30 backdrop-blur-md rounded-full px-4 py-2 w-fit mx-auto shadow-[0_0_20px_rgba(0,82,255,0.2)] pointer-events-auto">
+                        {currentMember.social.linkedin && (
+                          <a href={currentMember.social.linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                            <Linkedin size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.github && (
+                          <a href={currentMember.social.github} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
+                            <Github size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.instagram && (
+                          <a href={currentMember.social.instagram} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#E1306C] transition-colors cursor-pointer">
+                            <Instagram size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.facebook && (
+                          <a href={currentMember.social.facebook} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#1877F2] transition-colors cursor-pointer">
+                            <Facebook size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.whatsapp && (
+                          <a href={currentMember.social.whatsapp} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#25D366] transition-colors cursor-pointer">
+                            <MessageCircle size={18} />
+                          </a>
+                        )}
+                        {currentMember.social.email && (
+                          <a href={currentMember.social.email} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#00A3FF] transition-colors cursor-pointer">
+                            <Mail size={18} />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 </AnimatePresence>
