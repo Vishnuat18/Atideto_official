@@ -297,19 +297,19 @@ export const COURSES: Course[] = [
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
-    id: '1',
-    name: 'Vishnu R',
-    role: 'CEO, Atideto',
-    bio: 'Full-stack architect specializing in scalable cloud systems and modern web frameworks.',
+    id: '6',
+    name: 'Sam Abishek',
+    role: 'Founder, Atideto',
+    bio: 'Founder and visionary passionate about democratizing tech education and building scalable digital ecosystems.',
     social: { 
-      email: 'mailto:vishnurajan24766@gmail.com',
-      phone: 'tel:+916379000598',
-      whatsapp: 'https://wa.me/916379000598',
-      linkedin: 'https://www.linkedin.com/in/vishnu-r-a41884300/',
-      github: 'https://github.com/Vishnuat18'
+      email: 'mailto:vipsamabishek444@gmail.com',
+      phone: 'tel:+919087284053',
+      whatsapp: 'https://wa.me/919087284053',
+      linkedin: 'https://www.linkedin.com/in/sam-abishek-74983541a',
+      instagram: 'https://www.instagram.com/vva_kiddo_sam'
     },
-    image: vishnuImg,
-    detailImage: vishnuImg
+    image: samImg,
+    detailImage: samDetailImg
   },
   {
     id: '2',
@@ -343,19 +343,19 @@ export const TEAM_MEMBERS: TeamMember[] = [
     detailImage: yokeshDetailImg
   },
   {
-    id: '4',
-    name: 'Sanjay',
-    role: 'Designer & Video Editor',
-    bio: 'Award-winning UI/UX designer crafting experiences that convert. Worked with 100+ brands globally.',
+    id: '1',
+    name: 'Vishnu R',
+    role: 'CEO, Atideto',
+    bio: 'Full-stack architect specializing in scalable cloud systems and modern web frameworks.',
     social: { 
-      email: 'mailto:sanjaysanjeev2289@gmail.com',
-      phone: 'tel:+919092472289',
-      whatsapp: 'https://wa.me/919092472289',
-      instagram: 'https://instagram.com/stylish_ismart_sanjay',
-      facebook: 'https://www.facebook.com/search/top/?q=Sanjay%20Sanjeev'
+      email: 'mailto:vishnurajan24766@gmail.com',
+      phone: 'tel:+916379000598',
+      whatsapp: 'https://wa.me/916379000598',
+      linkedin: 'https://www.linkedin.com/in/vishnu-r-a41884300/',
+      github: 'https://github.com/Vishnuat18'
     },
-    image: sanjayImg,
-    detailImage: sanjayDetailImg
+    image: vishnuImg,
+    detailImage: vishnuImg
   },
   {
     id: '5',
@@ -373,19 +373,19 @@ export const TEAM_MEMBERS: TeamMember[] = [
     detailImage: kiranDetailImg
   },
   {
-    id: '6',
-    name: 'Sam Abishek',
-    role: 'Founder, Atideto',
-    bio: 'Founder and visionary passionate about democratizing tech education and building scalable digital ecosystems.',
+    id: '4',
+    name: 'Sanjay',
+    role: 'Designer & Video Editor',
+    bio: 'Award-winning UI/UX designer crafting experiences that convert. Worked with 100+ brands globally.',
     social: { 
-      email: 'mailto:vipsamabishek444@gmail.com',
-      phone: 'tel:+919087284053',
-      whatsapp: 'https://wa.me/919087284053',
-      linkedin: 'https://www.linkedin.com/in/sam-abishek-74983541a',
-      instagram: 'https://www.instagram.com/vva_kiddo_sam'
+      email: 'mailto:sanjaysanjeev2289@gmail.com',
+      phone: 'tel:+919092472289',
+      whatsapp: 'https://wa.me/919092472289',
+      instagram: 'https://instagram.com/stylish_ismart_sanjay',
+      facebook: 'https://www.facebook.com/share/1HQhn3yenG/'
     },
-    image: samImg,
-    detailImage: samDetailImg
+    image: sanjayImg,
+    detailImage: sanjayDetailImg
   },
   {
     id: '7',

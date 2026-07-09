@@ -60,7 +60,6 @@ export default function MeetTheTeam() {
                   return (
                     <motion.div
                       key={member.id}
-                      layoutId={`team-card-${member.id}`}
                       onMouseEnter={() => setHoveredId(member.id)}
                       onClick={() => setSelectedId(member.id)}
                       className="relative overflow-hidden cursor-pointer group rounded-none h-[400px] flex-1"
@@ -70,8 +69,7 @@ export default function MeetTheTeam() {
                       }}
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                      <motion.img 
-                        layoutId={`team-img-${member.id}`}
+                      <img 
                         src={member.image}
                         alt={member.name}
                         className="absolute inset-0 w-full h-full object-cover"
@@ -106,8 +104,7 @@ export default function MeetTheTeam() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
-                    className="relative w-[80%] h-full rounded-3xl overflow-hidden border border-[#0052FF]/30 shadow-[0_0_30px_rgba(0,82,255,0.2)] cursor-pointer"
-                    onClick={() => setSelectedId(currentMember.id)}
+                    className="relative w-[80%] h-full rounded-3xl overflow-hidden border border-[#0052FF]/30 shadow-[0_0_30px_rgba(0,82,255,0.2)]"
                   >
                     <motion.img 
                       layoutId={`team-img-${currentMember.id}`}
@@ -119,39 +116,6 @@ export default function MeetTheTeam() {
                     <div className="absolute bottom-0 inset-x-0 p-6 text-center pointer-events-none">
                       <h3 className="text-white font-black text-2xl drop-shadow-md mb-1">{currentMember.name}</h3>
                       <p className="text-[#00C6FF] font-bold text-sm tracking-wide uppercase drop-shadow-md">{currentMember.role}</p>
-                      
-                      <div className="mt-5 flex flex-wrap items-center justify-center gap-3 bg-black/60 border border-[#0052FF]/30 backdrop-blur-md rounded-full px-4 py-2 w-fit mx-auto shadow-[0_0_20px_rgba(0,82,255,0.2)] pointer-events-auto">
-                        {currentMember.social.linkedin && (
-                          <a href={currentMember.social.linkedin} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
-                            <Linkedin size={18} />
-                          </a>
-                        )}
-                        {currentMember.social.github && (
-                          <a href={currentMember.social.github} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-white transition-colors cursor-pointer">
-                            <Github size={18} />
-                          </a>
-                        )}
-                        {currentMember.social.instagram && (
-                          <a href={currentMember.social.instagram} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#E1306C] transition-colors cursor-pointer">
-                            <Instagram size={18} />
-                          </a>
-                        )}
-                        {currentMember.social.facebook && (
-                          <a href={currentMember.social.facebook} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#1877F2] transition-colors cursor-pointer">
-                            <Facebook size={18} />
-                          </a>
-                        )}
-                        {currentMember.social.whatsapp && (
-                          <a href={currentMember.social.whatsapp} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#25D366] transition-colors cursor-pointer">
-                            <MessageCircle size={18} />
-                          </a>
-                        )}
-                        {currentMember.social.email && (
-                          <a href={currentMember.social.email} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 px-1 py-1 text-white/80 hover:text-[#00A3FF] transition-colors cursor-pointer">
-                            <Mail size={18} />
-                          </a>
-                        )}
-                      </div>
                     </div>
                   </motion.div>
                 </AnimatePresence>
@@ -182,7 +146,7 @@ export default function MeetTheTeam() {
               <div className="relative w-full min-h-[550px] md:min-h-[600px] rounded-[24px] md:rounded-[32px] overflow-hidden bg-[#0A0F1C] border border-[#0052FF]/30 shadow-[0_0_50px_rgba(0,82,255,0.15)] flex flex-col p-6 md:p-12">
                 
                 {/* Top Tags Bar - Pill Shape */}
-                <div className="mx-auto w-fit mb-6 md:mb-8 rounded-full border border-[#0052FF]/30 flex flex-wrap items-center justify-center gap-2 md:gap-6 px-4 md:px-6 py-2 md:py-3 text-[9px] md:text-[11px] text-[#00A3FF]/80 font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase bg-[#0052FF]/10 shadow-inner z-0 relative">
+                <div className="-mx-6 md:-mx-12 -mt-6 md:-mt-12 w-[calc(100%+3rem)] md:w-[calc(100%+6rem)] mb-6 md:mb-8 rounded-t-[24px] md:rounded-t-[32px] border-b border-[#0052FF]/30 flex flex-wrap items-center justify-center gap-2 md:gap-6 px-4 md:px-6 py-3 md:py-4 text-[9px] md:text-[11px] text-[#00A3FF]/80 font-bold tracking-[0.1em] md:tracking-[0.2em] uppercase bg-[#0052FF]/10 shadow-inner z-20 relative">
                   <span>Innovation</span> <span className="hidden md:inline">&bull;</span> <span>Leadership</span> <span className="hidden md:inline">&bull;</span> <span>Technology</span>
                 </div>
 
@@ -195,8 +159,7 @@ export default function MeetTheTeam() {
 
                 {/* Central Image overlay */}
                 <div className="absolute inset-x-0 bottom-0 top-32 md:top-12 flex items-end justify-center pointer-events-none z-10 md:opacity-100">
-                  <motion.img
-                    layoutId={`team-img-${selectedId}`} 
+                  <img
                     src={(selectedMember as any).detailImage || selectedMember!.image}
                     className="h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-full scale-110 md:scale-[1.2] origin-bottom"
                   />
