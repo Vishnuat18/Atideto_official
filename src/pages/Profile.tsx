@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { User, Shield, Key, LogOut } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
+import { signOut, updateProfile, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';

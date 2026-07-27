@@ -8,13 +8,13 @@
   "theme_color": "#050505",
   "icons": [
     {
-      "src": "/src/assets/atideto-logo.png",
+      "src": "/atideto-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/src/assets/atideto-logo.png",
+      "src": "/atideto-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

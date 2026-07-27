@@ -27,17 +27,40 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
-const PageWrapper = ({ children, isOverlay }: { children: React.ReactNode, isOverlay?: boolean }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 15 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -15 }}
-    transition={{ duration: 0.3, ease: 'easeInOut' }}
-    className={isOverlay ? "relative z-[200]" : "relative z-0"}
-  >
-    {children}
-  </motion.div>
-);
+const PageWrapper = ({ children, isOverlay }: { children: React.ReactNode, isOverlay?: boolean }) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const variants = isMobile
+    ? {
+        initial: { opacity: 0, x: 25, filter: 'blur(4px)' },
+        animate: { opacity: 1, x: 0, filter: 'blur(0px)' },
+        exit: { opacity: 0, x: -25, filter: 'blur(4px)' }
+      }
+    : {
+        initial: { opacity: 0, y: 15 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -15 }
+      };
+
+  return (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={variants}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} // Native app-like spring ease
+      className={isOverlay ? "relative z-[200] overflow-x-hidden" : "relative z-0 overflow-x-hidden"}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const PageLoader = () => (
   <div className="flex h-[80vh] w-full items-center justify-center bg-[#050505]">
