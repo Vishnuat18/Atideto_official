@@ -22,6 +22,7 @@ const RequirementGathering = lazy(() => import('./pages/RequirementGathering'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
+const LocationPage = lazy(() => import('./pages/LocationPage'));
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const AnimatedRoutes = () => {
           <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
           <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
           <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
+          <Route path="/locations/:city" element={<PageWrapper><LocationPage /></PageWrapper>} />
           <Route path="/dashboard" element={<ProtectedRoute><PageWrapper><Dashboard /></PageWrapper></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
           <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />

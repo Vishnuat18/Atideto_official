@@ -18,7 +18,15 @@ export default defineConfig({
         '/services',
         '/academy',
         '/about',
-        '/client-connect'
+        '/client-connect',
+        ...[
+          "salem", "chennai", "coimbatore", "erode", "namakkal", "dharmapuri", 
+          "krishnagiri", "madurai", "trichy", "tiruppur", "karur", "vellore", 
+          "hosur", "tirunelveli", "kanyakumari", "thoothukudi", "villupuram", 
+          "cuddalore", "kanchipuram", "thanjavur", "dindigul", "ramanathapuram", 
+          "nagapattinam", "pudukkottai", "virudhunagar", "sivagangai", 
+          "perambalur", "ariyalur", "nilgiris"
+        ].map(city => `/locations/${city}`)
       ]
     })
   ],
