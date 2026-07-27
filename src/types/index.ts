@@ -40,6 +40,7 @@ export interface TeamMember {
     facebook?: string;
   };
   image: string;
+  detailImage?: string;
 }
 
 export interface Testimonial {

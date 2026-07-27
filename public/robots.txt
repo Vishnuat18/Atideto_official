@@ -2,5 +2,11 @@ User-agent: *
 Allow: /
 Disallow: /dashboard
 Disallow: /profile
+Disallow: /api/
+Disallow: /login
+Disallow: /*?*
+
+# Allow search bots to crawl important assets
+Allow: /assets/
 
 Sitemap: https://atideto.in/sitemap.xml
