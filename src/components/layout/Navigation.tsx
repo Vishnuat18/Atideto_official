@@ -5,13 +5,16 @@ import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import atidetoLogo from '@/assets/atideto.png';
-import PullChain from './PullChain';
+import { Menu, X } from 'lucide-react';
+import PullMenu from './pull-chain/PullMenu';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -134,11 +137,39 @@ export default function Navigation() {
               Let's Talk <span className="text-[#2EA8FF] font-bold">→</span>
             </Link>
           </div>
+          {/* Mobile Menu Toggle */}
+          <button
+            className="lg:hidden text-white hover:text-[#2EA8FF] transition-colors p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle Menu"
+          >
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
       </nav>
 
-      {/* Pull Chain Menu - visible on all screen sizes */}
-      <PullChain />
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed inset-x-0 top-[72px] z-50 lg:hidden px-4"
+            >
+              <PullMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} theme="home" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

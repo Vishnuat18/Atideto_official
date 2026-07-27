@@ -70,7 +70,7 @@ export default function Index() {
       {/* ── HERO ── */}
       <section 
         ref={heroRef} 
-        className="relative min-h-screen flex flex-col overflow-hidden border-b border-[#3B82F6]/20"
+        className="relative min-h-[100dvh] flex flex-col overflow-hidden border-b border-[#3B82F6]/20"
         style={{
           backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${homeBg})`,
           backgroundSize: 'cover',
@@ -80,16 +80,16 @@ export default function Index() {
       >
 
         {/* Hero Responsive Layout (Centered on Mobile, Left on Desktop) */}
-        <div className="flex-1 flex flex-col justify-center w-full z-10 pt-32 pb-8">
-          <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full flex flex-col items-center text-center lg:items-start lg:text-left animate-fadeIn font-montserrat">
+        <div className="flex-1 flex flex-col justify-center w-full z-10 pt-24 lg:pt-32 pb-8">
+          <div className="relative max-w-7xl mx-auto px-5 lg:px-12 w-full flex flex-col items-center text-center lg:items-start lg:text-left animate-fadeIn font-montserrat">
             
             {/* Main Heading (Montserrat) */}
             <h1
-              className="font-montserrat font-bold text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-white mb-6"
+              className="font-montserrat font-bold text-[38px] md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-white mb-5 lg:mb-6"
             >
               Building
               <br />
-              <span className="animate-text-gradient font-montserrat font-black block my-1">
+              <span className="animate-text-gradient font-montserrat font-black block my-1 lg:my-2">
                 Digital Experiences
               </span>
               Beyond Imagination
@@ -97,22 +97,22 @@ export default function Index() {
 
             {/* Description */}
             <p
-              className="text-[#A7B3C7] text-[16px] md:text-[18px] leading-relaxed mb-10 max-w-[680px] font-montserrat mx-auto lg:mx-0"
+              className="text-[#A7B3C7] text-[15px] md:text-[18px] leading-relaxed mb-8 lg:mb-10 max-w-[680px] font-montserrat mx-auto lg:mx-0"
             >
               We build intelligent software, AI automation, premium web experiences, mobile applications, cloud solutions, and scalable digital platforms that empower businesses to innovate, automate, and grow faster.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4 font-montserrat w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 lg:gap-4 font-montserrat w-full sm:w-auto">
               <button
                 onClick={() => navigate('/client-connect')}
-                className="btn-electric rounded-xl text-[15px] font-semibold px-8 py-4 font-montserrat w-full sm:w-auto"
+                className="btn-electric rounded-xl text-[15px] font-semibold px-6 py-3.5 lg:px-8 lg:py-4 font-montserrat w-full sm:w-auto"
               >
                 Get Started →
               </button>
               <button
                 onClick={() => navigate('/services')}
-                className="btn-outline rounded-xl text-[15px] font-semibold px-8 py-4 glass font-montserrat w-full sm:w-auto"
+                className="btn-outline rounded-xl text-[15px] font-semibold px-6 py-3.5 lg:px-8 lg:py-4 glass font-montserrat w-full sm:w-auto"
               >
                 Explore Services
               </button>
