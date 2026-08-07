@@ -355,7 +355,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
       github: 'https://github.com/Vishnuat18'
     },
     image: vishnuImg,
-    detailImage: vishnuDetailImg
+    detailImage: vishnuImg
   },
   {
     id: '5',
