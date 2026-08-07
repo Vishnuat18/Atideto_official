@@ -193,7 +193,7 @@ export default function MeetTheTeam() {
                 {/* Central Image overlay */}
                 <div className="absolute inset-x-0 bottom-0 top-32 md:top-12 flex items-end justify-center pointer-events-none z-10 md:opacity-100">
                   <img
-                    src={(selectedMember as any).detailImage || selectedMember!.image}
+                    src={selectedMember!.detailImage || selectedMember!.image}
                     className="h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] max-w-full scale-110 md:scale-[1.2] origin-bottom"
                   />
                 </div>
