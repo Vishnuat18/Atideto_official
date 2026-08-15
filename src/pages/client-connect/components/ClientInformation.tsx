@@ -1,105 +1,131 @@
 import React from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
+import { User, Mail, Phone, Globe, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface ClientInfoProps {
   register: UseFormRegister<any>;
   errors: FieldErrors<any>;
+  values: any;
 }
 
-export default function ClientInformation({ register, errors }: ClientInfoProps) {
-  return (
-    <div className="w-full max-w-2xl mx-auto space-y-12 py-6">
-      {/* Name Field */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="name">
-          What is your name?
-        </label>
-        <div className="relative">
-          <input
-            id="name"
-            type="text"
-            placeholder="John Doe"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
-            {...register('name', { required: 'Name is required' })}
-          />
-          <div className="absolute bottom-0 left-0 h-[2px] bg-[#5B5EFF] w-0 transition-all duration-300 focus-within:w-full" />
-        </div>
-        {errors.name && (
-          <span className="text-red-500 text-sm mt-1">{errors.name.message as string}</span>
-        )}
-      </div>
+const EMAIL_RE = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const PHONE_RE = /^\d{10,15}$/;
 
-      {/* Email Field */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="email">
-          Your email address
-        </label>
-        <div className="relative">
-          <input
-            id="email"
-            type="email"
-            placeholder="john@company.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
-            {...register('email', { 
-              required: 'Email is required',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address'
-              }
-            })}
-          />
+export default function ClientInformation({ register, errors, values }: ClientInfoProps) {
+  const ok = {
+    name: !!(values?.name && !errors.name),
+    email: !!(values?.email && EMAIL_RE.test(values.email) && !errors.email),
+    phone: !!(values?.phone && PHONE_RE.test(values.phone) && !errors.phone),
+  };
+
+  return (
+    <div className="w-full space-y-7">
+      <div className="cc-grid-2">
+        {/* Name Field */}
+        <div className="cc-field">
+          <div className={`cc-input-wrap ${ok.name ? 'valid' : ''}`}>
+            <span className="lead"><User /></span>
+            <input
+              id="name"
+              type="text"
+              placeholder=" "
+              className={`cc-input ${errors.name ? 'error' : ''}`}
+              {...register('name', { required: 'Name is required' })}
+            />
+            <label className="cc-float" htmlFor="name">What is your name?</label>
+            {ok.name && <span className="cc-input-ok"><CheckCircle2 /></span>}
+          </div>
+          {errors.name && (
+            <span className="cc-error"><AlertCircle /> {errors.name.message as string}</span>
+          )}
         </div>
-        {errors.email && (
-          <span className="text-red-500 text-sm mt-1">{errors.email.message as string}</span>
-        )}
+
+        {/* Email Field */}
+        <div className="cc-field">
+          <div className={`cc-input-wrap ${ok.email ? 'valid' : ''}`}>
+            <span className="lead"><Mail /></span>
+            <input
+              id="email"
+              type="email"
+              placeholder=" "
+              className={`cc-input ${errors.email ? 'error' : ''}`}
+              {...register('email', {
+                required: 'Email is required',
+                pattern: {
+                  value: EMAIL_RE,
+                  message: 'Invalid email address'
+                }
+              })}
+            />
+            <label className="cc-float" htmlFor="email">Your email address</label>
+            {ok.email && <span className="cc-input-ok"><CheckCircle2 /></span>}
+          </div>
+          {errors.email && (
+            <span className="cc-error"><AlertCircle /> {errors.email.message as string}</span>
+          )}
+        </div>
       </div>
 
       {/* Contact Info (Country Code + Phone) */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="phone">
-          Contact Number
-        </label>
-        <div className="flex gap-4 items-end">
+      <div className="cc-field">
+        <div className="flex gap-4 items-start">
           {/* Country Code */}
-          <div className="w-[120px] relative">
-            <select
-              id="countryCode"
-              aria-label="Country Code"
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 cursor-pointer"
-              {...register('countryCode')}
-              defaultValue="+91"
-            >
-              <option value="+91" className="bg-[#050505] text-white">+91 (IN)</option>
-              <option value="+1" className="bg-[#050505] text-white">+1 (US)</option>
-              <option value="+44" className="bg-[#050505] text-white">+44 (UK)</option>
-              <option value="+61" className="bg-[#050505] text-white">+61 (AU)</option>
-              <option value="+971" className="bg-[#050505] text-white">+971 (AE)</option>
-              <option value="+81" className="bg-[#050505] text-white">+81 (JP)</option>
-              <option value="+49" className="bg-[#050505] text-white">+49 (DE)</option>
-            </select>
+          <div className="w-[130px] relative">
+            <div className="cc-input-wrap">
+              <span className="lead"><Globe /></span>
+              <select
+                id="countryCode"
+                aria-label="Country Code"
+                className="cc-input cc-select"
+                {...register('countryCode')}
+                defaultValue="+91"
+              >
+                <option value="+91">+91 (IN)</option>
+                <option value="+1">+1 (US)</option>
+                <option value="+44">+44 (UK)</option>
+                <option value="+61">+61 (AU)</option>
+                <option value="+971">+971 (AE)</option>
+                <option value="+81">+81 (JP)</option>
+                <option value="+49">+49 (DE)</option>
+              </select>
+              <span className="cc-select-arrow"><ChevronDownIcon /></span>
+            </div>
           </div>
 
           {/* Phone Number */}
           <div className="flex-1 relative">
-            <input
-              id="phone"
-              type="tel"
-              placeholder="9876543210"
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
-              {...register('phone', { 
-                required: 'Phone number is required',
-                pattern: {
-                  value: /^\d{10,15}$/,
-                  message: 'Enter a valid phone number (10-15 digits)'
-                }
-              })}
-            />
+            <div className={`cc-input-wrap ${ok.phone ? 'valid' : ''}`}>
+              <span className="lead"><Phone /></span>
+              <input
+                id="phone"
+                type="tel"
+                placeholder=" "
+                className={`cc-input ${errors.phone ? 'error' : ''}`}
+                {...register('phone', {
+                  required: 'Phone number is required',
+                  pattern: {
+                    value: PHONE_RE,
+                    message: 'Enter a valid phone number (10-15 digits)'
+                  }
+                })}
+              />
+              <label className="cc-float" htmlFor="phone">Phone number</label>
+              {ok.phone && <span className="cc-input-ok"><CheckCircle2 /></span>}
+            </div>
           </div>
         </div>
         {errors.phone && (
-          <span className="text-red-500 text-sm mt-1">{errors.phone.message as string}</span>
+          <span className="cc-error"><AlertCircle /> {errors.phone.message as string}</span>
         )}
       </div>
     </div>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }

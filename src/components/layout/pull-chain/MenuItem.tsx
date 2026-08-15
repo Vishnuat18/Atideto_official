@@ -31,13 +31,13 @@ export default function MenuItem({
       <Link
         to={href}
         onClick={onClick}
-        className="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm text-[#AFAFAF] hover:text-white hover:bg-white/5 transition-all duration-300 group relative overflow-hidden"
+        className="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all duration-300 group relative overflow-hidden"
       >
         {/* Glow behind icon */}
         <span
-          className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-white"
+          className="w-10 h-10 rounded-xl bg-[#F1F5F9] flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-[#2F2FE4]"
           style={{
-            borderColor: 'rgba(255, 255, 255, 0.05)'}}
+            borderColor: 'rgba(15,23,42,0.06)'}}
         >
           {IconComponent && <IconComponent className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />}
           <div

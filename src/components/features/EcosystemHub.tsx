@@ -110,7 +110,7 @@ export default function EcosystemHub() {
           transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'}}
       >
         {/* Background Mesh Gradient behind hub */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full bg-radial from-[#005DFF]/15 to-transparent blur-[80px] -z-20 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full bg-radial from-[#2F2FE4]/10 to-transparent blur-[80px] -z-20 pointer-events-none" />
 
         {/* SVG Network Connections Overlay */}
         <svg 
@@ -136,7 +136,7 @@ export default function EcosystemHub() {
                 <path
                   d={linePath}
                   fill="none"
-                  stroke={isHovered ? 'rgba(95, 212, 255, 0.35)' : 'rgba(0, 93, 255, 0.15)'}
+                  stroke={isHovered ? 'rgba(47, 47, 228, 0.4)' : 'rgba(47, 47, 228, 0.15)'}
                   strokeWidth={isHovered ? '3.5' : '2'}
                   className="transition-all duration-300"
                 />
@@ -145,13 +145,13 @@ export default function EcosystemHub() {
                 <path
                   d={linePath}
                   fill="none"
-                  stroke={isHovered ? '#5FD4FF' : '#005DFF'}
+                  stroke={isHovered ? '#2F2FE4' : '#6366F1'}
                   strokeWidth="1.5"
                   className="animated-svg-path opacity-80"
                 />
 
                 {/* Traveling Particle dot */}
-                <circle r={isHovered ? '5' : '3.5'} fill={isHovered ? '#5FD4FF' : '#2EA8FF'} filter="url(#glow-filter)">
+                <circle r={isHovered ? '5' : '3.5'} fill={isHovered ? '#2F2FE4' : '#2F2FE4'} filter="url(#glow-filter)">
                   <animateMotion 
                     dur={isHovered ? '2.2s' : '3.5s'} 
                     repeatCount="indefinite" 
@@ -165,21 +165,21 @@ export default function EcosystemHub() {
 
         {/* Central Crystal Sphere */}
         <div 
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full glass border border-white/10 flex items-center justify-center -z-10 animate-ecosystem-center transition-all duration-300 ${
-            hoveredCardId ? 'scale-[1.08] border-[#2EA8FF]/40 shadow-[0_0_35px_rgba(46,168,255,0.4)]' : ''
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full glass border border-[#E2E8F0] flex items-center justify-center -z-10 animate-ecosystem-center transition-all duration-300 ${
+            hoveredCardId ? 'scale-[1.08] border-[#A5B4FC] shadow-[0_0_35px_rgba(47,47,228,0.25)]' : ''
           }`}
         >
           {/* Logo container */}
-          <div className="relative w-16 h-16 rounded-full bg-[#050505] border border-white/5 flex items-center justify-center shadow-[inset_0_0_15px_rgba(0,93,255,0.4)]">
+          <div className="relative w-16 h-16 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shadow-[inset_0_0_15px_rgba(47,47,228,0.12)]">
             <img 
               src={atidetoLogo} 
               alt="ATIDETO Logo" 
-              className={`w-10 h-10 object-contain filter drop-shadow-[0_0_8px_rgba(46,168,255,0.5)] transition-transform duration-300 ${
+              className={`w-10 h-10 object-contain filter drop-shadow-[0_0_8px_rgba(47,47,228,0.3)] transition-transform duration-300 ${
                 hoveredCardId ? 'scale-110 rotate-6' : ''
               }`} 
             />
             {/* Spinning holographic ring */}
-            <div className="absolute inset-0 rounded-full border border-dashed border-[#2EA8FF]/30 animate-spin-slow pointer-events-none" />
+            <div className="absolute inset-0 rounded-full border border-dashed border-[#A5B4FC]/70 animate-spin-slow pointer-events-none" />
           </div>
         </div>
 
@@ -202,25 +202,25 @@ export default function EcosystemHub() {
             >
               <div 
                 onClick={() => navigate(`/requirement-gathering?service=${c.id}`)}
-                className={`ecosystem-card glass-card-premium rounded-[22px] p-6 w-[230px] border border-white/5 cursor-pointer text-left ${
+                className={`ecosystem-card glass-card-premium rounded-[22px] p-6 w-[230px] cursor-pointer text-left ${
                   isHovered ? 'scale-[1.04]' : ''
                 }`}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#005DFF]/15 border border-[#2EA8FF]/25 flex items-center justify-center text-[#2EA8FF] shadow-[0_0_15px_rgba(0,93,255,0.1)]">
+                  <div className="w-10 h-10 rounded-xl bg-[#2F2FE4]/10 border border-[#A5B4FC]/60 flex items-center justify-center text-[#2F2FE4] shadow-[0_0_15px_rgba(47,47,228,0.1)]">
                     <Icon size={18} />
                   </div>
                 </div>
-                <h4 className="font-space font-bold text-[16px] text-white tracking-wide uppercase mb-3">{c.title}</h4>
+                <h4 className="font-space font-bold text-[16px] text-[#0F172A] tracking-wide uppercase mb-3">{c.title}</h4>
                 <ul className="space-y-1.5 mb-5 pointer-events-none">
                   {c.desc.map((d, index) => (
-                    <li key={index} className="text-[#A7B3C7] text-[11px] leading-relaxed flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-[#2EA8FF]" />
+                    <li key={index} className="text-[#64748B] text-[11px] leading-relaxed flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-[#2F2FE4]" />
                       {d}
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-center gap-1 text-[#2EA8FF] text-[11px] font-bold tracking-wide uppercase transition-colors duration-200 group-hover:text-white">
+                <div className="flex items-center gap-1 text-[#2F2FE4] text-[11px] font-bold tracking-wide uppercase transition-colors duration-200 group-hover:text-[#4F46E5]">
                   Learn More <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
               </div>
@@ -234,10 +234,10 @@ export default function EcosystemHub() {
         
         {/* Holographic Logo Header for mobile list */}
         <div className="col-span-full flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-full glass border border-[#2EA8FF]/20 flex items-center justify-center animate-ecosystem-center mb-4">
+          <div className="w-20 h-20 rounded-full glass border border-[#A5B4FC]/60 flex items-center justify-center animate-ecosystem-center mb-4">
             <img src={atidetoLogo} alt="ATIDETO Logo" className="w-12 h-12 object-contain" />
           </div>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2EA8FF] font-space"> Ecosytem Center</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2F2FE4] font-space"> Ecosytem Center</span>
         </div>
 
         {cards.map((c) => {
@@ -246,23 +246,23 @@ export default function EcosystemHub() {
             <div
               key={c.id}
               onClick={() => navigate(`/requirement-gathering?service=${c.id}`)}
-              className="glass rounded-[20px] p-6 border border-white/5 shadow-md active:scale-95 transition-transform duration-200"
+              className="glass rounded-[20px] p-6 border border-[#E2E8F0] shadow-md active:scale-95 transition-transform duration-200"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#005DFF]/15 border border-[#2EA8FF]/20 flex items-center justify-center text-[#2EA8FF]">
+                <div className="w-10 h-10 rounded-xl bg-[#2F2FE4]/10 border border-[#A5B4FC]/60 flex items-center justify-center text-[#2F2FE4]">
                   <Icon size={18} />
                 </div>
               </div>
-              <h4 className="font-space font-bold text-[15px] text-white tracking-wide uppercase mb-2">{c.title}</h4>
+              <h4 className="font-space font-bold text-[15px] text-[#0F172A] tracking-wide uppercase mb-2">{c.title}</h4>
               <ul className="space-y-1 mb-4">
                 {c.desc.map((d, index) => (
-                  <li key={index} className="text-[#A7B3C7] text-[11px] leading-relaxed flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-[#2EA8FF]" />
+                  <li key={index} className="text-[#64748B] text-[11px] leading-relaxed flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-[#2F2FE4]" />
                     {d}
                   </li>
                 ))}
               </ul>
-              <div className="text-[#2EA8FF] text-[11px] font-bold tracking-wide uppercase flex items-center gap-1">
+              <div className="text-[#2F2FE4] text-[11px] font-bold tracking-wide uppercase flex items-center gap-1">
                 Learn More <span>→</span>
               </div>
             </div>

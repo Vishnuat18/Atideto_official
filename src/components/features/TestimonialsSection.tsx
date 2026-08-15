@@ -19,7 +19,7 @@ export default function TestimonialsSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="section-tag">Testimonials</div>
-          <h2 className="text-3xl lg:text-5xl font-bold text-white" >
+          <h2 className="text-3xl lg:text-5xl font-bold text-[#0F172A]" >
             What Our Clients Say
           </h2>
         </div>
@@ -40,7 +40,7 @@ export default function TestimonialsSection() {
 
             {/* Quote */}
             <div className="text-4xl text-[#2F2FE4] mb-4" >"</div>
-            <p className="text-white text-lg leading-relaxed mb-8 italic">
+            <p className="text-[#334155] text-lg leading-relaxed mb-8 italic">
               {t.content}
             </p>
 
@@ -52,8 +52,8 @@ export default function TestimonialsSection() {
                 className="w-14 h-14 rounded-full object-cover border-2 border-[#2F2FE4]/30"
               />
               <div className="text-left">
-                <p className="text-white font-semibold">{t.name}</p>
-                <p className="text-[#AFAFAF] text-sm">{t.role} at {t.company}</p>
+                <p className="text-[#0F172A] font-semibold">{t.name}</p>
+                <p className="text-[#64748B] text-sm">{t.role} at {t.company}</p>
               </div>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function TestimonialsSection() {
                 className={`transition-all duration-300 rounded-full ${
                   i === active
                     ? 'w-8 h-2 bg-[#2F2FE4]'
-                    : 'w-2 h-2 bg-white/20 hover:bg-white/40'
+                    : 'w-2 h-2 bg-[#CBD5E1] hover:bg-[#94A3B8]'
                 }`}
                 aria-label={`Testimonial ${i + 1}`}
               />
@@ -82,7 +82,7 @@ export default function TestimonialsSection() {
               key={testimonial.id}
               onClick={() => setActive(i)}
               className={`testimonial-card rounded-xl p-5 text-left transition-all duration-300 cursor-pointer ${
-                i === active ? 'border-[#2F2FE4]/50 shadow-lg shadow-[#2F2FE4]/10' : 'hover:border-white/20'
+                i === active ? 'border-[#2F2FE4]/50 shadow-lg shadow-[#2F2FE4]/10' : 'hover:border-[#C7D2FE]'
               }`}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -92,11 +92,11 @@ export default function TestimonialsSection() {
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
-                  <p className="text-white text-sm font-medium">{testimonial.name}</p>
-                  <p className="text-[#AFAFAF] text-xs">{testimonial.company}</p>
+                  <p className="text-[#0F172A] text-sm font-medium">{testimonial.name}</p>
+                  <p className="text-[#64748B] text-xs">{testimonial.company}</p>
                 </div>
               </div>
-              <p className="text-[#AFAFAF] text-xs line-clamp-3 leading-relaxed">
+              <p className="text-[#64748B] text-xs line-clamp-3 leading-relaxed">
                 {testimonial.content}
               </p>
             </button>

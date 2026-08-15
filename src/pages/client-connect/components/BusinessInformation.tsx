@@ -1,71 +1,82 @@
 import React from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
+import { Building2, Mail, Globe, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface BusinessInfoProps {
   register: UseFormRegister<any>;
   errors: FieldErrors<any>;
+  values: any;
 }
 
-export default function BusinessInformation({ register, errors }: BusinessInfoProps) {
-  return (
-    <div className="w-full max-w-2xl mx-auto space-y-12 py-6">
-      {/* Company Name */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="company">
-          What is your Company or Business Name?
-        </label>
-        <div className="relative">
-          <input
-            id="company"
-            type="text"
-            placeholder="Acme Corporation"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
-            {...register('company', { required: 'Company name is required' })}
-          />
-        </div>
-        {errors.company && (
-          <span className="text-red-500 text-sm mt-1">{errors.company.message as string}</span>
-        )}
-      </div>
+const EMAIL_RE = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
 
-      {/* Business Email */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="businessEmail">
-          Business Email Address
-        </label>
-        <div className="relative">
-          <input
-            id="businessEmail"
-            type="email"
-            placeholder="hello@acme.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
-            {...register('businessEmail', { 
-              required: 'Business email is required',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address'
-              }
-            })}
-          />
+export default function BusinessInformation({ register, errors, values }: BusinessInfoProps) {
+  const ok = {
+    company: !!(values?.company && !errors.company),
+    businessEmail: !!(values?.businessEmail && EMAIL_RE.test(values.businessEmail) && !errors.businessEmail),
+  };
+
+  return (
+    <div className="w-full space-y-7">
+      <div className="cc-grid-2">
+        {/* Company Name */}
+        <div className="cc-field">
+          <div className={`cc-input-wrap ${ok.company ? 'valid' : ''}`}>
+            <span className="lead"><Building2 /></span>
+            <input
+              id="company"
+              type="text"
+              placeholder=" "
+              className={`cc-input ${errors.company ? 'error' : ''}`}
+              {...register('company', { required: 'Company name is required' })}
+            />
+            <label className="cc-float" htmlFor="company">What is your Company or Business Name?</label>
+            {ok.company && <span className="cc-input-ok"><CheckCircle2 /></span>}
+          </div>
+          {errors.company && (
+            <span className="cc-error"><AlertCircle /> {errors.company.message as string}</span>
+          )}
         </div>
-        {errors.businessEmail && (
-          <span className="text-red-500 text-sm mt-1">{errors.businessEmail.message as string}</span>
-        )}
+
+        {/* Business Email */}
+        <div className="cc-field">
+          <div className={`cc-input-wrap ${ok.businessEmail ? 'valid' : ''}`}>
+            <span className="lead"><Mail /></span>
+            <input
+              id="businessEmail"
+              type="email"
+              placeholder=" "
+              className={`cc-input ${errors.businessEmail ? 'error' : ''}`}
+              {...register('businessEmail', {
+                required: 'Business email is required',
+                pattern: {
+                  value: EMAIL_RE,
+                  message: 'Invalid email address'
+                }
+              })}
+            />
+            <label className="cc-float" htmlFor="businessEmail">Business email address</label>
+            {ok.businessEmail && <span className="cc-input-ok"><CheckCircle2 /></span>}
+          </div>
+          {errors.businessEmail && (
+            <span className="cc-error"><AlertCircle /> {errors.businessEmail.message as string}</span>
+          )}
+        </div>
       </div>
 
       {/* Website (Optional) */}
-      <div className="flex flex-col space-y-4">
-        <label className="text-[22px] font-medium text-[#CFCFCF]" htmlFor="website">
-          Company Website (Optional)
-        </label>
-        <div className="relative">
+      <div className="cc-field">
+        <div className="cc-input-wrap has-opt">
+          <span className="lead"><Globe /></span>
           <input
             id="website"
             type="text"
-            placeholder="https://acme.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            placeholder=" "
+            className="cc-input"
             {...register('website')}
           />
+          <label className="cc-float" htmlFor="website">Company website</label>
+          <span className="cc-opt-badge">Optional</span>
         </div>
       </div>
     </div>

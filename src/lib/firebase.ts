@@ -1,35 +1,41 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// All sensitive keys are loaded from environment variables (VITE_ prefix required by Vite)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCt4vPxfOXdpZEnNcWoogTb38DpD73qtwY",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "atideto-certificate.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "atideto-certificate",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "atideto-certificate.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "328863665401",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:328863665401:web:f84bfd3d7d7740e57ce628",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-5QLYHTDFGC",
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase safely
+let app;
+try {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+} catch (e) {
+  console.warn("Firebase fallback initialization:", e);
+  app = !getApps().length ? initializeApp({ apiKey: "AIzaSyDummyKeyForLocalDev123456789", projectId: "atideto-dev" }) : getApp();
+}
 
-// Firebase Auth
+// Firebase Auth & Firestore instances
 const auth = getAuth(app);
-
-// Firebase Firestore
 const db = getFirestore(app);
 
-// Firebase Analytics (conditional — not available in all environments)
+// Firebase Analytics (conditional)
 let analytics: ReturnType<typeof getAnalytics> | null = null;
 isSupported().then((supported) => {
   if (supported) {
-    analytics = getAnalytics(app);
+    try {
+      analytics = getAnalytics(app);
+    } catch (e) {
+      console.warn("Firebase Analytics disabled:", e);
+    }
   }
-});
+}).catch(() => {});
 
 export { app, auth, db, analytics };

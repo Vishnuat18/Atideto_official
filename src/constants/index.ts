@@ -11,6 +11,17 @@ import mobileAppDevImg from '@/assets/service cards/mobile app dev.jpg';
 import uiUxDesignImg from '@/assets/service cards/ui ux design.jpg';
 import webDevImg from '@/assets/service cards/web dev.jpg';
 
+import aiAgentsLightImg from '@/assets/service cards/ai agents-light.jpg';
+import aiAutomationLightImg from '@/assets/service cards/ai automation-light.jpg';
+import apiDevLightImg from '@/assets/service cards/api dev-light.jpg';
+import cloudLightImg from '@/assets/service cards/cloud-light.jpg';
+import customSoftwareLightImg from '@/assets/service cards/custom software-light.jpg';
+import databaseSolutionsLightImg from '@/assets/service cards/database solutons-light.jpg';
+import desktopSoftwareLightImg from '@/assets/service cards/desktop software-light.jpg';
+import mobileAppDevLightImg from '@/assets/service cards/mobile app dev-light.jpg';
+import uiUxDesignLightImg from '@/assets/service cards/ui ux design-light.jpg';
+import webDevLightImg from '@/assets/service cards/web dev-light.jpg';
+
 import yokeshDetailImg from '@/assets/Team_atideto/yokesh-removebg-preview.png';
 import neevasDetailImg from '@/assets/Team_atideto/neevas-removebg-preview.png';
 import samDetailImg from '@/assets/Team_atideto/sam-removebg-preview.png';
@@ -70,61 +81,71 @@ export const SERVICES = [
     id: 'custom-software',
     title: 'Custom Software Development',
     description: 'Build scalable enterprise software tailored for your business with modern architecture and high performance.',
-    image: customSoftwareImg
+    image: customSoftwareImg,
+    imageLight: customSoftwareLightImg
   },
   {
     id: 'web-dev',
     title: 'Web Application Development',
     description: 'Modern responsive websites built with cutting-edge technologies delivering exceptional user experiences.',
-    image: webDevImg
+    image: webDevImg,
+    imageLight: webDevLightImg
   },
   {
     id: 'mobile-dev',
     title: 'Mobile App Development',
     description: 'Beautiful Android and iOS applications optimized for performance and user engagement.',
-    image: mobileAppDevImg
+    image: mobileAppDevImg,
+    imageLight: mobileAppDevLightImg
   },
   {
     id: 'ui-ux',
     title: 'UI / UX Design',
     description: 'Human-centered interfaces designed for simplicity, accessibility and unforgettable experiences.',
-    image: uiUxDesignImg
+    image: uiUxDesignImg,
+    imageLight: uiUxDesignLightImg
   },
   {
     id: 'ai-automation',
     title: 'AI Automation',
     description: 'Automate repetitive business processes using intelligent AI agents and advanced workflows.',
-    image: aiAutomationImg
+    image: aiAutomationImg,
+    imageLight: aiAutomationLightImg
   },
   {
     id: 'ai-agents',
     title: 'AI Agents',
     description: 'Deploy intelligent AI agents capable of handling customer support, operations and business automation.',
-    image: aiAgentsImg
+    image: aiAgentsImg,
+    imageLight: aiAgentsLightImg
   },
   {
     id: 'cloud-solutions',
     title: 'Cloud Solutions',
     description: 'Secure cloud migration, deployment and scalable infrastructure for modern businesses.',
-    image: cloudImg
+    image: cloudImg,
+    imageLight: cloudLightImg
   },
   {
     id: 'desktop-apps',
     title: 'Desktop Applications',
     description: 'Robust Windows desktop software designed for speed, reliability and enterprise productivity.',
-    image: desktopSoftwareImg
+    image: desktopSoftwareImg,
+    imageLight: desktopSoftwareLightImg
   },
   {
     id: 'api-dev',
     title: 'API Development',
     description: 'Fast, secure and scalable REST APIs powering modern digital ecosystems.',
-    image: apiDevImg
+    image: apiDevImg,
+    imageLight: apiDevLightImg
   },
   {
     id: 'database-solutions',
     title: 'Database Solutions',
     description: 'Reliable database architecture, optimization and management for high-performance applications.',
-    image: databaseSolutionsImg
+    image: databaseSolutionsImg,
+    imageLight: databaseSolutionsLightImg
   },
   {
     id: 'devops',
@@ -437,7 +458,6 @@ export const TESTIMONIALS: Testimonial[] = [
 ];
 
 export const STATS: Stat[] = [
-  { value: '250', label: 'Projects Delivered', suffix: '+' },
   { value: '98', label: 'Client Satisfaction', suffix: '%' },
   { value: '2000', label: 'Students Trained', suffix: '+' },
   { value: '15', label: 'Countries Served', suffix: '+' },
@@ -495,7 +515,7 @@ export const INTERNSHIP_CATEGORIES = [
 export const INTERNSHIP_PROGRAMS = [
   {
     id: 'fs-java',
-    title: 'Full Stack Web Development (Java)',
+    title: 'Java Full Stack Web Development',
     duration: '3 Months',
     description: 'Master enterprise-level full-stack development using Java, Spring Boot, and modern frontend technologies.',
     skills: ['Java', 'Spring Boot', 'React', 'MySQL'],
@@ -504,7 +524,7 @@ export const INTERNSHIP_PROGRAMS = [
   },
   {
     id: 'fs-mern',
-    title: 'Full Stack Development (MERN Stack)',
+    title: 'MERN Full Stack Web Development',
     duration: '3 Months',
     description: 'Build scalable single-page applications with MongoDB, Express.js, React, and Node.js.',
     skills: ['MongoDB', 'Express', 'React', 'Node.js'],
@@ -513,7 +533,7 @@ export const INTERNSHIP_PROGRAMS = [
   },
   {
     id: 'fs-mean',
-    title: 'Full Stack Development (MEAN Stack)',
+    title: 'MEAN Full Stack Web Development',
     duration: '3 Months',
     description: 'Develop robust web applications using MongoDB, Express.js, Angular, and Node.js.',
     skills: ['MongoDB', 'Express', 'Angular', 'Node.js'],

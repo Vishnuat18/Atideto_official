@@ -1,16 +1,20 @@
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
 import { TEAM_MEMBERS } from '@/constants';
 
+import './about/about.css';
+
 import HeroSection from './about/components/HeroSection';
-import CompanyStory from './about/components/CompanyStory';
-import MeetTheTeam from './about/components/MeetTheTeam';
+import WhoWeServe from './about/components/WhoWeServe';
+import ChallengesToChange from './about/components/ChallengesToChange';
+import PrinciplesDriveUs from './about/components/PrinciplesDriveUs';
+import JourneyTimeline from './about/components/JourneyTimeline';
+import InsideAtideto from './about/components/InsideAtideto';
 import TechStack from './about/components/TechStack';
+import VisionFuture from './about/components/VisionFuture';
 
 export default function About() {
   useEffect(() => {
-    // Ensure smooth scrolling resets to top on mount
     window.scrollTo(0, 0);
   }, []);
 
@@ -53,28 +57,48 @@ export default function About() {
   };
 
   return (
-    <div className="bg-[#05070B] min-h-screen relative overflow-hidden font-sans text-white selection:bg-[#3B82F6] selection:text-white">
-      <SEO 
+    <div className="about-page min-h-screen relative overflow-x-clip font-sans selection:bg-[var(--about-primary)] selection:text-white">
+      <SEO
         title="About Us | ATIDETO"
         description="Learn about ATIDETO's journey, our mission, and the expert team behind our premium software solutions."
         url="https://atideto.in/about"
         schema={aboutSchema}
       />
-      
-      {/* Removed Background Ambience as requested */}
 
-      {/* Main Content Area */}
       <main className="relative z-10 w-full">
+        {/* Section 1: Hero */}
         <HeroSection />
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
-        <CompanyStory />
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
-        <MeetTheTeam />
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6]/20 to-transparent" />
+
+        {/* Divider */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--about-primary)]/30 to-transparent" />
+
+        {/* Section 2: Who We Serve */}
+        <WhoWeServe />
+
+        {/* Divider */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--about-primary)]/30 to-transparent" />
+
+        {/* Section 3: Challenges to Change */}
+        <ChallengesToChange />
+
+        {/* Divider */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--about-primary)]/30 to-transparent" />
+
+        {/* Section 4: Principles */}
+        <PrinciplesDriveUs />
+
+        {/* Section 5: Timeline */}
+        <JourneyTimeline />
+
+        {/* Section 6: Inside Atideto */}
+        <InsideAtideto />
+
+        {/* Section 7: Tech Stack */}
         <TechStack />
 
+        {/* Section 8: Vision & Proof in the Work */}
+        <VisionFuture />
       </main>
-
     </div>
   );
 }

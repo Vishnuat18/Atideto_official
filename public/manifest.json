@@ -4,8 +4,8 @@
   "description": "Premium software company delivering web, mobile, AI, and cloud solutions.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#050505",
+  "background_color": "#F8FAFC",
+  "theme_color": "#2F2FE4",
   "icons": [
     {
       "src": "/atideto-logo.png",

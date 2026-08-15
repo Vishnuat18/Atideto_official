@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UseFormSetValue, UseFormWatch, UseFormRegister, FieldErrors } from 'react-hook-form';
+import { Check, AlertCircle, Video, MapPin } from 'lucide-react';
 
 interface MeetingTypeProps {
   setValue: UseFormSetValue<any>;
@@ -8,6 +9,21 @@ interface MeetingTypeProps {
   errors: FieldErrors<any>;
   onAutoAdvance?: () => void;
 }
+
+const MEETING_CHOICES = [
+  {
+    type: 'Online',
+    icon: Video,
+    title: 'Online Meeting',
+    desc: 'Video call on Google Meet or Zoom — we connect within 24–48 hours.',
+  },
+  {
+    type: 'Offline',
+    icon: MapPin,
+    title: 'In-Person Meeting',
+    desc: 'Meet us at our office. Pick a preferred date and time below.',
+  },
+];
 
 export default function MeetingType({ setValue, watch, register, errors, onAutoAdvance }: MeetingTypeProps) {
   const selectedType = watch('meetingType');
@@ -21,7 +37,6 @@ export default function MeetingType({ setValue, watch, register, errors, onAutoA
       setShowOfflineFields(false);
       setValue('meetingDate', '');
       setValue('meetingTime', '');
-      // Auto-advance since there are no additional fields
       if (onAutoAdvance) {
         onAutoAdvance();
       }
@@ -29,27 +44,25 @@ export default function MeetingType({ setValue, watch, register, errors, onAutoA
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-12 py-6">
-      <div className="flex flex-col space-y-6">
-        <label className="text-[22px] font-medium text-[#CFCFCF] text-center">
+    <div className="w-full space-y-9">
+      <div className="cc-field">
+        <label className="cc-label">
           How would you like to connect with us?
         </label>
-        
-        <div className="flex justify-center gap-6">
-          {['Online', 'Offline'].map((type) => {
+        <div className="cc-choice">
+          {MEETING_CHOICES.map(({ type, icon: Icon, title, desc }) => {
             const isSelected = selectedType === type;
             return (
               <button
                 key={type}
                 type="button"
                 onClick={() => handleTypeSelect(type as 'Online' | 'Offline')}
-                className={`px-12 h-[58px] rounded-full text-base font-semibold transition-all duration-300 flex items-center justify-center cursor-pointer border ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] border-transparent shadow-[0_0_20px_rgba(91,94,255,0.35)] text-white scale-[1.02]'
-                    : 'bg-transparent border-[#5B5EFF]/40 text-white hover:border-[#5B5EFF] hover:shadow-[0_0_15px_rgba(91,94,255,0.2)] hover:scale-[1.03]'
-                }`}
+                className={`cc-choice-card ${isSelected ? 'selected' : ''}`}
               >
-                {type}
+                <span className="co-ic"><Icon /></span>
+                <b>{title}</b>
+                <small>{desc}</small>
+                <span className="co-check"><Check /></span>
               </button>
             );
           })}
@@ -57,40 +70,40 @@ export default function MeetingType({ setValue, watch, register, errors, onAutoA
       </div>
 
       {showOfflineFields && (
-        <div className="space-y-8 animate-fadeIn max-w-md mx-auto pt-6">
+        <div className="cc-grid-2">
           {/* Meeting Date */}
-          <div className="flex flex-col space-y-4">
-            <label className="text-[20px] font-medium text-[#CFCFCF]" htmlFor="meetingDate">
+          <div className="cc-field">
+            <label className="cc-label" htmlFor="meetingDate">
               Preferred Meeting Date
             </label>
-            <div className="relative">
+            <div className="cc-input-wrap">
               <input
                 id="meetingDate"
                 type="date"
-                className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 cursor-pointer scheme-dark"
+                className={`cc-input ${errors.meetingDate ? 'error' : ''}`}
                 {...register('meetingDate', { required: selectedType === 'Offline' ? 'Meeting date is required' : false })}
               />
             </div>
             {errors.meetingDate && (
-              <span className="text-red-500 text-sm mt-1">{errors.meetingDate.message as string}</span>
+              <span className="cc-error"><AlertCircle /> {errors.meetingDate.message as string}</span>
             )}
           </div>
 
           {/* Meeting Time */}
-          <div className="flex flex-col space-y-4">
-            <label className="text-[20px] font-medium text-[#CFCFCF]" htmlFor="meetingTime">
+          <div className="cc-field">
+            <label className="cc-label" htmlFor="meetingTime">
               Preferred Meeting Time
             </label>
-            <div className="relative">
+            <div className="cc-input-wrap">
               <input
                 id="meetingTime"
                 type="time"
-                className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 cursor-pointer scheme-dark"
+                className={`cc-input ${errors.meetingTime ? 'error' : ''}`}
                 {...register('meetingTime', { required: selectedType === 'Offline' ? 'Meeting time is required' : false })}
               />
             </div>
             {errors.meetingTime && (
-              <span className="text-red-500 text-sm mt-1">{errors.meetingTime.message as string}</span>
+              <span className="cc-error"><AlertCircle /> {errors.meetingTime.message as string}</span>
             )}
           </div>
         </div>

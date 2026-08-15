@@ -1,130 +1,34 @@
-import { useEffect, useRef, useState } from 'react';
-import { SERVICES } from '@/constants';
 import SEO from '@/components/seo/SEO';
-import { AnimatePresence } from 'framer-motion';
-import ServiceCard from '@/components/services/ServiceCard';
-import ServiceModal from '@/components/services/ServiceModal';
-import servicesBg from '@/assets/hero/service.png';
+import PremiumServices from '@/components/services/PremiumServices';
+import { SERVICES } from '@/constants';
 
 export default function Services() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [selectedService, setSelectedService] = useState<any>(null);
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      // Check if user is scrolling vertically
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        const isScrollableRight = container.scrollLeft < (container.scrollWidth - container.clientWidth - 10);
-        const isScrollableLeft = container.scrollLeft > 10;
-
-        if (e.deltaY > 0 && isScrollableRight) {
-          // Scroll horizontally right instead of vertical page scroll
-          container.scrollLeft += e.deltaY * 1.5;
-          e.preventDefault();
-        } else if (e.deltaY < 0 && isScrollableLeft) {
-          // Scroll horizontally left instead of vertical page scroll
-          container.scrollLeft += e.deltaY * 1.5;
-          e.preventDefault();
-        }
-      }
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
-
   return (
-    <div ref={containerRef} className="bg-[#050505] min-h-screen relative text-[#F8FAFC] overflow-x-hidden">
-      <SEO 
+    <>
+      <SEO
         title="Our Services | ATIDETO"
-        description="Explore ATIDETO's premium services: Web Development, Mobile Apps, AI Solutions, Cloud Infrastructure, and UI/UX Design."
+        description="Explore ATIDETO's premium services: software products, AI automation, cloud infrastructure, data systems, and UI/UX design."
         url="https://atideto.in/services"
         schema={{
-          "@context": "https://schema.org",
-          "@graph": [
+          '@context': 'https://schema.org',
+          '@graph': [
             {
-              "@type": "BreadcrumbList",
-              "itemListElement": [
-                {
-                  "@type": "ListItem",
-                  "position": 1,
-                  "name": "Home",
-                  "item": "https://atideto.in/"
-                },
-                {
-                  "@type": "ListItem",
-                  "position": 2,
-                  "name": "Services",
-                  "item": "https://atideto.in/services"
-                }
-              ]
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://atideto.in/' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://atideto.in/services' },
+              ],
             },
-            ...SERVICES.map(s => ({
-              "@type": "Service",
-              "name": s.title,
-              "description": s.description,
-              "provider": {
-                "@type": "LocalBusiness",
-                "@id": "https://atideto.in/#organization",
-                "name": "ATIDETO"
-              }
-            }))
-          ]
+            ...SERVICES.map((service) => ({
+              '@type': 'Service',
+              name: service.title,
+              description: service.description,
+              provider: { '@type': 'LocalBusiness', '@id': 'https://atideto.in/#organization', name: 'ATIDETO' },
+            })),
+          ],
         }}
       />
-      
-      {/* Global Ambient Background */}
-      <div className="fixed inset-0 bg-[#050505] -z-10" />
-      
-      <section 
-        className="relative min-h-screen w-full px-8 lg:px-16 pt-32 pb-8 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
-        style={{ 
-          backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${servicesBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white drop-shadow-2xl">
-          Our <span className="text-[#3B82F6]">Services</span>
-        </h1>
-        <p className="text-[#AFAFAF] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-medium">
-          Innovative solutions to grow your business<br className="hidden md:block" /> with technology and creativity.
-        </p>
-      </section>
-
-      {/* Horizontal Scroll Area */}
-      <div 
-        ref={scrollRef}
-        className="flex flex-nowrap overflow-x-auto overflow-y-hidden px-8 pb-32 pt-12 gap-8 relative z-10 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        {SERVICES.map((service, index) => (
-          <ServiceCard
-            key={service.id}
-            index={index}
-            service={service}
-            onClick={() => setSelectedService(service)}
-          />
-        ))}
-      </div>
-
-      {/* Modal Popup */}
-      <AnimatePresence>
-        {selectedService && (
-          <ServiceModal 
-            service={selectedService} 
-            onClose={() => setSelectedService(null)} 
-          />
-        )}
-      </AnimatePresence>
-
-    </div>
+      <PremiumServices />
+    </>
   );
 }

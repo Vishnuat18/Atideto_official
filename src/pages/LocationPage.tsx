@@ -37,7 +37,7 @@ export default function LocationPage() {
   };
 
   return (
-    <div className="bg-[#050505] min-h-screen relative text-white pt-24 font-sans">
+    <div className="bg-[#F8FAFC] min-h-screen relative text-[#0F172A] pt-24 font-sans">
       <SEO 
         title={generateMetaTitle("Software & Tech Internships", name)}
         description={generateMetaDescription("software development and AI", seoKeywords)}
@@ -47,15 +47,15 @@ export default function LocationPage() {
       />
       
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:px-16 border-b border-[#3B82F6]/20 bg-gradient-to-b from-[#050505] to-[#0A0A10]">
+      <section className="relative px-6 py-20 lg:px-16 border-b border-[#2F2FE4]/20 bg-gradient-to-b from-[#F8FAFC] to-[#F1F5F9]">
         <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-[#3B82F6] text-sm font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#2F2FE4]/30 bg-[#2F2FE4]/10 text-[#2F2FE4] text-sm font-medium mb-6">
             <MapPin size={16} /> Serving {name}, Tamil Nadu
           </div>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-white">
+          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight text-[#0F172A]">
             {heroTitle}
           </h1>
-          <p className="text-[#AFAFAF] text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-10">
+          <p className="text-[#64748B] text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-10">
             {heroDescription}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -73,46 +73,46 @@ export default function LocationPage() {
       <section className="py-20 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">Our Expertise in {name}</h2>
-          <p className="text-[#AFAFAF]">Delivering enterprise-grade solutions and education to the local community.</p>
+          <p className="text-[#64748B]">Delivering enterprise-grade solutions and education to the local community.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {localServices.map((service, idx) => (
-            <div key={idx} className="glass p-8 rounded-2xl border border-white/5 hover:border-[#3B82F6]/50 transition-colors">
+            <div key={idx} className="glass p-8 rounded-2xl border border-[#E2E8F0] hover:border-[#2F2FE4]/50 transition-colors">
               <h3 className="text-xl font-bold mb-3">{service}</h3>
-              <p className="text-[#AFAFAF] text-sm">We provide tailored {service.toLowerCase()} to help local organizations and individuals thrive.</p>
+              <p className="text-[#64748B] text-sm">We provide tailored {service.toLowerCase()} to help local organizations and individuals thrive.</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Students & Academy Section */}
-      <section className="py-20 px-6 bg-[#0A0A10] border-t border-[#3B82F6]/10">
+      <section className="py-20 px-6 bg-[#F1F5F9] border-t border-[#2F2FE4]/10">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="flex-1">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">Empowering Students in {name}</h2>
-            <p className="text-[#AFAFAF] mb-8 leading-relaxed">
+            <p className="text-[#64748B] mb-8 leading-relaxed">
               Are you studying at one of the {nearbyColleges.join(', ')}? Join ATIDETO Academy for real-world project experience.
             </p>
             <ul className="space-y-4 mb-8">
               {['Final Year Projects & Guidance', 'Professional Tech Internships', 'Full Stack & AI Courses'].map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-[#3B82F6]/20 flex items-center justify-center text-[#3B82F6]">
+                  <div className="w-6 h-6 rounded-full bg-[#2F2FE4]/20 flex items-center justify-center text-[#2F2FE4]">
                     <Target size={14} />
                   </div>
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
-            <Link to="/academy" className="inline-flex items-center gap-2 text-[#3B82F6] font-semibold hover:gap-3 transition-all">
+            <Link to="/academy" className="inline-flex items-center gap-2 text-[#2F2FE4] font-semibold hover:gap-3 transition-all">
               View Student Programs <ArrowRight size={18} />
             </Link>
           </div>
-          <div className="flex-1 glass p-10 rounded-3xl border border-[#3B82F6]/20 w-full relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-[#3B82F6]/20 rounded-full blur-[80px]" />
+          <div className="flex-1 glass p-10 rounded-3xl border border-[#2F2FE4]/20 w-full relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-[#2F2FE4]/20 rounded-full blur-[80px]" />
              <h3 className="text-2xl font-bold mb-4 relative z-10">Why Choose Us?</h3>
-             <p className="text-[#AFAFAF] relative z-10 mb-6">"ATIDETO transformed how we approach technology in our region. Their software is flawless, and their training programs are exactly what the local industry needs."</p>
-             <p className="font-semibold text-white relative z-10">- Local Business Partner, {name}</p>
+             <p className="text-[#64748B] relative z-10 mb-6">"ATIDETO transformed how we approach technology in our region. Their software is flawless, and their training programs are exactly what the local industry needs."</p>
+             <p className="font-semibold text-[#0F172A] relative z-10">- Local Business Partner, {name}</p>
           </div>
         </div>
       </section>
@@ -124,9 +124,9 @@ export default function LocationPage() {
         </div>
         <div className="space-y-6">
           {faqs.map((faq, idx) => (
-            <div key={idx} className="glass p-6 rounded-xl border border-white/5">
-              <h3 className="text-lg font-bold mb-2 text-[#3B82F6]">{faq.question}</h3>
-              <p className="text-[#AFAFAF]">{faq.answer}</p>
+            <div key={idx} className="glass p-6 rounded-xl border border-[#E2E8F0]">
+              <h3 className="text-lg font-bold mb-2 text-[#2F2FE4]">{faq.question}</h3>
+              <p className="text-[#64748B]">{faq.answer}</p>
             </div>
           ))}
         </div>

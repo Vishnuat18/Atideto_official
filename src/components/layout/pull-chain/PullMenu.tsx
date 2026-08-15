@@ -5,6 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import ThemeToggle from '../ThemeToggle';
 
 interface PullMenuProps {
   isOpen: boolean;
@@ -45,8 +46,14 @@ export default function PullMenu({ isOpen, onClose, theme }: PullMenuProps) {
 
   return (
     <div
-      className="w-full bg-[#0a0a0a]/95 backdrop-blur-2xl border border-white/10 rounded-b-2xl shadow-2xl overflow-hidden"
+      className="w-full bg-white/95 backdrop-blur-2xl border border-[#E2E8F0] rounded-b-2xl shadow-[0_10px_30px_rgba(15,23,42,0.1)] overflow-hidden"
     >
+      {/* Theme toggle */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-1">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#475569]">Appearance</span>
+        <ThemeToggle />
+      </div>
+
       {/* Menu Items */}
       <div className="p-3 space-y-1">
         {menuItems.map((item, index) => {
@@ -65,10 +72,10 @@ export default function PullMenu({ isOpen, onClose, theme }: PullMenuProps) {
               <Link
                 to={item.href}
                 onClick={onClose}
-                className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm text-[#AFAFAF] hover:text-white hover:bg-white/5 transition-all duration-300 group relative overflow-hidden"
+                className="flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all duration-300 group relative overflow-hidden"
               >
                 <span
-                  className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-white"
+                  className="w-10 h-10 rounded-xl bg-[#F1F5F9] flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-[#2F2FE4]"
                 >
                   {IconComponent && <IconComponent className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />}
                   <div
@@ -77,7 +84,7 @@ export default function PullMenu({ isOpen, onClose, theme }: PullMenuProps) {
                   />
                 </span>
 
-                <span className={`font-semibold text-base tracking-wide transition-transform duration-300 group-hover:translate-x-1 ${isActive ? 'text-white' : ''}`}>
+                <span className={`font-semibold text-base tracking-wide transition-transform duration-300 group-hover:translate-x-1 ${isActive ? 'text-[#2F2FE4]' : ''}`}>
                   {displayLabel}
                 </span>
 
@@ -116,9 +123,9 @@ export default function PullMenu({ isOpen, onClose, theme }: PullMenuProps) {
                   console.error('Failed to sign out', err);
                 }
               }}
-              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-white/5 transition-all duration-300 group relative overflow-hidden text-left"
+              className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm text-red-500 hover:text-red-600 hover:bg-[#FEF2F2] transition-all duration-300 group relative overflow-hidden text-left"
             >
-              <span className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-red-300">
+              <span className="w-10 h-10 rounded-xl bg-[#F1F5F9] flex items-center justify-center text-lg relative z-10 transition-all duration-300 group-hover:text-red-500">
                 <LucideIcons.LogOut className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
               </span>
               <span className="font-semibold text-base tracking-wide transition-transform duration-300 group-hover:translate-x-1">

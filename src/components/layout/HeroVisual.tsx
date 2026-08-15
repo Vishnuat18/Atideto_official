@@ -28,12 +28,12 @@ const FloatingCard: React.FC<FloatingCardProps> = ({
         transform: `translate3d(${tx}px, ${ty}px, 0)`}}
     >
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-full bg-[#005DFF]/15 border border-[#2EA8FF]/20 flex items-center justify-center text-[#2EA8FF]">
+        <div className="w-8 h-8 rounded-full bg-[#2F2FE4]/10 border border-[#A5B4FC]/60 flex items-center justify-center text-[#2F2FE4]">
           <Icon size={16} />
         </div>
-        <h5 className="font-bold text-[14px] text-white tracking-wide uppercase">{title}</h5>
+        <h5 className="font-bold text-[14px] text-[#0F172A] tracking-wide uppercase">{title}</h5>
       </div>
-      <p className="text-[#A7B3C7] text-[11px] leading-relaxed">{desc}</p>
+      <p className="text-[#64748B] text-[11px] leading-relaxed">{desc}</p>
     </div>
   );
 };
@@ -123,7 +123,7 @@ export default function HeroVisual() {
             ctx.moveTo(x, y);
             ctx.lineTo(nextX, nextY);
             const alpha = Math.max(0.01, 0.18 - (r * 0.012));
-            ctx.strokeStyle = `rgba(0, 93, 255, ${alpha})`;
+            ctx.strokeStyle = `rgba(79, 70, 229, ${alpha})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -137,7 +137,7 @@ export default function HeroVisual() {
             ctx.moveTo(x, y);
             ctx.lineTo(x, nextY);
             const alpha = Math.max(0.01, 0.18 - (r * 0.012));
-            ctx.strokeStyle = `rgba(95, 212, 255, ${alpha})`;
+            ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
             ctx.lineWidth = 0.6;
             ctx.stroke();
           }
@@ -153,7 +153,7 @@ export default function HeroVisual() {
       // Outer energy ring
       ctx.beginPath();
       ctx.arc(0, 0, 180, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(0, 93, 255, 0.15)';
+      ctx.strokeStyle = 'rgba(47, 47, 228, 0.15)';
       ctx.lineWidth = 4;
       ctx.stroke();
 
@@ -163,7 +163,7 @@ export default function HeroVisual() {
       ctx.beginPath();
       ctx.arc(0, 0, 150, 0, Math.PI * 2);
       ctx.setLineDash([40, 30, 10, 30]);
-      ctx.strokeStyle = 'rgba(46, 168, 255, 0.4)';
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
       ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.restore();
@@ -174,7 +174,7 @@ export default function HeroVisual() {
       ctx.beginPath();
       ctx.arc(0, 0, 110, 0, Math.PI * 2);
       ctx.setLineDash([8, 12]);
-      ctx.strokeStyle = 'rgba(95, 212, 255, 0.35)';
+      ctx.strokeStyle = 'rgba(47, 47, 228, 0.35)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.restore();
@@ -191,8 +191,8 @@ export default function HeroVisual() {
         
         ctx.beginPath();
         ctx.arc(px, py, Math.max(0.5, 1 + Math.sin(angle + i) * 0.5), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(95, 212, 255, ${0.3 + Math.sin(angle * 2 + i) * 0.2})`;
-        ctx.shadowColor = '#5FD4FF';
+        ctx.fillStyle = `rgba(47, 47, 228, ${0.3 + Math.sin(angle * 2 + i) * 0.2})`;
+        ctx.shadowColor = '#6366F1';
         ctx.shadowBlur = 10;
         ctx.fill();
         ctx.shadowBlur = 0;
@@ -247,23 +247,23 @@ export default function HeroVisual() {
         ctx.closePath();
 
         // Calculate shading based on depth and rotation angle to simulate crystal reflections
-        const baseColor = 'rgba(0, 93, 255, 0.12)';
-        const glowColor = 'rgba(95, 212, 255, 0.28)';
+        const baseColor = 'rgba(47, 47, 228, 0.1)';
+        const glowColor = 'rgba(99, 102, 241, 0.25)';
         
         const grad = ctx.createLinearGradient(p1.x, p1.y, p3.x, p3.y);
         grad.addColorStop(0, baseColor);
-        grad.addColorStop(0.5, 'rgba(46, 168, 255, 0.22)');
+        grad.addColorStop(0.5, 'rgba(129, 140, 248, 0.2)');
         grad.addColorStop(1, glowColor);
 
         ctx.fillStyle = grad;
         ctx.fill();
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.strokeStyle = 'rgba(47, 47, 228, 0.15)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
         // Neon outline/wire overlay on the edges
-        ctx.strokeStyle = 'rgba(46, 168, 255, 0.7)';
+        ctx.strokeStyle = 'rgba(99, 102, 241, 0.6)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
       });

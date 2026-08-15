@@ -15,9 +15,9 @@ export default function BackgroundBlur({ isOpen, onClose }: BackgroundBlurProps)
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4, ease: 'easeInOut' }}
       onClick={onClose}
-      className="fixed inset-0 z-40 bg-black/60 backdrop-blur-md pointer-events-auto"
+      className="fixed inset-0 z-40 bg-slate-900/25 backdrop-blur-md pointer-events-auto"
       style={{
-        background: 'radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%)'}}
+        background: 'radial-gradient(circle, rgba(15,23,42,0.18) 0%, rgba(15,23,42,0.35) 100%)'}}
     />
   );
 }

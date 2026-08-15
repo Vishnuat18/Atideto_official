@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
-import { Mail, Database, Shield, Edit3, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import {
+  Users, LayoutDashboard, CalendarClock, Edit3, ChevronDown, ChevronUp,
+  FileText, Send, Check, AlertCircle,
+} from 'lucide-react';
+import { UseFormRegister, FieldErrors } from 'react-hook-form';
 
 interface ReviewSubmitProps {
   formValues: any;
   goToStep: (stepIndex: number) => void;
   isSubmitting: boolean;
+  submitError?: string;
+  register: UseFormRegister<any>;
+  errors: FieldErrors<any>;
+  privacyAccepted: boolean;
 }
 
-export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: ReviewSubmitProps) {
-  const [openSection, setOpenSection] = useState<string | null>('client');
+const SECTIONS = [
+  { id: 'contact', title: 'Contact Information', step: 0, icon: Users },
+  { id: 'project', title: 'Project Requirements', step: 1, icon: LayoutDashboard },
+  { id: 'budget', title: 'Budget & Meeting', step: 2, icon: CalendarClock },
+];
+
+export default function ReviewSubmit({
+  formValues, goToStep, isSubmitting, submitError, register, errors, privacyAccepted,
+}: ReviewSubmitProps) {
+  const [openSection, setOpenSection] = useState<string | null>('contact');
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
@@ -16,134 +32,125 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
 
   const formatList = (arr: any) => {
     if (!arr || !Array.isArray(arr)) return 'None';
-    return arr.join(', ');
+    return arr.length ? arr.join(', ') : 'None';
   };
 
-  const renderSectionHeader = (id: string, title: string, stepIndex: number) => {
+  const renderHead = (id: string, title: string, stepIndex: number, icon: any) => {
     const isOpen = openSection === id;
+    const Icon = icon;
     return (
-      <div className="flex items-center justify-between py-4 border-b border-white/10 cursor-pointer group" onClick={() => toggleSection(id)}>
-        <h3 className="text-[20px] font-bold text-white group-hover:text-[#5B5EFF] transition-colors duration-200">
-          {title}
-        </h3>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
+      <div className="cc-review-head" onClick={() => toggleSection(id)}>
+        <div className="t">
+          <span className="ic"><Icon /></span>
+          <b>{title}</b>
+        </div>
+        <div className="h-actions">
+          <span
+            role="button"
+            tabIndex={0}
+            className="cc-review-edit"
+            title="Edit Section"
             onClick={(e) => {
               e.stopPropagation();
               goToStep(stepIndex);
             }}
-            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-all"
-            title="Edit Section"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation();
+                goToStep(stepIndex);
+              }
+            }}
           >
-            <Edit3 className="w-4 h-4" />
-          </button>
-          {isOpen ? <ChevronUp className="w-5 h-5 text-white/40" /> : <ChevronDown className="w-5 h-5 text-white/40" />}
+            <Edit3 />
+          </span>
+          <span className="cc-review-toggle">
+            {isOpen ? <ChevronUp /> : <ChevronDown />}
+          </span>
         </div>
       </div>
     );
   };
 
+  const row = (label: string, value: any) => (
+    <div className="cc-review-row">
+      <b>{label}</b>
+      <span>{value || '—'}</span>
+    </div>
+  );
+
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-8 py-6">
-      <div className="space-y-2">
-        {/* Step 1: Client Info */}
-        <div className="border-t border-white/10">
-          {renderSectionHeader('client', 'Client Information', 0)}
-          {openSection === 'client' && (
-            <div className="py-4 px-2 space-y-3 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div><span className="text-white/40 mr-2 font-semibold">Name:</span> {formValues.name || '—'}</div>
-              <div><span className="text-white/40 mr-2 font-semibold">Email:</span> {formValues.email || '—'}</div>
-              <div><span className="text-white/40 mr-2 font-semibold">Phone:</span> {formValues.countryCode} {formValues.phone || '—'}</div>
+    <div className="w-full space-y-8">
+      <div className="cc-review">
+        {/* Contact */}
+        <div className="cc-review-sec">
+          {renderHead('contact', 'Contact Information', 0, Users)}
+          {openSection === 'contact' && (
+            <div className="cc-review-body">
+              {row('Name', formValues.name)}
+              {row('Email', formValues.email)}
+              {row('Phone', `${formValues.countryCode} ${formValues.phone}`)}
+              {row('Company', formValues.company)}
+              {row('Business Email', formValues.businessEmail)}
+              {row('Website', formValues.website)}
             </div>
           )}
         </div>
 
-        {/* Step 2: Business Info */}
-        <div>
-          {renderSectionHeader('business', 'Business Information', 1)}
-          {openSection === 'business' && (
-            <div className="py-4 px-2 space-y-3 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div><span className="text-white/40 mr-2 font-semibold">Company Name:</span> {formValues.company || '—'}</div>
-              <div><span className="text-white/40 mr-2 font-semibold">Business Email:</span> {formValues.businessEmail || '—'}</div>
-              <div><span className="text-white/40 mr-2 font-semibold">Website:</span> {formValues.website || '—'}</div>
-            </div>
-          )}
-        </div>
-
-        {/* Step 3: Service Selection */}
-        <div>
-          {renderSectionHeader('services', 'Service Selection', 2)}
-          {openSection === 'services' && (
-            <div className="py-4 px-2 space-y-3 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div><span className="text-white/40 mr-2 font-semibold">Services:</span> {formatList(formValues.services)}</div>
-              {formValues.services?.includes('Other') && (
-                <div><span className="text-white/40 mr-2 font-semibold">Other Requirements:</span> {formValues.otherServiceDetails || '—'}</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Step 4: Project Information */}
-        <div>
-          {renderSectionHeader('project', 'Project Information', 3)}
+        {/* Project */}
+        <div className="cc-review-sec">
+          {renderHead('project', 'Project Requirements', 1, LayoutDashboard)}
           {openSection === 'project' && (
-            <div className="py-4 px-2 space-y-4 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div>
-                <span className="text-white/40 block mb-1 font-semibold">Description:</span>
-                <p className="whitespace-pre-line bg-white/[0.01] border border-white/5 rounded-xl p-4">{formValues.description || '—'}</p>
+            <div className="cc-review-body">
+              <div className="cc-review-row">
+                <b>Services</b>
+                <div className="cc-review-tags">
+                  {(formValues.services || []).map((s: string) => (
+                    <span key={s}>{s}</span>
+                  ))}
+                </div>
               </div>
-              {formValues.designStatus && (
-                <div><span className="text-white/40 mr-2 font-semibold">Design Status:</span> {formValues.designStatus}</div>
-              )}
-              {formValues.aiIntegrations && (
-                <div><span className="text-white/40 mr-2 font-semibold">Integrations:</span> {formValues.aiIntegrations}</div>
-              )}
-              <div><span className="text-white/40 mr-2 font-semibold">Preferred Stack:</span> {formatList(formValues.techStack)}</div>
+              {formValues.services?.includes('Other') && row('Other Details', formValues.otherServiceDetails)}
+              <div className="cc-review-desc">{formValues.description || '—'}</div>
+              {formValues.designStatus && row('Design Status', formValues.designStatus)}
+              {formValues.aiIntegrations && row('AI Integrations', formValues.aiIntegrations)}
+              <div className="cc-review-row">
+                <b>Preferred Stack</b>
+                <div className="cc-review-tags">
+                  {((formValues.techStack || []).length ? formValues.techStack : ['Any']).map((t: string) => (
+                    <span key={t}>{t}</span>
+                  ))}
+                </div>
+              </div>
               {formValues.attachments?.length > 0 && (
-                <div>
-                  <span className="text-white/40 block mb-2 font-semibold">Attachments:</span>
-                  <div className="space-y-1.5">
-                    {formValues.attachments.map((file: File, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-white/80 bg-white/5 px-3 py-2 rounded-lg border border-white/5">
-                        <FileText className="w-4 h-4 text-[#5B5EFF]" />
-                        <span className="truncate max-w-[250px]">{file.name}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="cc-review-row" style={{ display: 'block' }}>
+                  <b>Attachments</b>
+                  {(formValues.attachments as File[]).map((file, i) => (
+                    <div key={i} className="cc-review-file">
+                      <FileText />
+                      <span className="truncate">{file.name}</span>
+                      <small style={{ marginLeft: 'auto', color: 'var(--cc-muted)' }}>
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </small>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Step 5: Budget & Time */}
-        <div>
-          {renderSectionHeader('budget', 'Budget & Time', 4)}
+        {/* Budget & Meeting */}
+        <div className="cc-review-sec">
+          {renderHead('budget', 'Budget & Meeting', 2, CalendarClock)}
           {openSection === 'budget' && (
-            <div className="py-4 px-2 space-y-3 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div>
-                <span className="text-white/40 mr-2 font-semibold">Budget:</span> 
-                {formValues.budget === 'Custom Budget' ? `Custom: ${formValues.customBudgetDetails}` : formValues.budget || '—'}
-              </div>
-              <div>
-                <span className="text-white/40 mr-2 font-semibold">Timeline:</span> 
-                {formValues.timeline === 'Custom Timeline' ? `Custom: ${formValues.customTimelineDetails}` : formValues.timeline || '—'}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Step 6: Meeting Type */}
-        <div className="border-b border-white/10">
-          {renderSectionHeader('meeting', 'Meeting Type', 5)}
-          {openSection === 'meeting' && (
-            <div className="py-4 px-2 space-y-3 text-[#AFAFAF] text-[16px] animate-fadeIn">
-              <div><span className="text-white/40 mr-2 font-semibold">Format:</span> {formValues.meetingType || '—'}</div>
+            <div className="cc-review-body">
+              {row('Budget', formValues.budget === 'Custom Budget' ? `Custom — ${formValues.customBudgetDetails}` : formValues.budget)}
+              {row('Timeline', formValues.timeline === 'Custom Timeline' ? `Custom — ${formValues.customTimelineDetails}` : formValues.timeline)}
+              {row('Meeting', formValues.meetingType)}
               {formValues.meetingType === 'Offline' && (
                 <>
-                  <div><span className="text-white/40 mr-2 font-semibold">Date:</span> {formValues.meetingDate || '—'}</div>
-                  <div><span className="text-white/40 mr-2 font-semibold">Time:</span> {formValues.meetingTime || '—'}</div>
+                  {row('Date', formValues.meetingDate)}
+                  {row('Time', formValues.meetingTime)}
                 </>
               )}
             </div>
@@ -151,36 +158,50 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
         </div>
       </div>
 
-      {/* Trust Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-        {[
-          { icon: Mail, text: 'A copy of this request will be sent to your email.' },
-          { icon: Database, text: 'Your request will be securely stored in our database.' },
-          { icon: Shield, text: 'Your information remains private and secure.' }
-        ].map((card, i) => (
-          <div key={i} className="flex flex-col items-center text-center p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all hover:bg-white/[0.03]">
-            <card.icon className="w-6 h-6 text-[#5B5EFF] mb-3" />
-            <p className="text-[13px] text-white/50 leading-relaxed">{card.text}</p>
-          </div>
-        ))}
+      {/* Privacy consent */}
+      <div className="cc-privacy">
+        <label className="cc-check">
+          <input
+            type="checkbox"
+            {...register('privacyAccepted', { required: 'You must accept the privacy policy to submit' })}
+          />
+          <span className="box"><Check /></span>
+          <span className="txt">
+            I agree to the <a href="/privacy-policy" onClick={(e) => e.preventDefault()} title="Privacy policy coming soon">Privacy Policy</a> and
+            consent to ATIDETO processing my information to respond to this inquiry.
+          </span>
+        </label>
+        {errors.privacyAccepted && (
+          <span className="cc-error">
+            <AlertCircle /> {typeof errors.privacyAccepted.message === 'string' ? errors.privacyAccepted.message : 'Please accept the privacy policy'}
+          </span>
+        )}
       </div>
 
-      {/* Large Premium Submit Button */}
-      <div className="pt-6">
+      {/* Submit */}
+      <div className="pt-2">
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full h-[58px] rounded-full bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(91,94,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(91,94,255,0.3)]"
+          disabled={isSubmitting || !privacyAccepted}
+          className="cc-btn-primary w-full justify-center text-lg py-4 rounded-2xl"
+          style={{ minHeight: '58px' }}
         >
           {isSubmitting ? (
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="flex items-center gap-3">
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Processing Proposal...
-            </div>
+            </span>
           ) : (
-            'Submit Project Inquiry'
+            <span className="flex items-center gap-2">
+              <Send className="w-5 h-5" /> Submit Project Inquiry
+            </span>
           )}
         </button>
+        {submitError && (
+          <p className="mt-4 text-red-300 text-sm text-center bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+            {submitError}
+          </p>
+        )}
       </div>
     </div>
   );

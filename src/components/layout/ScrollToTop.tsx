@@ -10,6 +10,12 @@ export default function ScrollToTop() {
       window.history.scrollRestoration = 'manual';
     }
 
+    // When arriving with a #hash (e.g. /services#web-dev), let the target page
+    // handle scrolling to the referenced section instead of jumping to the top.
+    if (window.location.hash) {
+      return;
+    }
+
     // Instantly jump to the top of the page on route change without any smooth scroll animation
     window.scrollTo({
       top: 0,

@@ -8,10 +8,10 @@ export default function TechStack() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <div className="section-tag">Technology</div>
-          <h2 className="text-3xl lg:text-5xl font-bold text-white" >
+          <h2 className="text-3xl lg:text-5xl font-bold text-[#0F172A]" >
             Our Tech Stack
           </h2>
-          <p className="text-[#AFAFAF] mt-4 max-w-xl mx-auto">
+          <p className="text-[#475569] mt-4 max-w-xl mx-auto">
             Enterprise-grade tools and frameworks powering every project we build.
           </p>
         </div>
@@ -27,8 +27,8 @@ export default function TechStack() {
               <div className="w-10 h-10 rounded-lg bg-[#2F2FE4]/10 flex items-center justify-center text-xl group-hover:bg-[#2F2FE4]/20 transition-colors duration-200">
                 {getTechIcon(tech.name)}
               </div>
-              <span className="text-white text-xs font-medium text-center">{tech.name}</span>
-              <span className="text-[#AFAFAF] text-xs">{tech.category}</span>
+              <span className="text-[#0F172A] text-xs font-medium text-center">{tech.name}</span>
+              <span className="text-[#64748B] text-xs">{tech.category}</span>
             </div>
           ))}
         </div>

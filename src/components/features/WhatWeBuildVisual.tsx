@@ -38,10 +38,10 @@ const FloatingCard: React.FC<FloatingCardProps> = ({
 
     if (isPulsed) {
       gsap.fromTo(el,
-        { boxShadow: '0 0 5px rgba(0, 191, 255, 0)' },
+        { boxShadow: '0 0 5px rgba(47, 47, 228, 0)' },
         {
-          boxShadow: '0 0 30px rgba(0, 191, 255, 0.3), 0 0 60px rgba(47, 125, 255, 0.15)',
-          borderColor: 'rgba(0, 191, 255, 0.4)',
+          boxShadow: '0 0 30px rgba(47, 47, 228, 0.2), 0 0 60px rgba(47, 47, 228, 0.12)',
+          borderColor: 'rgba(47, 47, 228, 0.3)',
           duration: 0.5,
           ease: 'power2.out',
           yoyo: true,
@@ -60,37 +60,37 @@ const FloatingCard: React.FC<FloatingCardProps> = ({
       className={`absolute ${position} pointer-events-auto hidden md:block cursor-pointer transition-all duration-500 ease-out
         rounded-[18px] p-5 w-[215px]
         ${isHovered
-          ? 'border-[#2EA8FF]/40 shadow-[0_0_30px_rgba(46,168,255,0.2),0_20px_40px_-12px_rgba(0,93,255,0.3)] scale-[1.04]'
-          : 'border-white/5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)]'
+          ? 'border-[#A5B4FC] shadow-[0_10px_30px_rgba(47,47,228,0.15),0_20px_40px_-12px_rgba(47,47,228,0.2)] scale-[1.04]'
+          : 'border-[#E2E8F0] shadow-[0_10px_30px_-15px_rgba(15,23,42,0.15)]'
         }`}
       style={{
         background: isHovered
-          ? 'rgba(255,255,255,0.06)'
-          : 'rgba(255,255,255,0.03)',
+          ? 'rgba(255,255,255,1)'
+          : 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid',
-        borderColor: isHovered ? 'rgba(0, 191, 255, 0.3)' : 'rgba(255, 255, 255, 0.06)',
+        borderColor: isHovered ? 'rgba(47, 47, 228, 0.3)' : 'rgba(226, 232, 240, 1)',
       }}
     >
       <div className="flex items-center gap-3 mb-2">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500"
           style={{
-            background: isHovered ? 'rgba(0, 93, 255, 0.25)' : 'rgba(0, 93, 255, 0.15)',
+            background: isHovered ? 'rgba(47, 47, 228, 0.15)' : 'rgba(47, 47, 228, 0.08)',
             border: '1px solid',
-            borderColor: isHovered ? 'rgba(0, 191, 255, 0.4)' : 'rgba(46, 168, 255, 0.2)',
+            borderColor: isHovered ? 'rgba(47, 47, 228, 0.35)' : 'rgba(47, 47, 228, 0.2)',
             transform: isHovered ? 'rotate(8deg)' : 'rotate(0deg)',
           }}
         >
-          <Icon size={16} className="text-[#2EA8FF]" />
+          <Icon size={16} className="text-[#2F2FE4]" />
         </div>
-        <h5 className="font-bold text-[14px] text-white tracking-wide uppercase font-space">{title}</h5>
+        <h5 className="font-bold text-[14px] text-[#0F172A] tracking-wide uppercase font-space">{title}</h5>
       </div>
-      <p className="text-[#A7B3C7] text-[11px] leading-relaxed mb-3">{desc}</p>
+      <p className="text-[#64748B] text-[11px] leading-relaxed mb-3">{desc}</p>
       <div
         className="text-[10px] font-bold tracking-wide uppercase flex items-center gap-1 transition-all duration-300"
-        style={{ color: isHovered ? '#7CCBFF' : '#2EA8FF' }}
+        style={{ color: isHovered ? '#2F2FE4' : '#2F2FE4' }}
       >
         Learn More <span className="transition-transform duration-300" style={{ transform: isHovered ? 'translateX(4px)' : 'translateX(0)' }}>→</span>
       </div>
@@ -257,19 +257,19 @@ export default function WhatWeBuildVisual() {
             <div
               key={c.id}
               onClick={() => navigate(`/requirement-gathering?service=${c.id}`)}
-              className="glass rounded-[20px] p-6 border border-white/5 shadow-md active:scale-95 transition-transform duration-200 text-left"
+              className="glass rounded-[20px] p-6 border border-[#E2E8F0] shadow-md active:scale-95 transition-transform duration-200 text-left"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-[#005DFF]/15 border border-[#2EA8FF]/20 flex items-center justify-center text-[#2EA8FF]">
+                <div className="w-8 h-8 rounded-xl bg-[#2F2FE4]/10 border border-[#A5B4FC]/60 flex items-center justify-center text-[#2F2FE4]">
                   <Icon size={16} />
                 </div>
-                <h4 className="font-space font-bold text-[15px] text-white tracking-wide uppercase">{c.title}</h4>
+                <h4 className="font-space font-bold text-[15px] text-[#0F172A] tracking-wide uppercase">{c.title}</h4>
               </div>
-              <p className="text-[#A7B3C7] text-[11px] leading-relaxed mb-4">{c.desc}</p>
+              <p className="text-[#64748B] text-[11px] leading-relaxed mb-4">{c.desc}</p>
               <div className="flex items-center gap-1">
-                <span className="inline-block w-6 h-px bg-[#2EA8FF]/40" />
-                <span className="text-[#2EA8FF] text-[10px] font-bold tracking-wide uppercase">Learn More</span>
-                <span className="text-[#2EA8FF]">→</span>
+                <span className="inline-block w-6 h-px bg-[#2F2FE4]/40" />
+                <span className="text-[#2F2FE4] text-[10px] font-bold tracking-wide uppercase">Learn More</span>
+                <span className="text-[#2F2FE4]">→</span>
               </div>
             </div>
           );

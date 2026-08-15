@@ -32,10 +32,10 @@ export default function WaveBackground() {
 
     // Ribbon layer configurations
     const layers = [
-      { color: [0, 93, 255], zOffset: 0, speed: 0.001, count: 25 },     // Deep Blue
-      { color: [139, 92, 246], zOffset: 80, speed: 0.0015, count: 25 },   // Violet
-      { color: [46, 168, 255], zOffset: 160, speed: 0.0008, count: 25 },  // Electric Cyan
-      { color: [255, 46, 168], zOffset: 240, speed: 0.0012, count: 15 },  // Magenta Accent
+      { color: [79, 70, 229], zOffset: 0, speed: 0.001, count: 25 },     // Indigo
+      { color: [129, 140, 248], zOffset: 80, speed: 0.0015, count: 25 }, // Soft Indigo
+      { color: [47, 47, 228], zOffset: 160, speed: 0.0008, count: 25 },  // Brand Indigo
+      { color: [165, 180, 252], zOffset: 240, speed: 0.0012, count: 15 },// Light Indigo
     ];
 
     const particlesPerStrand = 180;
@@ -54,12 +54,12 @@ export default function WaveBackground() {
       mouse.x += (mouse.targetX - mouse.x) * 0.05;
       mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-      // Dark premium background
-      ctx.fillStyle = '#050505';
+      // Light premium background
+      ctx.fillStyle = '#F8FAFC';
       ctx.fillRect(0, 0, width, height);
 
       // Subtle atmospheric grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.045)';
       ctx.lineWidth = 1;
       const gridSize = 50;
       ctx.beginPath();
@@ -73,8 +73,8 @@ export default function WaveBackground() {
       }
       ctx.stroke();
 
-      // Use screen composite mode to make overlapping particles glow brightly
-      ctx.globalCompositeOperation = 'screen';
+      // Draw ribbons in normal blend for crisp lines on light surfaces
+      ctx.globalCompositeOperation = 'source-over';
       time += 1;
 
       // Draw mathematical particle ribbons

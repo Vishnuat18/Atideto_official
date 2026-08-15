@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { useTheme } from 'next-themes';
 
 const CARD_POSITIONS_3D = [
   { x: -3.61, y: 2.27, z: 0 },
@@ -13,17 +14,47 @@ const CARD_POSITIONS_3D = [
   { x: 3.44, y: -2.05, z: 0 },
 ];
 
+const DARK_SCENE = {
+  ambient: '#4466ff',
+  primary: '#2F7DFF',
+  bright: '#00BFFF',
+  soft: '#53A8FF',
+  accent: '#7CCBFF',
+  hemiGround: '#071326',
+  fog: '#050505',
+  particleOpacity: 0.6,
+  additive: true,
+};
+
+const LIGHT_SCENE = {
+  ambient: '#6366F1',
+  primary: '#4F46E5',
+  bright: '#6366F1',
+  soft: '#818CF8',
+  accent: '#2F2FE4',
+  hemiGround: '#E0E7FF',
+  fog: '#F8FAFC',
+  particleOpacity: 0.5,
+  additive: false,
+};
+
+function useScenePalette() {
+  const { resolvedTheme } = useTheme();
+  return resolvedTheme === 'dark' ? DARK_SCENE : LIGHT_SCENE;
+}
+
 // ── Scene Lighting ──
 function SceneLighting() {
+  const P = useScenePalette();
   return (
     <>
-      <ambientLight intensity={0.3} color="#4466ff" />
-      <directionalLight position={[5, 8, 6]} intensity={1.2} color="#2F7DFF" />
-      <directionalLight position={[-5, -3, 4]} intensity={0.5} color="#00BFFF" />
-      <pointLight position={[0, 3, 2]} intensity={0.8} color="#53A8FF" distance={10} decay={2} />
-      <pointLight position={[3, -2, 1]} intensity={0.4} color="#00BFFF" distance={8} decay={2} />
-      <pointLight position={[-3, 1, 3]} intensity={0.4} color="#2F7DFF" distance={8} decay={2} />
-      <hemisphereLight args={['#2F7DFF', '#071326', 0.3]} />
+      <ambientLight intensity={0.3} color={P.ambient} />
+      <directionalLight position={[5, 8, 6]} intensity={1.2} color={P.primary} />
+      <directionalLight position={[-5, -3, 4]} intensity={0.5} color={P.bright} />
+      <pointLight position={[0, 3, 2]} intensity={0.8} color={P.soft} distance={10} decay={2} />
+      <pointLight position={[3, -2, 1]} intensity={0.4} color={P.bright} distance={8} decay={2} />
+      <pointLight position={[-3, 1, 3]} intensity={0.4} color={P.primary} distance={8} decay={2} />
+      <hemisphereLight args={[P.primary, P.hemiGround, 0.3]} />
     </>
   );
 }
@@ -33,6 +64,7 @@ function LogoCore({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const floatOffset = useRef(Math.random() * Math.PI * 2);
+  const P = useScenePalette();
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -68,10 +100,10 @@ function LogoCore({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.6, 0]} />
         <meshPhysicalMaterial
-          color="#2F7DFF"
+          color={P.primary}
           metalness={0.9}
           roughness={0.1}
-          emissive="#00BFFF"
+          emissive={P.bright}
           emissiveIntensity={0.3}
           transparent
           opacity={0.95}
@@ -83,13 +115,13 @@ function LogoCore({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
       {/* Inner glow sphere */}
       <mesh>
         <sphereGeometry args={[0.55, 32, 32]} />
-        <meshBasicMaterial color="#53A8FF" transparent opacity={0.12} />
+        <meshBasicMaterial color={P.soft} transparent opacity={0.12} />
       </mesh>
 
       {/* Outer glow ring */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.85, 0.03, 16, 48]} />
-        <meshBasicMaterial color="#00BFFF" transparent opacity={0.25} />
+        <meshBasicMaterial color={P.bright} transparent opacity={0.25} />
       </mesh>
 
       {/* ATIDETO text */}
@@ -103,10 +135,10 @@ function LogoCore({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
       >
         ATIDETO
         <meshPhysicalMaterial
-          color="#7CCBFF"
+          color={P.accent}
           metalness={0.8}
           roughness={0.2}
-          emissive="#2F7DFF"
+          emissive={P.primary}
           emissiveIntensity={0.2}
           transparent
           opacity={0.9}
@@ -118,6 +150,7 @@ function LogoCore({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
 
 // ── Holographic Ring System ──
 function HolographicRings({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
+  const P = useScenePalette();
   const ringData = useMemo(() => [
     { radius: 1.4, tube: 0.015, rotX: 0, rotY: 0, rotZ: 0, speed: 0.2, dir: 1, opacity: 0.2 },
     { radius: 1.8, tube: 0.012, rotX: 0.4, rotY: 0, rotZ: 0.2, speed: -0.15, dir: -1, opacity: 0.15 },
@@ -161,7 +194,7 @@ function HolographicRings({ mouseX, mouseY }: { mouseX: number; mouseY: number }
           >
             <torusGeometry args={[data.radius, data.tube, 32, 80]} />
             <meshBasicMaterial
-              color="#00BFFF"
+              color={P.bright}
               transparent
               opacity={data.opacity}
             />
@@ -188,7 +221,7 @@ function HolographicRings({ mouseX, mouseY }: { mouseX: number; mouseY: number }
                 >
                   <planeGeometry args={[tickWidth, tickLen]} />
                   <meshBasicMaterial
-                    color={j % 6 === 0 ? '#7CCBFF' : '#00BFFF'}
+                    color={j % 6 === 0 ? P.accent : P.bright}
                     transparent
                     opacity={j % 6 === 0 ? 0.6 : 0.25}
                   />
@@ -207,6 +240,7 @@ function HolographicPlatform() {
   const platformRef = useRef<THREE.Group>(null);
   const pulseRingRef = useRef<THREE.Mesh>(null);
   const scanRef = useRef<THREE.Mesh>(null);
+  const P = useScenePalette();
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
@@ -226,7 +260,7 @@ function HolographicPlatform() {
       {/* Base glow */}
       <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.8, 3.0, 64]} />
-        <meshBasicMaterial color="#2F7DFF" transparent opacity={0.04} side={THREE.DoubleSide} />
+        <meshBasicMaterial color={P.primary} transparent opacity={0.04} side={THREE.DoubleSide} />
       </mesh>
 
       {/* Concentric rings */}
@@ -234,7 +268,7 @@ function HolographicPlatform() {
         <mesh key={i} position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[radius - 0.01, radius + 0.01, 80]} />
           <meshBasicMaterial
-            color="#00BFFF"
+            color={P.bright}
             transparent
             opacity={0.12 - i * 0.015}
             side={THREE.DoubleSide}
@@ -245,19 +279,19 @@ function HolographicPlatform() {
       {/* Radial scan line */}
       <mesh ref={scanRef} position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[4, 0.03]} />
-        <meshBasicMaterial color="#7CCBFF" transparent opacity={0.3} />
+        <meshBasicMaterial color={P.accent} transparent opacity={0.3} />
       </mesh>
 
       {/* Center glow */}
       <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.15, 24]} />
-        <meshBasicMaterial color="#00BFFF" transparent opacity={0.4} />
+        <meshBasicMaterial color={P.bright} transparent opacity={0.4} />
       </mesh>
 
       {/* Pulse ring */}
       <mesh ref={pulseRingRef} position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.2, 0.35, 48]} />
-        <meshBasicMaterial color="#53A8FF" transparent opacity={0.3} />
+        <meshBasicMaterial color={P.soft} transparent opacity={0.3} />
       </mesh>
     </group>
   );
@@ -271,6 +305,7 @@ function ConnectionLines({
   hoveredCard: number | null;
   pulseTrigger: number;
 }) {
+  const P = useScenePalette();
   const curves = useMemo(() => {
     return CARD_POSITIONS_3D.map((pos) => {
       const midX = pos.x * 0.5;
@@ -327,7 +362,7 @@ function ConnectionLines({
             <mesh>
               <tubeGeometry args={[curve, 32, lineWidth, 8, false]} />
               <meshBasicMaterial
-                color="#00BFFF"
+                color={P.bright}
                 transparent
                 opacity={lineOpacity}
               />
@@ -337,7 +372,7 @@ function ConnectionLines({
             <mesh>
               <tubeGeometry args={[curve, 32, lineWidth * 2, 8, false]} />
               <meshBasicMaterial
-                color="#2F7DFF"
+                color={P.primary}
                 transparent
                 opacity={lineOpacity * 0.5}
               />
@@ -348,13 +383,13 @@ function ConnectionLines({
               ref={(el) => { particlesRef.current[i] = el!; }}
             >
               <sphereGeometry args={[isHovered ? 0.05 : 0.035, 8, 8]} />
-              <meshBasicMaterial color="#7CCBFF" transparent opacity={0.9} />
+              <meshBasicMaterial color={P.accent} transparent opacity={0.9} />
             </mesh>
 
             {/* Endpoint glow */}
             <mesh position={[curve.v2.x, curve.v2.y, curve.v2.z]}>
               <sphereGeometry args={[isHovered ? 0.06 : 0.04, 12, 12]} />
-              <meshBasicMaterial color="#00BFFF" transparent opacity={isHovered ? 0.6 : 0.25} />
+              <meshBasicMaterial color={P.bright} transparent opacity={isHovered ? 0.6 : 0.25} />
             </mesh>
           </group>
         );
@@ -367,6 +402,7 @@ function ConnectionLines({
 function ParticleField() {
   const count = 400;
   const pointsRef = useRef<THREE.Points>(null);
+  const P = useScenePalette();
 
   const [positions, speeds, phases, radii, orbits] = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -448,10 +484,10 @@ function ParticleField() {
       </bufferGeometry>
       <pointsMaterial
         size={0.025}
-        color="#53A8FF"
+        color={P.soft}
         transparent
-        opacity={0.6}
-        blending={THREE.AdditiveBlending}
+        opacity={P.particleOpacity}
+        blending={P.additive ? THREE.AdditiveBlending : THREE.NormalBlending}
         depthWrite={false}
         sizeAttenuation
       />
@@ -464,6 +500,7 @@ function EnergyPulse({ trigger }: { trigger: number }) {
   const ringRef = useRef<THREE.Mesh>(null);
   const scaleRef = useRef(0);
   const opacityRef = useRef(0);
+  const P = useScenePalette();
 
   useFrame((state, delta) => {
     if (!ringRef.current) return;
@@ -491,7 +528,7 @@ function EnergyPulse({ trigger }: { trigger: number }) {
   return (
     <mesh ref={ringRef} position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       <ringGeometry args={[0.1, 0.4, 48]} />
-      <meshBasicMaterial color="#00BFFF" transparent opacity={0} side={THREE.DoubleSide} />
+      <meshBasicMaterial color={P.bright} transparent opacity={0} side={THREE.DoubleSide} />
     </mesh>
   );
 }
@@ -499,6 +536,7 @@ function EnergyPulse({ trigger }: { trigger: number }) {
 // ── Wireframe Terrain ──
 function WireframeTerrain() {
   const meshRef = useRef<THREE.Mesh>(null);
+  const P = useScenePalette();
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -526,7 +564,7 @@ function WireframeTerrain() {
       <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[14, 4, 48, 24]} />
         <meshBasicMaterial
-          color="#2F7DFF"
+          color={P.primary}
           wireframe
           transparent
           opacity={0.12}
@@ -537,7 +575,7 @@ function WireframeTerrain() {
       <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[14, 4, 32, 16]} />
         <meshBasicMaterial
-          color="#00BFFF"
+          color={P.bright}
           wireframe
           transparent
           opacity={0.05}
@@ -557,6 +595,7 @@ function SceneContent({
 }) {
   const { mouse } = useThree();
   const smoothMouse = useRef({ x: 0, y: 0 });
+  const P = useScenePalette();
 
   useFrame(() => {
     smoothMouse.current.x = THREE.MathUtils.lerp(
@@ -589,7 +628,7 @@ function SceneContent({
           mipmapBlur
         />
       </EffectComposer>
-      <fog attach="fog" args={['#050505', 6, 15]} />
+      <fog attach="fog" args={[P.fog, 6, 15]} />
     </>
   );
 }

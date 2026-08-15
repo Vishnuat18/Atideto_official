@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 
 export default function CrystallineGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -61,10 +64,10 @@ export default function CrystallineGrid() {
       time += 0.025;
       
       // Deep space / dark liquid glass background
-      ctx.fillStyle = '#030308';
+      ctx.fillStyle = isDark ? '#030308' : '#F8FAFC';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.globalCompositeOperation = 'screen';
+      ctx.globalCompositeOperation = isDark ? 'screen' : 'source-over';
       
       // Manage explosions
       for (let i = explosions.length - 1; i >= 0; i--) {
@@ -171,9 +174,15 @@ export default function CrystallineGrid() {
       }
       // Single stroke for massive performance boost
       const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, 'rgba(0, 93, 255, 0.05)');
-      grad.addColorStop(0.5, 'rgba(46, 168, 255, 0.25)');
-      grad.addColorStop(1, 'rgba(0, 20, 50, 0.05)');
+      if (isDark) {
+        grad.addColorStop(0, 'rgba(0, 93, 255, 0.05)');
+        grad.addColorStop(0.5, 'rgba(46, 168, 255, 0.25)');
+        grad.addColorStop(1, 'rgba(0, 20, 50, 0.05)');
+      } else {
+        grad.addColorStop(0, 'rgba(47, 47, 228, 0.06)');
+        grad.addColorStop(0.5, 'rgba(99, 102, 241, 0.28)');
+        grad.addColorStop(1, 'rgba(47, 47, 228, 0.04)');
+      }
       ctx.strokeStyle = grad;
       ctx.stroke();
       
@@ -186,7 +195,9 @@ export default function CrystallineGrid() {
           const depthAlpha = Math.max(0, 1 - p.z / 3000);
           const heightGlow = Math.max(0, -p.rawY / 150); // Glow more when pushed up by waves/explosions
           
-          ctx.fillStyle = `rgba(46, 168, 255, ${(0.3 + heightGlow) * depthAlpha})`;
+          ctx.fillStyle = isDark
+            ? `rgba(46, 168, 255, ${(0.3 + heightGlow) * depthAlpha})`
+            : `rgba(47, 47, 228, ${(0.3 + heightGlow) * depthAlpha})`;
           ctx.beginPath();
           ctx.arc(p.x, p.y, (1 + heightGlow * 2) * p.scale, 0, Math.PI * 2);
           ctx.fill();
@@ -206,14 +217,18 @@ export default function CrystallineGrid() {
         ctx.beginPath();
         // Approximate oval projection
         ctx.ellipse(px, py, radius * scale, radius * scale * 0.5, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(95, 212, 255, ${alpha * 0.6})`;
+        ctx.strokeStyle = isDark
+          ? `rgba(95, 212, 255, ${alpha * 0.6})`
+          : `rgba(47, 47, 228, ${alpha * 0.6})`;
         ctx.lineWidth = 2 * scale;
         ctx.stroke();
         
         // Secondary inner ripple
         ctx.beginPath();
         ctx.ellipse(px, py, radius * scale * 0.8, radius * scale * 0.4, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(0, 93, 255, ${alpha * 0.4})`;
+        ctx.strokeStyle = isDark
+          ? `rgba(0, 93, 255, ${alpha * 0.4})`
+          : `rgba(99, 102, 241, ${alpha * 0.4})`;
         ctx.stroke();
       }
       
@@ -228,8 +243,10 @@ export default function CrystallineGrid() {
         
         const depthAlpha = Math.max(0, 1 - p1.z / 3000);
         
-        ctx.fillStyle = `rgba(255, 255, 255, ${depthAlpha})`;
-        ctx.shadowColor = '#5FD4FF';
+        ctx.fillStyle = isDark
+          ? `rgba(255, 255, 255, ${depthAlpha})`
+          : `rgba(47, 47, 228, ${depthAlpha})`;
+        ctx.shadowColor = isDark ? '#5FD4FF' : '#6366F1';
         ctx.shadowBlur = 15 * pScale;
         ctx.beginPath();
         ctx.arc(px, py, 2.5 * pScale, 0, Math.PI * 2);
@@ -248,7 +265,7 @@ export default function CrystallineGrid() {
       // window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [resolvedTheme]);
 
   // pointer-events-auto removed since hover is disabled
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0 pointer-events-none" />;

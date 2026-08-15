@@ -35,7 +35,7 @@ function CountUpNumber({ end, suffix = '' }: { end: number; suffix?: string }) {
   }, [started, end]);
 
   return (
-    <div ref={ref} className="text-4xl lg:text-5xl font-bold text-white" >
+    <div ref={ref} className="text-4xl lg:text-5xl font-bold text-[#0F172A]" >
       {count.toLocaleString()}{suffix}
     </div>
   );
@@ -47,12 +47,12 @@ export default function StatsSection() {
       <div
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, rgba(26,25,83,0.4) 0%, rgba(47,47,228,0.05) 100%)'}}
+          background: 'linear-gradient(135deg, rgba(238,242,255,0.9) 0%, rgba(47,47,228,0.04) 100%)'}}
       />
       <div className="absolute inset-0 grid-bg opacity-30" />
 
       <div className="relative max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {STATS.map((stat, i) => (
             <div
               key={stat.label}
@@ -60,7 +60,7 @@ export default function StatsSection() {
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               <CountUpNumber end={parseInt(stat.value)} suffix={stat.suffix} />
-              <p className="text-[#AFAFAF] mt-2 text-sm font-medium">{stat.label}</p>
+              <p className="text-[#475569] mt-2 text-sm font-medium">{stat.label}</p>
               <div className="mt-3 mx-auto w-8 h-0.5 bg-[#2F2FE4] rounded-full" />
             </div>
           ))}

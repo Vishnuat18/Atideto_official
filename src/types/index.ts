@@ -6,6 +6,7 @@ export interface Service {
   color?: string;
   features?: string[];
   image?: string;
+  imageLight?: string;
 }
 
 export interface Course {

@@ -51,18 +51,18 @@ export default function HorizonBackground() {
     const draw = () => {
       time += 0.015;
 
-      // Background gradient (Deep dark futuristic sky)
+      // Background gradient (Deep light futuristic sky)
       const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-      bgGrad.addColorStop(0, '#010105');
-      bgGrad.addColorStop(0.4, '#04081c');
-      bgGrad.addColorStop(1, '#010105');
+      bgGrad.addColorStop(0, '#F8FAFC');
+      bgGrad.addColorStop(0.4, '#E0E7FF');
+      bgGrad.addColorStop(1, '#F8FAFC');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      ctx.globalCompositeOperation = 'screen';
+      ctx.globalCompositeOperation = 'source-over';
 
       // Draw Stars / Floating glowing particles
-      ctx.fillStyle = '#6ab8ff';
+      ctx.fillStyle = '#6366F1';
       for (let p of floatingParticles) {
         p.x -= p.speed;
         if (p.x < 0) {
@@ -96,7 +96,7 @@ export default function HorizonBackground() {
         ctx.beginPath();
         ctx.moveTo(sp.x, sp.y);
         ctx.lineTo(sp.x + sp.speed * 4, sp.y - sp.speed * 0.8);
-        ctx.strokeStyle = `rgba(150, 210, 255, ${sp.alpha})`;
+        ctx.strokeStyle = `rgba(99, 102, 241, ${sp.alpha})`;
         ctx.lineWidth = sp.size;
         ctx.stroke();
 
@@ -151,36 +151,34 @@ export default function HorizonBackground() {
         projected.push(row);
       }
       
-      // Render holographic grids
+      // Grid lines disabled per design requirement
+      /*
       ctx.lineWidth = 1;
-      
       for (let r = 0; r < rows - 1; r++) {
         for (let c = 0; c < cols - 1; c++) {
            const p1 = projected[r][c];
            const p2 = projected[r][c+1];
            const p3 = projected[r+1][c];
-           
-           if (p1.z < 10) continue; // Behind camera
-           
+           if (p1.z < 10) continue;
            ctx.beginPath();
            ctx.moveTo(p1.x, p1.y);
            ctx.lineTo(p2.x, p2.y);
            ctx.moveTo(p1.x, p1.y);
            ctx.lineTo(p3.x, p3.y);
-           
-           ctx.strokeStyle = `rgba(0, 140, 255, ${p1.alpha * 0.3})`;
+           ctx.strokeStyle = `rgba(47, 47, 228, ${p1.alpha * 0.3})`;
            ctx.stroke();
         }
       }
+      */
 
       ctx.globalCompositeOperation = 'source-over';
 
       // Soft moving fog (gradient layer over the horizon)
       const fogGrad = ctx.createLinearGradient(0, horizonY - 120, 0, horizonY + 200);
-      fogGrad.addColorStop(0, 'rgba(2, 2, 8, 0)');
-      fogGrad.addColorStop(0.3, 'rgba(5, 15, 40, 0.7)'); 
-      fogGrad.addColorStop(0.5, 'rgba(1, 4, 15, 0.9)'); 
-      fogGrad.addColorStop(1, 'rgba(2, 2, 8, 0)');
+      fogGrad.addColorStop(0, 'rgba(248, 250, 252, 0)');
+      fogGrad.addColorStop(0.3, 'rgba(224, 231, 255, 0.7)'); 
+      fogGrad.addColorStop(0.5, 'rgba(248, 250, 252, 0.9)'); 
+      fogGrad.addColorStop(1, 'rgba(248, 250, 252, 0)');
       ctx.fillStyle = fogGrad;
       ctx.fillRect(0, horizonY - 120, width, 320);
       

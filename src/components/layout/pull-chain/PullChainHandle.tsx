@@ -21,7 +21,7 @@ export default function PullChainHandle({
       <img 
         src={atidetoLogo} 
         alt="Pull Menu" 
-        className="w-12 h-12 -mt-1 object-contain select-none pointer-events-none drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+        className="w-12 h-12 -mt-1 object-contain select-none pointer-events-none drop-shadow-[0_2px_6px_rgba(15,23,42,0.15)]"
         draggable="false"
       />
     </motion.div>
