@@ -11,7 +11,7 @@ import {
   User, LayoutDashboard, LogOut, Sun, Moon, Sparkles,
   ArrowLeft, X
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { applyThemeTransition, syncThemeMeta } from '@/lib/smoothTheme';
 
 interface NavItemConfig {
@@ -124,13 +124,13 @@ export default function Navigation() {
   };
 
   // Outer-Space Dimension Panel Framer Motion Variants (Enters from right: translateX 130% -> 0%)
-  const panelVariants = {
+  const panelVariants: Variants = {
     closed: {
       x: '130%',
       filter: 'blur(6px)',
       opacity: 0,
       transition: {
-        x: { type: 'spring', stiffness: 140, damping: 22, mass: 0.8 },
+        x: { type: 'spring' as const, stiffness: 140, damping: 22, mass: 0.8 },
         filter: { duration: 0.15 },
         opacity: { duration: 0.2 }
       }
@@ -140,14 +140,14 @@ export default function Navigation() {
       filter: 'blur(0px)',
       opacity: 1,
       transition: {
-        x: { type: 'spring', stiffness: 140, damping: 22, mass: 0.8 },
+        x: { type: 'spring' as const, stiffness: 140, damping: 22, mass: 0.8 },
         filter: { duration: 0.2, delay: 0.05 },
         opacity: { duration: 0.2 }
       }
     }
   };
 
-  const listVariants = {
+  const listVariants: Variants = {
     closed: { opacity: 0 },
     open: {
       opacity: 1,
@@ -158,12 +158,12 @@ export default function Navigation() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     closed: { opacity: 0, x: 20 },
     open: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] as const }
     }
   };
 
