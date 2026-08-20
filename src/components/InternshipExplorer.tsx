@@ -12,7 +12,7 @@ import atidetoLogo from '@/assets/atideto-logo.png';
 // Backend API base URL. In development Vite proxies /api → localhost:5000, so an
 // empty string works. In production set VITE_API_URL to the deployed API origin,
 // e.g. https://api.atideto.in (no trailing slash).
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || 'https://atideto-backend-system.vercel.app';
 
 // Helper date functions
 function getFormattedToday(): string {

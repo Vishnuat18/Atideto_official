@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, ShieldX, ShieldQuestion, Loader2, Award, CheckCircle2 } from 'lucide-react';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || 'https://atideto-backend-system.vercel.app';
 
 interface VerifyResult {
   certificateId: string;
@@ -89,7 +89,7 @@ export default function VerifyCertificate() {
         ? `This certificate is authentic and officially issued by Atideto Technologies to ${cert?.studentName || 'the student'}.`
         : 'No certificate was found for this ID. Please check the certificate number and try again.';
 
-    const qrUrl = `${window.location.origin}/verify?id=${encodeURIComponent(cert?.certificateId || '')}`;
+    const qrUrl = `https://atideto-certificate-system.vercel.app/studentverify?id=${encodeURIComponent(cert?.certificateId || '')}`;
     const qrImgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=6&data=${encodeURIComponent(qrUrl)}`;
 
     return (

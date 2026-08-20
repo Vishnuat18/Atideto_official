@@ -6,7 +6,7 @@
  * `atideto_csrf` cookie in the `x-csrf-token` header.
  */
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || 'https://atideto-backend-system.vercel.app';
 
 const CSRF_COOKIE = 'atideto_csrf';
 
