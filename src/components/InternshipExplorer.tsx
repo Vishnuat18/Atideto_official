@@ -8,6 +8,8 @@ import {
 import { INTERNSHIP_PROGRAMS, INTERNSHIP_CATEGORIES } from '@/constants';
 import { Link } from 'react-router-dom';
 import atidetoLogo from '@/assets/atideto-logo.png';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Backend API base URL. In development Vite proxies /api → localhost:5000, so an
 // empty string works. In production set VITE_API_URL to the deployed API origin,
@@ -128,11 +130,14 @@ export default function InternshipExplorer() {
       selectedCourse: applyForm.selectedCourse || activeProgram.title,
       startDate: applyForm.startDate,
       endDate: applyForm.endDate || calculateEndDate(applyForm.startDate, applyForm.duration),
-      duration: applyForm.duration,
+      duration: String(applyForm.duration),
       reportIncluded: applyForm.reportIncluded,
       paymentOption: applyForm.paymentOption,
     };
 
+    let submittedSuccessfully = false;
+
+    // 1. Try Backend API first
     try {
       const res = await fetch(`${API_BASE_URL}/api/internships/apply`, {
         method: 'POST',
@@ -145,15 +150,52 @@ export default function InternshipExplorer() {
       if (res.ok && data.success) {
         setSubmittedDocId(data.data.applicationId);
         setApplyStep(4);
+        submittedSuccessfully = true;
       } else {
-        setSubmitError(data.message || 'Unable to submit application. Please try again.');
+        console.warn('API returned non-success response:', data);
+        if (data.message) {
+          setSubmitError(data.message);
+        }
       }
     } catch (err) {
-      console.warn('Application submission error:', err);
-      setSubmitError('Network error. Please check your connection and try again.');
-    } finally {
-      setIsSubmitting(false);
+      console.warn('Backend API submission fetch failed, switching to Firestore fallback:', err);
     }
+
+    // 2. Fallback to Firebase Firestore if Backend API call was unreachable or failed
+    if (!submittedSuccessfully) {
+      try {
+        const fallbackAppId = `ATD-APP-${Date.now().toString().slice(-6)}`;
+        await addDoc(collection(db, 'internship_applications'), {
+          ...payload,
+          applicationId: fallbackAppId,
+          createdAt: serverTimestamp(),
+          status: 'RECEIVED',
+        });
+
+        // Also queue email notification if mail collection is present
+        try {
+          await addDoc(collection(db, 'mail'), {
+            to: ['kiranbalasopatil33@gmail.com', 'vishnurajan24766@gmail.com', 'yogeshbrf2006@gmail.com'],
+            message: {
+              subject: `New Internship Application: ${payload.name} - ${payload.selectedCourse}`,
+              text: `New application received:\nName: ${payload.name}\nEmail: ${payload.email}\nPhone: ${payload.phone}\nCollege: ${payload.college}\nCourse: ${payload.selectedCourse}\nApplication ID: ${fallbackAppId}`,
+            },
+          });
+        } catch (emailErr) {
+          console.warn('Email queue fallback failed:', emailErr);
+        }
+
+        setSubmittedDocId(fallbackAppId);
+        setSubmitError(null);
+        setApplyStep(4);
+        submittedSuccessfully = true;
+      } catch (firestoreErr) {
+        console.error('Firestore fallback error:', firestoreErr);
+        setSubmitError('Unable to submit application. Please check your network connection and try again.');
+      }
+    }
+
+    setIsSubmitting(false);
   };
 
   return (

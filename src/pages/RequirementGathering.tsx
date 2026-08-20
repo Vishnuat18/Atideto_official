@@ -3,6 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTheme } from 'next-themes';
 import { SERVICES } from '@/constants';
 import SEO from '@/components/seo/SEO';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Loader2 } from 'lucide-react';
 
 export default function RequirementGathering() {
   const [searchParams] = useSearchParams();
@@ -18,6 +21,8 @@ export default function RequirementGathering() {
   const optionBg = isDark ? '#0A0F1C' : '#fff';
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [form, setForm] = useState({
     name: '',
     company: '',
@@ -32,9 +37,47 @@ export default function RequirementGathering() {
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const generatedId = `ATD-REQ-${Date.now().toString().slice(-6)}`;
+      await addDoc(collection(db, 'project_inquiries'), {
+        requestId: generatedId,
+        createdAt: serverTimestamp(),
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        company: form.company || '',
+        services: form.service ? [form.service] : [],
+        description: form.description || form.features || '',
+        budget: form.budget || '',
+        timeline: form.timeline || '',
+        source: 'Requirement Gathering Form',
+        status: 'new',
+      });
+
+      try {
+        await addDoc(collection(db, 'mail'), {
+          to: ['kiranbalasopatil33@gmail.com', 'vishnurajan24766@gmail.com', 'yogeshbrf2006@gmail.com'],
+          message: {
+            subject: `New Project Requirement: ${form.name} (${form.service || 'Custom'})`,
+            text: `New requirement submitted:\nName: ${form.name}\nEmail: ${form.email}\nPhone: ${form.phone}\nCompany: ${form.company}\nService: ${form.service}\nBudget: ${form.budget}\nTimeline: ${form.timeline}\nDescription: ${form.description}\nRequest ID: ${generatedId}`,
+          },
+        });
+      } catch (mailErr) {
+        console.warn('Mail queue warning:', mailErr);
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Requirement submission error:', err);
+      setSubmitError('Failed to submit requirements. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -259,9 +302,26 @@ export default function RequirementGathering() {
                 </div>
               </div>
 
+              {submitError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 text-xs text-red-600">
+                  {submitError}
+                </div>
+              )}
+
               {/* Submit */}
-              <button type="submit" className="btn-primary w-full py-4 text-base animate-pulseGlow">
-                🚀 Submit Requirements
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="btn-primary w-full py-4 text-base flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting Requirements...
+                  </>
+                ) : (
+                  '🚀 Submit Requirements'
+                )}
               </button>
             </div>
           </form>
