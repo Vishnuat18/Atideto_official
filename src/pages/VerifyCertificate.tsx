@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { ShieldCheck, ShieldX, ShieldQuestion, Loader2, Award, CheckCircle2 } from 'lucide-react';
+import SEO from '@/components/seo/SEO';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || 'https://atideto-backend-system.vercel.app';
 
@@ -147,6 +148,12 @@ export default function VerifyCertificate() {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 py-16 bg-slate-50">
+      <SEO 
+        title="Verify Certificate | ATIDETO Official Credential Verification"
+        description="Verify authentic completion certificates and student internship credentials issued by ATIDETO Technologies."
+        url={`https://www.atideto.in/verify/${encodeURIComponent(certificateId || '')}`}
+        noindex={true}
+      />
       <div className="flex items-center gap-3 mb-8">
         <Award className="w-8 h-8 text-[#2F2FE4]" />
         <div>

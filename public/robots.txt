@@ -1,12 +1,23 @@
 User-agent: *
 Allow: /
+
+# Protected private and administrative endpoints
 Disallow: /dashboard
 Disallow: /profile
 Disallow: /api/
 Disallow: /login
-Disallow: /*?*
+Disallow: /admin/
+Disallow: /admin
 
-# Allow search bots to crawl important assets
+# Allow search bots to crawl all rendering assets
 Allow: /assets/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.webp$
+Allow: /*.svg$
 
-Sitemap: https://atideto.in/sitemap.xml
+# Official XML Sitemap
+Sitemap: https://www.atideto.in/sitemap.xml

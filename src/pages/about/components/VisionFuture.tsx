@@ -41,7 +41,7 @@ export default function VisionFuture() {
                   to="/client-connect"
                   className="group inline-flex items-center gap-2 rounded-full bg-[var(--about-primary)] px-7 py-3.5 text-sm font-bold text-white shadow-[var(--about-shadow)] transition-colors hover:bg-[var(--about-cyan)]"
                 >
-                  Meet ATIDETO
+                  Contact ATIDETO Technologies
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </motion.div>

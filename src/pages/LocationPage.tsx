@@ -16,9 +16,9 @@ export default function LocationPage() {
   const { name, heroTitle, heroDescription, localServices, nearbyColleges, seoKeywords } = locationData;
 
   const breadcrumbs = [
-    { name: "Home", url: "https://atideto.in/" },
-    { name: "Locations", url: "https://atideto.in/locations" },
-    { name, url: `https://atideto.in/locations/${city}` }
+    { name: "Home", url: "https://www.atideto.in/" },
+    { name: "Locations", url: "https://www.atideto.in/locations" },
+    { name, url: `https://www.atideto.in/locations/${city}` }
   ];
 
   const faqs = [
@@ -42,7 +42,7 @@ export default function LocationPage() {
         title={generateMetaTitle("Software & Tech Internships", name)}
         description={generateMetaDescription("software development and AI", seoKeywords)}
         keywords={seoKeywords}
-        url={`https://atideto.in/locations/${city}`}
+        url={`https://www.atideto.in/locations/${city}`}
         schema={schema}
       />
       

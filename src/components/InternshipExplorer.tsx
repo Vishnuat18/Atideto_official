@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Award, Clock, Sparkles, Users, 
@@ -27,6 +27,246 @@ function calculateEndDate(startIsoStr: string, daysStr: string): string {
   const days = parseInt(daysStr, 10) || 30;
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
+}
+
+// Dropdown Option Type
+interface CustomSelectOption {
+  value: string;
+  label: string;
+  sublabel?: string;
+}
+
+const DURATION_OPTIONS: CustomSelectOption[] = [
+  { value: '7', label: '7 Days (₹500)' },
+  { value: '15', label: '15 Days (₹1,000)' },
+  { value: '30', label: '1 Month / 30 Days (₹2,000)' },
+  { value: '60', label: '2 Months (₹4,000)' },
+  { value: '90', label: '3 Months (₹6,000)' },
+  { value: '180', label: '6 Months (₹12,000)' },
+];
+
+const GRAD_YEAR_OPTIONS: CustomSelectOption[] = [
+  { value: '2024', label: '2024' },
+  { value: '2025', label: '2025' },
+  { value: '2026', label: '2026' },
+  { value: '2027', label: '2027' },
+  { value: '2028', label: '2028' },
+  { value: '2029', label: '2029' },
+];
+
+const DEGREE_OPTIONS: CustomSelectOption[] = [
+  { value: 'B.Tech', label: 'B.Tech' },
+  { value: 'B.E', label: 'B.E' },
+  { value: 'B.Sc', label: 'B.Sc' },
+  { value: 'BCA', label: 'BCA' },
+  { value: 'M.Tech', label: 'M.Tech' },
+  { value: 'MCA', label: 'MCA' },
+  { value: 'Other', label: 'Other' },
+];
+
+const COUNTRY_OPTIONS: CustomSelectOption[] = [
+  { value: '+91', label: '+91 (IN)' },
+  { value: '+1', label: '+1 (US)' },
+  { value: '+44', label: '+44 (UK)' },
+  { value: '+971', label: '+971 (UAE)' },
+];
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  className,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: CustomSelectOption[];
+  placeholder?: string;
+  className?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative w-full" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left text-base font-semibold transition-all duration-200 cursor-pointer ${
+          isOpen
+            ? 'border-[#2F2FE4] ring-2 ring-[#2F2FE4]/20 bg-[#F8FAFC] dark:bg-[#0B0F19] text-[#0F172A] dark:text-white'
+            : 'border-[#E2E8F0] dark:border-[#1E293B] bg-[#F8FAFC] dark:bg-[#0B0F19] text-[#0F172A] dark:text-white hover:border-[#CBD5E1] dark:hover:border-[#334155]'
+        } ${className || ''}`}
+      >
+        <span className="truncate">
+          {selectedOption ? selectedOption.label : placeholder || 'Select option...'}
+        </span>
+        <ChevronDown
+          className={`w-4 h-4 ml-2 shrink-0 text-[#64748B] transition-transform duration-200 ${
+            isOpen ? 'rotate-180 text-[#2F2FE4]' : ''
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute z-50 left-0 right-0 top-[calc(100%+6px)] bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#2F2FE4]/40 rounded-2xl shadow-2xl overflow-hidden py-1.5 max-h-64 overflow-y-auto"
+            style={{
+              boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
+            }}
+          >
+            {options.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 flex items-center justify-between text-left text-sm transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#2F2FE4] text-white font-bold'
+                      : 'text-[#0F172A] dark:text-[#F1F5F9] hover:bg-[#2F2FE4]/10 dark:hover:bg-[#1E293B] hover:text-[#2F2FE4] dark:hover:text-white'
+                  }`}
+                >
+                  <div className="flex flex-col min-w-0 pr-2">
+                    <span className="truncate">{opt.label}</span>
+                    {opt.sublabel && (
+                      <span
+                        className={`text-[11px] truncate ${
+                          isSelected ? 'text-white/80' : 'text-[#64748B] dark:text-[#94A3B8]'
+                        }`}
+                      >
+                        {opt.sublabel}
+                      </span>
+                    )}
+                  </div>
+                  {isSelected && <Check className="w-4 h-4 text-white shrink-0 ml-2" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function CountryCodeSelect({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: CustomSelectOption[];
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative shrink-0" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between px-3 py-3 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer bg-[#F8FAFC] dark:bg-[#0B0F19] text-[#0F172A] dark:text-white ${
+          isOpen
+            ? 'border-[#2F2FE4] ring-2 ring-[#2F2FE4]/20'
+            : 'border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#CBD5E1] dark:hover:border-[#334155]'
+        }`}
+      >
+        <span>{selectedOption ? selectedOption.label : value}</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 ml-1.5 text-[#64748B] transition-transform duration-200 ${
+            isOpen ? 'rotate-180 text-[#2F2FE4]' : ''
+          }`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 left-0 top-[calc(100%+6px)] min-w-[140px] bg-white dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#2F2FE4]/40 rounded-xl shadow-2xl overflow-hidden py-1"
+            style={{
+              boxShadow: '0 20px 40px -10px rgba(0,0,0,0.6)',
+            }}
+          >
+            {options.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full px-3 py-2 flex items-center justify-between text-left text-xs transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#2F2FE4] text-white font-bold'
+                      : 'text-[#0F172A] dark:text-[#F1F5F9] hover:bg-[#2F2FE4]/10 dark:hover:bg-[#1E293B] hover:text-[#2F2FE4] dark:hover:text-white'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0 ml-1.5" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 // --- Subcomponent for Visual ---
@@ -554,19 +794,11 @@ export default function InternshipExplorer() {
                         <div className="flex flex-col space-y-1.5">
                           <label className="text-xs font-bold uppercase tracking-wider text-[#334155]">Phone Number (WhatsApp updates)</label>
                           <div className="flex gap-2">
-                            <div className="relative shrink-0">
-                              <select
-                                value={applyForm.countryCode}
-                                onChange={(e) => setApplyForm({...applyForm, countryCode: e.target.value})}
-                                className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-3 pr-8 py-3 text-[#0F172A] text-base focus:outline-none focus:border-[#2F2FE4] cursor-pointer appearance-none"
-                              >
-                                <option value="+91" className="bg-white text-[#0F172A]">+91 (IN)</option>
-                                <option value="+1" className="bg-white text-[#0F172A]">+1 (US)</option>
-                                <option value="+44" className="bg-white text-[#0F172A]">+44 (UK)</option>
-                                <option value="+971" className="bg-white text-[#0F172A]">+971 (UAE)</option>
-                              </select>
-                              <ChevronDown className="w-4 h-4 text-[#64748B] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            </div>
+                            <CountryCodeSelect
+                              value={applyForm.countryCode}
+                              onChange={(val) => setApplyForm({...applyForm, countryCode: val})}
+                              options={COUNTRY_OPTIONS}
+                            />
                             <input 
                               type="tel" 
                               placeholder="98765 43210" 
@@ -648,45 +880,24 @@ export default function InternshipExplorer() {
                           />
                         </div>
 
-                        {/* Year of Graduation with Aligned Dropdown Arrow */}
+                        {/* Year of Graduation */}
                         <div className="flex flex-col space-y-1.5">
                           <label className="text-xs font-bold uppercase tracking-wider text-[#334155]">Year of Graduation</label>
-                          <div className="relative">
-                            <select
-                              value={applyForm.graduationYear}
-                              onChange={(e) => setApplyForm({...applyForm, graduationYear: e.target.value})}
-                              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#2F2FE4] rounded-xl pl-4 pr-10 py-3 text-[#0F172A] text-base focus:outline-none cursor-pointer appearance-none"
-                            >
-                              <option value="2024" className="bg-white text-[#0F172A]">2024</option>
-                              <option value="2025" className="bg-white text-[#0F172A]">2025</option>
-                              <option value="2026" className="bg-white text-[#0F172A]">2026</option>
-                              <option value="2027" className="bg-white text-[#0F172A]">2027</option>
-                              <option value="2028" className="bg-white text-[#0F172A]">2028</option>
-                              <option value="2029" className="bg-white text-[#0F172A]">2029</option>
-                            </select>
-                            <ChevronDown className="w-4 h-4 text-[#64748B] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                          </div>
+                          <CustomSelect
+                            value={applyForm.graduationYear}
+                            onChange={(val) => setApplyForm({...applyForm, graduationYear: val})}
+                            options={GRAD_YEAR_OPTIONS}
+                          />
                         </div>
 
-                        {/* Degree Name with Aligned Dropdown Arrow */}
+                        {/* Degree Name */}
                         <div className="flex flex-col space-y-1.5">
                           <label className="text-xs font-bold uppercase tracking-wider text-[#334155]">Degree Name</label>
-                          <div className="relative">
-                            <select
-                              value={applyForm.degree}
-                              onChange={(e) => setApplyForm({...applyForm, degree: e.target.value})}
-                              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#2F2FE4] rounded-xl pl-4 pr-10 py-3 text-[#0F172A] text-base focus:outline-none cursor-pointer appearance-none"
-                            >
-                              <option value="B.Tech" className="bg-white text-[#0F172A]">B.Tech</option>
-                              <option value="B.E" className="bg-white text-[#0F172A]">B.E</option>
-                              <option value="B.Sc" className="bg-white text-[#0F172A]">B.Sc</option>
-                              <option value="BCA" className="bg-white text-[#0F172A]">BCA</option>
-                              <option value="M.Tech" className="bg-white text-[#0F172A]">M.Tech</option>
-                              <option value="MCA" className="bg-white text-[#0F172A]">MCA</option>
-                              <option value="Other" className="bg-white text-[#0F172A]">Other</option>
-                            </select>
-                            <ChevronDown className="w-4 h-4 text-[#64748B] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                          </div>
+                          <CustomSelect
+                            value={applyForm.degree}
+                            onChange={(val) => setApplyForm({...applyForm, degree: val})}
+                            options={DEGREE_OPTIONS}
+                          />
                         </div>
 
                         {/* Department / Stream */}
@@ -746,28 +957,22 @@ export default function InternshipExplorer() {
                       </div>
 
                       <div className="space-y-4">
-                        {/* Course Selection (Auto-selected with Aligned Dropdown Arrow) */}
-                        <div className="flex flex-col space-y-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4">
+                        {/* Course Selection */}
+                        <div className="flex flex-col space-y-2 bg-[#F8FAFC] dark:bg-[#0B0F19]/50 border border-[#E2E8F0] dark:border-[#1E293B] rounded-2xl p-4">
                           <div className="flex items-center justify-between">
                             <label className="text-xs font-bold uppercase tracking-wider text-[#2F2FE4]">Selected Course / Domain</label>
                             <span className="text-[11px] bg-[#2F2FE4]/20 text-[#2F2FE4] border border-[#2F2FE4]/40 px-2.5 py-0.5 rounded-full font-semibold">
                               ✓ Auto-selected
                             </span>
                           </div>
-                          <div className="relative">
-                            <select
-                              value={applyForm.selectedCourse || activeProgram.title}
-                              onChange={(e) => setApplyForm({...applyForm, selectedCourse: e.target.value})}
-                              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#2F2FE4] rounded-xl pl-4 pr-10 py-3 text-[#0F172A] font-bold text-base focus:outline-none cursor-pointer appearance-none"
-                            >
-                              {INTERNSHIP_PROGRAMS.map(prog => (
-                                <option key={prog.id} value={prog.title} className="bg-white text-[#0F172A]">
-                                  {prog.title} ({prog.category})
-                                </option>
-                              ))}
-                            </select>
-                            <ChevronDown className="w-4 h-4 text-[#2F2FE4] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                          </div>
+                          <CustomSelect
+                            value={applyForm.selectedCourse || activeProgram.title}
+                            onChange={(val) => setApplyForm({...applyForm, selectedCourse: val})}
+                            options={INTERNSHIP_PROGRAMS.map(prog => ({
+                              value: prog.title,
+                              label: `${prog.title} (${prog.category})`
+                            }))}
+                          />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -786,28 +991,17 @@ export default function InternshipExplorer() {
                             />
                           </div>
 
-                          {/* Duration with Aligned Dropdown Arrow */}
+                          {/* Duration */}
                           <div className="flex flex-col space-y-1.5">
                             <label className="text-xs font-bold uppercase tracking-wider text-[#334155]">Duration</label>
-                            <div className="relative">
-                              <select
-                                value={applyForm.duration}
-                                onChange={(e) => {
-                                  const newDur = e.target.value;
-                                  const newEnd = calculateEndDate(applyForm.startDate, newDur);
-                                  setApplyForm({...applyForm, duration: newDur, endDate: newEnd});
-                                }}
-                                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#2F2FE4] rounded-xl pl-4 pr-10 py-3 text-[#0F172A] text-base focus:outline-none cursor-pointer appearance-none"
-                              >
-                                <option value="7" className="bg-white text-[#0F172A]">7 Days (₹500)</option>
-                                <option value="15" className="bg-white text-[#0F172A]">15 Days (₹1,000)</option>
-                                <option value="30" className="bg-white text-[#0F172A]">1 Month / 30 Days (₹2,000)</option>
-                                <option value="60" className="bg-white text-[#0F172A]">2 Months (₹4,000)</option>
-                                <option value="90" className="bg-white text-[#0F172A]">3 Months (₹6,000)</option>
-                                <option value="180" className="bg-white text-[#0F172A]">6 Months (₹12,000)</option>
-                              </select>
-                              <ChevronDown className="w-4 h-4 text-[#64748B] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                            </div>
+                            <CustomSelect
+                              value={applyForm.duration}
+                              onChange={(val) => {
+                                const newEnd = calculateEndDate(applyForm.startDate, val);
+                                setApplyForm({...applyForm, duration: val, endDate: newEnd});
+                              }}
+                              options={DURATION_OPTIONS}
+                            />
                           </div>
 
                           {/* To Date (End Date) */}
@@ -822,19 +1016,7 @@ export default function InternshipExplorer() {
                           </div>
                         </div>
 
-                        {/* Report Addon */}
-                        <div className="flex items-center gap-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-3.5 mt-2">
-                          <input 
-                            type="checkbox" 
-                            id="reportAddon"
-                            checked={applyForm.reportIncluded}
-                            onChange={(e) => setApplyForm({...applyForm, reportIncluded: e.target.checked})}
-                            className="w-4 h-4 rounded cursor-pointer accent-[#2F2FE4]"
-                          />
-                          <label htmlFor="reportAddon" className="text-xs text-[#334155] cursor-pointer flex-1">
-                            Include Official Project & Internship Documentation Report (+ ₹200)
-                          </label>
-                        </div>
+
                       </div>
 
                       <div className="flex justify-between items-center pt-6 border-t border-[#E2E8F0] mt-6">
@@ -889,33 +1071,7 @@ export default function InternshipExplorer() {
                         </div>
                       </div>
 
-                      {/* Payment Schedule Selector */}
-                      <div className="space-y-2 pt-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-[#334155] block">Select Payment Schedule</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {[
-                            { id: 'Pay Now', title: 'Pay Now', desc: 'Secure early-bird spot & immediate dashboard access.' },
-                            { id: 'Pay Later', title: 'Pay Later', desc: 'Pay upon internship completion before certificate unlock.' }
-                          ].map((opt) => (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              onClick={() => setApplyForm({...applyForm, paymentOption: opt.id})}
-                              className={`p-3.5 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
-                                applyForm.paymentOption === opt.id
-                                  ? 'bg-[#2F2FE4]/15 border-[#2F2FE4] text-[#2F2FE4] shadow-[0_0_15px_rgba(47,47,228,0.12)]'
-                                  : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-bold text-xs text-[#0F172A]">{opt.title}</span>
-                                {applyForm.paymentOption === opt.id && <span className="w-2.5 h-2.5 rounded-full bg-[#2F2FE4]"></span>}
-                              </div>
-                              <p className="text-[11px] text-[#64748B] leading-snug">{opt.desc}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+
 
                       {submitError && (
                         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3.5 flex items-center gap-2.5 text-xs text-red-600 mb-4">
@@ -1039,10 +1195,7 @@ export default function InternshipExplorer() {
                           <span className="text-[#64748B] uppercase font-semibold text-[10px]">Duration</span>
                           <span className="text-[#0F172A] font-medium">{applyForm.startDate} to {applyForm.endDate || calculateEndDate(applyForm.startDate, applyForm.duration)} ({applyForm.duration} Days)</span>
                         </div>
-                        <div className="flex justify-between items-center pb-2 border-b border-[#E2E8F0]">
-                          <span className="text-[#64748B] uppercase font-semibold text-[10px]">Payment Schedule</span>
-                          <span className="text-[#334155] font-medium">{applyForm.paymentOption}</span>
-                        </div>
+
                         <div className="flex justify-between items-center pt-1">
                           <span className="text-[#64748B] uppercase font-semibold text-[10px]">Certificate Status</span>
                           <span className="text-emerald-600 font-bold flex items-center gap-1">

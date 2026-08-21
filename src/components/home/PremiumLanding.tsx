@@ -66,7 +66,7 @@ export default function PremiumLanding() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.42, delay: 0, ease: 'easeOut' }}
             >
-              <Sparkles size={14} /> Digital solutions for ambitious businesses
+              <Sparkles size={14} /> ATIDETO Technologies · Technology &amp; Digital Solutions
             </motion.p>
             <motion.h1
               id="home-title"
@@ -84,7 +84,7 @@ export default function PremiumLanding() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reduceMotion ? 0 : 0.42, delay: 0.12, ease: 'easeOut' }}
             >
-              From websites and mobile apps to AI automation, cloud solutions, and custom software — we turn real business challenges into simple, scalable digital solutions.
+              ATIDETO Technologies is a digital solutions and custom software engineering company based in Salem, Tamil Nadu. From enterprise web and mobile applications to generative AI automation and cloud systems — we engineer high-performance technology to accelerate business growth.
             </motion.p>
             <motion.div
               className="home-actions"

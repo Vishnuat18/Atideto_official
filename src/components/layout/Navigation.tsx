@@ -181,11 +181,11 @@ export default function Navigation() {
         <Link
           to="/"
           className="group flex items-center justify-center rounded-2xl border border-border/60 bg-card/80 px-4 py-2.5 shadow-md backdrop-blur-xl transition-transform duration-200 hover:scale-105 hover:border-primary/40"
-          aria-label="ATIDETO Home"
+          aria-label="ATIDETO Technologies - Official Website Home"
         >
           <img
             src={atidetoLogo}
-            alt="ATIDETO Logo"
+            alt="ATIDETO Technologies Logo"
             className="h-8 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
           />
         </Link>

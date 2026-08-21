@@ -18,13 +18,16 @@ export default defineConfig({
   plugins: [
     react(),
     Sitemap({
-      hostname: 'https://atideto.in',
+      hostname: 'https://www.atideto.in',
       dynamicRoutes: [
-        '/',
         '/services',
         '/academy',
         '/about',
         '/client-connect',
+        '/requirement-gathering',
+        '/locations',
+        '/privacy-policy',
+        '/terms-and-conditions',
         ...[
           "salem", "chennai", "coimbatore", "erode", "namakkal", "dharmapuri", 
           "krishnagiri", "madurai", "trichy", "tiruppur", "karur", "vellore", 

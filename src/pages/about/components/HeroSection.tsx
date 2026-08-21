@@ -25,7 +25,7 @@ export default function HeroSection() {
           {/* Left Content */}
           <div className="flex flex-col">
             <BlurFade delay={0} inView>
-              <span className="about-eyebrow">About Atideto</span>
+              <span className="about-eyebrow">About ATIDETO Technologies</span>
             </BlurFade>
 
             <h1 className="about-hero-title text-[var(--about-text)]">
@@ -54,7 +54,7 @@ export default function HeroSection() {
 
             <BlurFade delay={0.2} inView>
               <p className="about-hero-copy text-[var(--about-muted)]">
-                Atideto is where innovative ideas meet intelligent engineering to create digital solutions that drive impact and empower people to achieve more.
+                ATIDETO Technologies is a technology and digital solutions company headquartered in Salem, Tamil Nadu. We combine innovative ideas with intelligent software engineering to build scalable web, mobile, cloud, and AI solutions that create measurable business impact.
               </p>
             </BlurFade>
 

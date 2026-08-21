@@ -22,10 +22,30 @@ export const generateOrganizationSchema = () => {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "ATIDETO",
-    "url": "https://atideto.in",
-    "logo": "https://atideto.in/assets/atideto-logo.png",
-    "description": "ATIDETO is a premium software company delivering web, mobile, AI, and cloud solutions, alongside a world-class tech academy.",
+    "@id": "https://www.atideto.in/#organization",
+    "name": "ATIDETO Technologies",
+    "alternateName": "ATIDETO",
+    "url": "https://www.atideto.in/",
+    "logo": "https://www.atideto.in/atideto-logo.png",
+    "description": "ATIDETO Technologies is an enterprise technology and software solutions company in Salem, Tamil Nadu, engineering custom software, web applications, mobile apps, AI automation, and cloud systems.",
+    "telephone": "+919087284053",
+    "email": "atideto.in@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Ponnammapet",
+      "addressLocality": "Salem",
+      "addressRegion": "Tamil Nadu",
+      "postalCode": "636001",
+      "addressCountry": "IN"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    ],
     "sameAs": [
       "https://www.linkedin.com/company/atideto",
       "https://github.com/Vishnuat18"
@@ -37,19 +57,36 @@ export const generateLocalBusinessSchema = (city: string = "Salem") => {
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": `ATIDETO ${city}`,
-    "url": "https://atideto.in",
-    "image": "https://atideto.in/assets/home.png",
-    "description": "ATIDETO provides premium software, web development, AI automation, and professional IT training.",
-    "telephone": "+916379000598",
-    "email": "mailto:vishnurajan24766@gmail.com",
+    "@id": `https://www.atideto.in/#localbusiness-${city.toLowerCase().replace(/\\s+/g, '-')}`,
+    "name": city === "Salem" ? "ATIDETO Technologies" : `ATIDETO Technologies - ${city}`,
+    "alternateName": "ATIDETO",
+    "url": "https://www.atideto.in/",
+    "image": "https://www.atideto.in/atideto-logo.png",
+    "description": "ATIDETO Technologies provides enterprise software development, web & mobile applications, AI automation, and professional IT internships.",
+    "telephone": "+919087284053",
+    "email": "atideto.in@gmail.com",
+    "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "",
+      "streetAddress": city === "Salem" ? "Ponnammapet" : "",
       "addressLocality": city,
       "addressRegion": "Tamil Nadu",
+      "postalCode": city === "Salem" ? "636001" : undefined,
       "addressCountry": "IN"
-    }
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      }
+    ],
+    "geo": city === "Salem" ? {
+      "@type": "GeoCoordinates",
+      "latitude": 11.6643,
+      "longitude": 78.1460
+    } : undefined
   };
 };
 

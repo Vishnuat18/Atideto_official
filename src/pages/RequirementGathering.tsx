@@ -122,9 +122,21 @@ export default function RequirementGathering() {
   return (
     <div style={{ background: pageBg, minHeight: '100vh', paddingTop: '80px' }}>
       <SEO 
-        title="Project Requirements | ATIDETO"
-        description="Tell us about your project requirements and we'll analyze your needs to prepare a detailed proposal."
-        url="https://atideto.in/requirement-gathering"
+        title="Project Scope & Requirement Gathering | ATIDETO Technologies"
+        description="Submit your software project specifications, feature requirements, tech stack preferences, and timeline to ATIDETO Technologies for an enterprise-grade proposal."
+        url="https://www.atideto.in/requirement-gathering"
+        schema={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.atideto.in/" },
+                { "@type": "ListItem", "position": 2, "name": "Requirement Gathering", "item": "https://www.atideto.in/requirement-gathering" }
+              ]
+            }
+          ]
+        }}
       />
       {/* Header */}
       <section className="py-16 relative overflow-hidden">

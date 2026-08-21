@@ -28,13 +28,13 @@ export default function About() {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": "https://atideto.in/"
+            "item": "https://www.atideto.in/"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "About Us",
-            "item": "https://atideto.in/about"
+            "item": "https://www.atideto.in/about"
           }
         ]
       },
@@ -44,9 +44,9 @@ export default function About() {
         "jobTitle": member.role,
         "description": member.bio,
         "affiliation": {
-          "@type": "LocalBusiness",
-          "@id": "https://atideto.in/#organization",
-          "name": "ATIDETO"
+          "@type": "Organization",
+          "@id": "https://www.atideto.in/#organization",
+          "name": "ATIDETO Technologies"
         },
         "sameAs": [
           member.social.linkedin,
@@ -59,9 +59,9 @@ export default function About() {
   return (
     <div className="about-page min-h-screen relative overflow-x-clip font-sans selection:bg-[var(--about-primary)] selection:text-white">
       <SEO
-        title="About Us | ATIDETO"
-        description="Learn about ATIDETO's journey, our mission, and the expert team behind our premium software solutions."
-        url="https://atideto.in/about"
+        title="About Us | ATIDETO Technologies - Software & AI Innovation"
+        description="Discover ATIDETO Technologies: our vision, leadership team, engineering culture, and commitment to delivering transformative software and AI solutions from Salem, Tamil Nadu."
+        url="https://www.atideto.in/about"
         schema={aboutSchema}
       />
 

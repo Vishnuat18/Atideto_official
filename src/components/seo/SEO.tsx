@@ -14,9 +14,9 @@ interface SEOProps {
 export default function SEO({
   title,
   description,
-  keywords = 'ATIDETO, software development, web development, mobile apps, AI automation, tech academy',
-  image = 'https://atideto.in/og-image.jpg',
-  url = 'https://atideto.in',
+  keywords = 'ATIDETO Technologies, software development, web development, mobile apps, AI automation, tech academy, Salem, Tamil Nadu',
+  image = 'https://www.atideto.in/og-image.jpg',
+  url = 'https://www.atideto.in',
   type = 'website',
   noindex = false,
   schema,
@@ -46,8 +46,8 @@ export default function SEO({
       <meta property="og:image" content={image} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="ATIDETO" />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:site_name" content="ATIDETO Technologies" />
+      <meta property="og:locale" content="en_IN" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

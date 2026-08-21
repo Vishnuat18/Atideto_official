@@ -44,14 +44,16 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               {[
-                { icon: Linkedin, label: 'LinkedIn', href: '#' },
-                { icon: Instagram, label: 'Instagram', href: '#' },
-                { icon: Disc, label: 'Discord', href: '#' },
-                { icon: Youtube, label: 'YouTube', href: '#' },
+                { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/company/atideto' },
+                { icon: Instagram, label: 'Instagram', href: 'https://www.instagram.com/atideto' },
+                { icon: Disc, label: 'Discord', href: 'https://discord.gg/atideto' },
+                { icon: Youtube, label: 'YouTube', href: 'https://youtube.com/@atideto' },
               ].map((Social) => (
                 <a
                   key={Social.label}
                   href={Social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={Social.label}
                   className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 hover:bg-primary-50 transition-all duration-300"
                 >
@@ -113,10 +115,12 @@ export default function Footer() {
                 { label: 'Home', href: '/' },
                 { label: 'About Us', href: '/about' },
                 { label: 'Services', href: '/services' },
+                { label: 'Locations Directory', href: '/locations' },
                 { label: 'Client Connect', href: '/client-connect' },
+                { label: 'Requirement Gathering', href: '/requirement-gathering' },
+                { label: 'Privacy Policy', href: '/privacy-policy' },
+                { label: 'Terms & Conditions', href: '/terms-and-conditions' },
                 { label: 'Login / Register', href: '/login' },
-                { label: 'Privacy Policy', href: '/' },
-                { label: 'Terms & Conditions', href: '/' }
               ].map((l) => (
                 <li key={l.label}>
                   <Link to={l.href} className="text-muted-foreground hover:text-primary text-sm transition-colors duration-200">
@@ -135,19 +139,19 @@ export default function Footer() {
                 <div className="w-7 h-7 rounded-full border border-border flex items-center justify-center shrink-0 mt-0.5">
                   <Phone size={12} />
                 </div>
-                <span className="mt-1">+91 9087284053</span>
+                <a href="tel:+919087284053" className="mt-1 hover:text-primary transition-colors">+91 9087284053</a>
               </li>
               <li className="flex items-start gap-3 text-muted-foreground text-sm">
                 <div className="w-7 h-7 rounded-full border border-border flex items-center justify-center shrink-0 mt-0.5">
                   <Mail size={12} />
                 </div>
-                <span className="mt-1 break-all">atideto.in@gmail.com</span>
+                <a href="mailto:atideto.in@gmail.com" className="mt-1 break-all hover:text-primary transition-colors">atideto.in@gmail.com</a>
               </li>
               <li className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed">
                 <div className="w-7 h-7 rounded-full border border-border flex items-center justify-center shrink-0 mt-0.5">
                   <MapPin size={12} />
                 </div>
-                <span className="mt-1">Salem, Tamil Nadu, India</span>
+                <span className="mt-1">Ponnammapet, Salem, Tamil Nadu, India</span>
               </li>
             </ul>
           </div>
@@ -155,10 +159,15 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-border max-w-7xl mx-auto px-6 py-6 text-center">
-        <p className="text-muted-foreground text-sm">
-          © {new Date().getFullYear()} ATIDETO. All rights reserved.
+      <div className="border-t border-border max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+        <p>
+          © {new Date().getFullYear()} ATIDETO Technologies. All rights reserved. · Salem, Tamil Nadu, India
         </p>
+        <div className="flex items-center gap-6">
+          <Link to="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link to="/terms-and-conditions" className="hover:text-primary transition-colors">Terms of Service</Link>
+          <Link to="/locations" className="hover:text-primary transition-colors">Regional Hubs</Link>
+        </div>
       </div>
     </footer>
   );

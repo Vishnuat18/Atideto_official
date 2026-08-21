@@ -126,9 +126,9 @@ export default function PremiumServices() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: reduceMotion ? 0 : 0.45, ease: 'easeOut' }}
           >
-            <p className="services-eyebrow"><Sparkles size={14} /> What we do</p>
-            <h1 id="services-title">The right system changes <span>everything.</span></h1>
-            <p className="services-hero-copy">From the first useful idea to the infrastructure behind it, we turn complicated business needs into clear, high-performing digital systems.</p>
+            <p className="services-eyebrow"><Sparkles size={14} /> Technology &amp; Digital Solutions · ATIDETO</p>
+            <h1 id="services-title">Custom Software, Web, Mobile &amp; <span>AI Solutions.</span></h1>
+            <p className="services-hero-copy">From enterprise custom software and responsive web applications to mobile apps and generative AI automation — ATIDETO Technologies engineers high-performing digital systems designed to solve business problems and scale operations.</p>
             <div className="services-hero-actions">
               <a href="#service-library" className="services-button services-button--primary">Explore the services <ArrowRight size={17} /></a>
               <Link to="/client-connect" className="services-button services-button--secondary">Talk to an expert</Link>

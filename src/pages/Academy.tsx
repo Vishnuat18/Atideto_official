@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import SEO from '@/components/seo/SEO';
-import { motion } from 'framer-motion';
 import InternshipExplorer from '@/components/InternshipExplorer';
 import { COURSES, INTERNSHIP_PROGRAMS } from '@/constants';
 import academyBg from '@/assets/hero/academy.png';
@@ -34,13 +33,13 @@ export default function Academy() {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": "https://atideto.in/"
+            "item": "https://www.atideto.in/"
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Academy",
-            "item": "https://atideto.in/academy"
+            "item": "https://www.atideto.in/academy"
           }
         ]
       },
@@ -49,10 +48,10 @@ export default function Academy() {
         "name": course.title,
         "description": course.description,
         "provider": {
-          "@type": "LocalBusiness",
-          "@id": "https://atideto.in/#organization",
+          "@type": "EducationalOrganization",
+          "@id": "https://www.atideto.in/#organization",
           "name": "ATIDETO Academy",
-          "url": "https://atideto.in/academy"
+          "url": "https://www.atideto.in/academy"
         }
       })),
       ...INTERNSHIP_PROGRAMS.map(prog => ({
@@ -60,10 +59,10 @@ export default function Academy() {
         "name": `${prog.title} Internship`,
         "description": `Industry-aligned tech internship in ${prog.title} at ATIDETO Academy.`,
         "provider": {
-          "@type": "LocalBusiness",
-          "@id": "https://atideto.in/#organization",
+          "@type": "EducationalOrganization",
+          "@id": "https://www.atideto.in/#organization",
           "name": "ATIDETO Academy",
-          "url": "https://atideto.in/academy"
+          "url": "https://www.atideto.in/academy"
         }
       }))
     ]
@@ -72,10 +71,10 @@ export default function Academy() {
   return (
     <div className="academy-page bg-[#F8FAFC] min-h-screen relative overflow-hidden text-[#0F172A] font-sans selection:bg-[#2F2FE4]/30">
       <SEO 
-        title="ATIDETO Academy | Tech Internships & Courses"
-        description="Join ATIDETO Academy for premium industry-aligned courses and internships. Build real-world projects and launch your tech career."
-        url="https://atideto.in/academy"
-        keywords="tech academy, internships, software engineering, learn to code, ATIDETO courses"
+        title="IT Internships & Professional Tech Certification | ATIDETO Academy"
+        description="Join ATIDETO Academy for hands-on software development internships, AI courses, real-world industry projects, verified certifications, and placement guidance in Tamil Nadu."
+        url="https://www.atideto.in/academy"
+        keywords="tech academy, IT internships, software engineering, learn to code, ATIDETO courses, Salem Tamil Nadu"
         schema={academySchema}
       />
       <style>{`

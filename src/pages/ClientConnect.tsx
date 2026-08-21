@@ -276,9 +276,28 @@ export default function ClientConnect() {
   return (
     <div className="contact-page relative text-[color:var(--cc-white)] overflow-x-hidden">
       <SEO
-        title="Start Your Project | ATIDETO"
-        description="Tell us about your vision. We'll craft a tailored proposal and set up your project dashboard within 24 hours."
-        url="https://atideto.in/client-connect"
+        title="Start a Project & Client Consultation | ATIDETO Technologies"
+        description="Connect with ATIDETO Technologies for custom software development, mobile app engineering, AI automation, and cloud architecture. Get a detailed proposal within 24 hours."
+        url="https://www.atideto.in/client-connect"
+        schema={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.atideto.in/" },
+                { "@type": "ListItem", "position": 2, "name": "Client Connect", "item": "https://www.atideto.in/client-connect" }
+              ]
+            },
+            {
+              "@type": "ContactPage",
+              "@id": "https://www.atideto.in/client-connect#webpage",
+              "url": "https://www.atideto.in/client-connect",
+              "name": "Start a Project - ATIDETO Technologies",
+              "description": "Project consultation and technical requirements intake for ATIDETO Technologies"
+            }
+          ]
+        }}
       />
 
       {/* Layered animated background */}
@@ -305,7 +324,7 @@ export default function ClientConnect() {
                 transition={{ duration: 0.5 }}
                 className="cc-badge"
               >
-                <i /> Client Connect · Project Intake
+                <i /> Client Connect · ATIDETO Technologies
               </motion.span>
 
               <motion.h1
@@ -313,7 +332,7 @@ export default function ClientConnect() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.08 }}
               >
-                Let&apos;s Build Your <span className="grad">Next Digital</span> Product
+                Start Your Project &amp; <span className="grad">Technical Consultation</span>
               </motion.h1>
 
               <motion.p
@@ -322,9 +341,7 @@ export default function ClientConnect() {
                 transition={{ duration: 0.6, delay: 0.16 }}
                 className="cc-hero-sub"
               >
-                Tell us about your vision. We&apos;ll craft a tailored proposal,
-                assign a dedicated project manager, and set up your project
-                dashboard within 24 hours.
+                Tell us about your software development, web, mobile, or AI automation requirements. ATIDETO Technologies crafts tailored proposals, assigns dedicated project architects, and prepares your technical roadmap within 24 hours.
               </motion.p>
 
               <motion.div

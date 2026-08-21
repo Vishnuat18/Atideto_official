@@ -116,6 +116,18 @@
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
   }
+
+  select {
+    color-scheme: light !important;
+    color: #0f172a !important;
+  }
+
+  select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-weight: 500;
+    padding: 6px 12px;
+  }
 }
 
 /* Custom Scrollbar */
