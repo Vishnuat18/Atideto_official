@@ -1,0 +1,144 @@
+:root {
+  --ui-background: #f7f8fc;
+  --ui-surface: #ffffff;
+  --ui-surface-muted: #f1f4fa;
+  --ui-foreground: #11182d;
+  --ui-muted: #64718a;
+  --ui-border: rgba(22, 37, 73, .12);
+  --ui-primary: #2f2fe4;
+  --ui-primary-soft: #eceeff;
+  --ui-success: #00d26a;
+  --ui-warning: #c98524;
+  --ui-radius-sm: 10px;
+  --ui-radius-md: 16px;
+  --ui-radius-lg: 24px;
+  --ui-shadow-sm: 0 4px 15px -12px rgba(23, 36, 83, .28);
+  --ui-shadow-md: 0 22px 50px -28px rgba(23, 36, 83, .32);
+  --ui-ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+.dark {
+  --ui-background: #080b14;
+  --ui-surface: #10172b;
+  --ui-surface-muted: #131d34;
+  --ui-foreground: #f4f6ff;
+  --ui-muted: #a3aec6;
+  --ui-border: rgba(215, 222, 255, .14);
+  --ui-primary: #2ea8ff;
+  --ui-primary-soft: rgba(46, 168, 255, .15);
+  --ui-success: #00d26a;
+  --ui-warning: #e6b158;
+  --ui-shadow-sm: 0 4px 15px -12px rgba(0,0,0,.8);
+  --ui-shadow-md: 0 22px 50px -28px rgba(0,0,0,.85);
+}
+
+.app-page-shell { min-height: 100%; background: var(--ui-background); color: var(--ui-foreground); }
+.app-page-shell.route-home, .app-page-shell.route-services { background: transparent; }
+.app-page-shell.route-about,
+.app-page-shell.route-academy,
+.app-page-shell.route-client-connect,
+.app-page-shell.route-locations,
+.app-page-shell.route-requirement-gathering,
+.app-page-shell.route-dashboard,
+.app-page-shell.route-profile,
+.app-page-shell.route-not-found { background: var(--ui-background); }
+
+.app-page-shell.route-about > div:first-child,
+.app-page-shell.route-academy > div:first-child,
+.app-page-shell.route-locations > div:first-child,
+.app-page-shell.route-dashboard > div:first-child,
+.app-page-shell.route-profile > div:first-child,
+.app-page-shell.route-requirement-gathering > div:first-child { background: var(--ui-background) !important; color: var(--ui-foreground) !important; }
+
+.app-page-shell h1,
+.app-page-shell h2,
+.app-page-shell h3,
+.app-page-shell h4 { letter-spacing: -.035em; }
+.app-page-shell p { max-width: 72ch; }
+.app-page-shell button,
+.app-page-shell a { -webkit-tap-highlight-color: transparent; }
+.app-page-shell button:focus-visible,
+.app-page-shell a:focus-visible,
+.app-page-shell input:focus-visible,
+.app-page-shell textarea:focus-visible,
+.app-page-shell select:focus-visible { outline: 3px solid color-mix(in srgb, var(--ui-primary) 38%, transparent); outline-offset: 3px; }
+
+.app-page-shell input:not([type=checkbox]):not([type=radio]),
+.app-page-shell textarea,
+.app-page-shell select { border-color: var(--ui-border) !important; border-radius: var(--ui-radius-sm) !important; background: color-mix(in srgb, var(--ui-surface) 92%, transparent) !important; color: var(--ui-foreground) !important; transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease; }
+.app-page-shell input:not([type=checkbox]):not([type=radio]):focus,
+.app-page-shell textarea:focus,
+.app-page-shell select:focus { border-color: var(--ui-primary) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--ui-primary) 15%, transparent) !important; }
+.app-page-shell input::placeholder,
+.app-page-shell textarea::placeholder { color: var(--ui-muted) !important; }
+
+.app-page-shell [class*="rounded-2xl"],
+.app-page-shell [class*="rounded-3xl"] { border-color: var(--ui-border); box-shadow: var(--ui-shadow-sm); }
+.app-page-shell [class*="hover:shadow"] { transition: transform 220ms var(--ui-ease), box-shadow 220ms var(--ui-ease), border-color 220ms ease; }
+.app-page-shell [class*="hover:shadow"]:hover { box-shadow: var(--ui-shadow-md); }
+
+.route-about main > section:first-child,
+.route-academy > div:first-child > section:first-of-type,
+.route-locations > div:first-child > section:first-of-type { min-height: 510px !important; border-bottom-color: var(--ui-border) !important; background-position: center !important; }
+.route-about main > section:first-child h1,
+.route-academy > div:first-child > section:first-of-type h1,
+.route-locations > div:first-child > section:first-of-type h1 { max-width: 780px; font-family: Montserrat, Inter, sans-serif; font-size: clamp(44px, 6vw, 78px); letter-spacing: -.065em; line-height: .98; }
+.route-about main > section:first-child p,
+.route-academy > div:first-child > section:first-of-type p,
+.route-locations > div:first-child > section:first-of-type p { color: var(--ui-muted) !important; }
+
+.route-about main > div,
+.route-about main > section,
+.route-academy > div:first-child > section:not(:first-of-type),
+.route-locations > div:first-child > section:not(:first-of-type) { border-color: var(--ui-border) !important; }
+.route-about .glass,
+.route-academy .glass,
+.route-locations .glass { background: color-mix(in srgb, var(--ui-surface) 88%, transparent) !important; border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow-sm); backdrop-filter: blur(14px); }
+
+.route-academy .service-pill,
+.route-academy [class*="rounded-xl"],
+.route-academy [class*="rounded-2xl"] { transition: transform 200ms var(--ui-ease), border-color 200ms ease, box-shadow 200ms ease; }
+.route-academy .service-pill:hover,
+.route-academy [class*="rounded-xl"]:hover,
+.route-academy [class*="rounded-2xl"]:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--ui-primary) 34%, var(--ui-border)) !important; }
+
+.contact-page { background: var(--ui-background) !important; color: var(--ui-foreground) !important; }
+.route-client-connect .contact-page > section { min-height: 490px; border-bottom-color: var(--ui-border); }
+.route-client-connect .contact-page > section h1 { font-family: Montserrat, Inter, sans-serif; letter-spacing: -.06em; }
+.route-client-connect .contact-page form { border-color: var(--ui-border); background: color-mix(in srgb, var(--ui-surface) 90%, transparent); box-shadow: var(--ui-shadow-md); border-radius: var(--ui-radius-lg); }
+
+.route-requirement-gathering .glass,
+.route-requirement-gathering [class*="rounded-xl"],
+.route-requirement-gathering [class*="rounded-2xl"] { background: color-mix(in srgb, var(--ui-surface) 92%, transparent) !important; border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow-sm); }
+.route-requirement-gathering form { max-width: 920px; margin-inline: auto; padding: clamp(22px, 4vw, 48px); border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-md); }
+
+.route-dashboard > div:first-child,
+.route-profile > div:first-child { padding-top: 112px; }
+.route-dashboard [class*="bg-[#F1F5F9]"],
+.route-profile [class*="bg-[#F1F5F9]"],
+.route-dashboard [class*="bg-[#F8FAFC]"],
+.route-profile [class*="bg-[#F8FAFC]"] { background: var(--ui-surface) !important; border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow-sm); }
+.route-dashboard table tr { border-color: var(--ui-border) !important; }
+.route-dashboard table tbody tr { transition: background 180ms ease; }.route-dashboard table tbody tr:hover { background: var(--ui-primary-soft); }
+.route-profile [role=tablist] button { transition: color 180ms ease, background 180ms ease, transform 180ms var(--ui-ease); }.route-profile [role=tablist] button:hover { transform: translateX(3px); }
+
+.route-login { background: var(--ui-background); }.route-login > div:first-child { background: var(--ui-background) !important; }.route-login form, .route-login [class*="rounded-2xl"], .route-login [class*="rounded-3xl"] { border-color: var(--ui-border) !important; box-shadow: var(--ui-shadow-md); }
+.route-login input { min-height: 46px; }.route-login button { min-height: 44px; }
+.route-not-found { background: var(--ui-background); }.route-not-found main { min-height: 680px; }.route-not-found main > div:last-child { border: 1px solid var(--ui-border); border-radius: var(--ui-radius-lg); background: color-mix(in srgb, var(--ui-surface) 80%, transparent); box-shadow: var(--ui-shadow-md); }
+
+@keyframes ui-soft-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.route-about .animate-float,
+.route-academy .animate-float { animation: ui-soft-float 5s ease-in-out infinite; }
+
+@media (max-width: 768px) {
+  .app-page-shell.route-about main > section:first-child,
+  .app-page-shell.route-academy > div:first-child > section:first-of-type,
+  .app-page-shell.route-locations > div:first-child > section:first-of-type { min-height: 420px !important; }
+  .route-dashboard > div:first-child,
+  .route-profile > div:first-child { padding-top: 96px; }
+  .route-requirement-gathering form { border-radius: var(--ui-radius-md); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-page-shell *, .app-page-shell *::before, .app-page-shell *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

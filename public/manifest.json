@@ -1,0 +1,23 @@
+{
+  "name": "ATIDETO Technologies – Business Solutions & Software Engineering",
+  "short_name": "ATIDETO",
+  "description": "ATIDETO Technologies is an enterprise software engineering company in Salem, Tamil Nadu, engineering CRM, Billing, ERP, Inventory, School ERP, AI Automation, Web and Mobile applications.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#2F2FE4",
+  "icons": [
+    {
+      "src": "/atideto-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/atideto-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
