@@ -17,7 +17,6 @@ import ChallengesToChange from './about/components/ChallengesToChange';
 import PrinciplesDriveUs from './about/components/PrinciplesDriveUs';
 import JourneyTimeline from './about/components/JourneyTimeline';
 import InsideAtideto from './about/components/InsideAtideto';
-import MeetTheTeam from './about/components/MeetTheTeam';
 import TechStack from './about/components/TechStack';
 import AboutSEOSection from './about/components/AboutSEOSection';
 import VisionFuture from './about/components/VisionFuture';
@@ -112,16 +111,13 @@ export default function About() {
         {/* Section 6: Inside Atideto */}
         <InsideAtideto />
 
-        {/* Section 7: Meet The Team (Executive Leadership: Vishnu, Neevas, Kiran) */}
-        <MeetTheTeam />
-
-        {/* Section 8: Tech Stack */}
+        {/* Section 7: Tech Stack */}
         <TechStack />
 
-        {/* Section 9: In-Depth SEO & Semantic Knowledge (1000+ Words, Technical Architecture & FAQ) */}
+        {/* Section 8: In-Depth SEO & Semantic Knowledge (1000+ Words, Technical Architecture & FAQ) */}
         <AboutSEOSection />
 
-        {/* Section 10: Vision & Proof in the Work */}
+        {/* Section 9: Vision & Proof in the Work */}
         <VisionFuture />
       </main>
     </div>
