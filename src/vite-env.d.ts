@@ -1,6 +1,4 @@
 /// <reference types="vite/client" />
-<<<<<<< HEAD
-=======
 
 declare module '*.png' {
   const content: string;
@@ -43,4 +41,4 @@ declare module '*.avif' {
   const content: string;
   export default content;
 }
->>>>>>> 9afa06a (2.3)
+

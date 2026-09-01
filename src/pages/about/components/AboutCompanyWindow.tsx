@@ -171,27 +171,15 @@ export default function AboutCompanyWindow() {
           >
             {/* Avatar Stack */}
             <div className="flex -space-x-2 overflow-hidden shrink-0">
-<<<<<<< HEAD
-              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#2F2FE4] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900">
-                V
-              </div>
-              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0EA5E9] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900">
-                N
-              </div>
-              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#00D26A] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900">
-                K
-              </div>
-=======
               <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#2F2FE4] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900" title="Vishnu R (CEO & Founder)">
                 V
               </div>
-              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0EA5E9] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900" title="Kiran Patil (CPO)">
+              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#0EA5E9] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900" title="Neevas Nagil (Founder)">
+                N
+              </div>
+              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#00D26A] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900" title="Kiran Patil (CPO)">
                 K
               </div>
-              <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#00D26A] text-[10px] font-extrabold text-white ring-2 ring-white dark:ring-slate-900" title="ATIDETO Core Engineers">
-                A
-              </div>
->>>>>>> 9afa06a (2.3)
             </div>
             <div>
               <div className="text-sm font-black text-[#0F172A] dark:text-white tracking-tight">

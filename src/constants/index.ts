@@ -22,29 +22,13 @@ import mobileAppDevLightImg from '@/assets/service cards/mobile app dev-light.jp
 import uiUxDesignLightImg from '@/assets/service cards/ui ux design-light.jpg';
 import webDevLightImg from '@/assets/service cards/web dev-light.jpg';
 
-<<<<<<< HEAD
-import yokeshDetailImg from '@/assets/Team_atideto/yokesh-removebg-preview.png';
+import vishnuDetailImg from '@/assets/Team_atideto/vishnu_-removebg-preview.png';
 import neevasDetailImg from '@/assets/Team_atideto/neevas-removebg-preview.png';
-import samDetailImg from '@/assets/Team_atideto/sam-removebg-preview.png';
-import vishnuDetailImg from '@/assets/Team_atideto/vishnu_-removebg-preview.png';
 import kiranDetailImg from '@/assets/Team_atideto/kiran-removebg-preview.png';
-import sanjayDetailImg from '@/assets/Team_atideto/sanjay-removebg-preview.png';
-import sachinDetailImg from '@/assets/Team_atideto/sachin-removebg-preview.png';
 
-import yokeshImg from '@/assets/team/yokesh.jpeg';
+import vishnuImg from '@/assets/team/vishnu_.png';
 import neevasImg from '@/assets/team/neevas.jpg';
-import samImg from '@/assets/team/sam.jpeg';
-import vishnuImg from '@/assets/team/vishnu_.png';
 import kiranImg from '@/assets/team/kiran.jpeg';
-import sanjayImg from '@/assets/team/sanjay.jpeg';
-import sachinImg from '@/assets/team/sachin.png';
-=======
-import vishnuDetailImg from '@/assets/Team_atideto/vishnu_-removebg-preview.png';
-import kiranDetailImg from '@/assets/Team_atideto/kiran-removebg-preview.png';
-
-import vishnuImg from '@/assets/team/vishnu_.png';
-import kiranImg from '@/assets/team/kiran.jpeg';
->>>>>>> 9afa06a (2.3)
 
 import javaLogo from '@/assets/course_logos/java.jpg';
 import pythonLogo from '@/assets/course_logos/python.jpg';
@@ -57,12 +41,6 @@ import javascriptLogo from '@/assets/course_logos/javascript.jpg';
 import dataScienceLogo from '@/assets/course_logos/data_science.jpg';
 import dataAnalyticsLogo from '@/assets/course_logos/data_analytics.jpg';
 import androidLogo from '@/assets/course_logos/android.jpg';
-
-<<<<<<< HEAD
-import { Brain, Code, Cpu, Database, Globe, LineChart, Server, Shield, Smartphone } from 'lucide-react';
-
-=======
->>>>>>> 9afa06a (2.3)
 
 // Internship logos
 import javaFullStackIntImg from '@/assets/internship/java full stack.png';
@@ -184,7 +162,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 299,
     category: 'Backend',
-    logo: javaLogo},
+    logo: javaLogo
+  },
   {
     id: 'python',
     title: 'Python Development',
@@ -198,7 +177,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 299,
     category: 'Backend',
-    logo: pythonLogo},
+    logo: pythonLogo
+  },
   {
     id: 'c-programming',
     title: 'C Programming',
@@ -212,7 +192,8 @@ export const COURSES: Course[] = [
     internship: false,
     price: 199,
     category: 'Core',
-    logo: cLogo},
+    logo: cLogo
+  },
   {
     id: 'sql',
     title: 'SQL & Database Design',
@@ -226,7 +207,8 @@ export const COURSES: Course[] = [
     internship: false,
     price: 149,
     category: 'Database',
-    logo: sqlLogo},
+    logo: sqlLogo
+  },
   {
     id: 'mongodb',
     title: 'MongoDB & NoSQL',
@@ -240,7 +222,8 @@ export const COURSES: Course[] = [
     internship: false,
     price: 149,
     category: 'Database',
-    logo: mongodbLogo},
+    logo: mongodbLogo
+  },
   {
     id: 'html',
     title: 'HTML5 Fundamentals',
@@ -254,7 +237,8 @@ export const COURSES: Course[] = [
     internship: false,
     price: 49,
     category: 'Frontend',
-    logo: html5Logo},
+    logo: html5Logo
+  },
   {
     id: 'css',
     title: 'CSS3 & Modern Styling',
@@ -268,7 +252,8 @@ export const COURSES: Course[] = [
     internship: false,
     price: 79,
     category: 'Frontend',
-    logo: css3Logo},
+    logo: css3Logo
+  },
   {
     id: 'javascript',
     title: 'JavaScript Mastery',
@@ -282,7 +267,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 249,
     category: 'Frontend',
-    logo: javascriptLogo},
+    logo: javascriptLogo
+  },
   {
     id: 'data-science',
     title: 'Data Science',
@@ -296,7 +282,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 399,
     category: 'Data',
-    logo: dataScienceLogo},
+    logo: dataScienceLogo
+  },
   {
     id: 'data-analytics',
     title: 'Data Analytics',
@@ -310,7 +297,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 299,
     category: 'Data',
-    logo: dataAnalyticsLogo},
+    logo: dataAnalyticsLogo
+  },
   {
     id: 'android',
     title: 'Android App Development',
@@ -324,7 +312,8 @@ export const COURSES: Course[] = [
     internship: true,
     price: 349,
     category: 'Mobile',
-    logo: androidLogo},
+    logo: androidLogo
+  },
 ];
 
 export const TEAM_MEMBERS: TeamMember[] = [
@@ -333,10 +322,10 @@ export const TEAM_MEMBERS: TeamMember[] = [
     name: 'Vishnu R',
     role: 'CEO & Founder, Atideto',
     bio: 'Chief Executive Officer and Full-Stack Architect. Directs company vision, enterprise engineering, AI innovation, and scalable system infrastructure.',
-    social: { 
+    social: {
       email: 'mailto:vishnurajan24766@gmail.com',
-      phone: 'tel:+919087284053',
-      whatsapp: 'https://wa.me/919087284053',
+      phone: 'tel:+916379000598',
+      whatsapp: 'https://wa.me/916379000598',
       linkedin: 'https://www.linkedin.com/in/vishnu-r-a41884300/',
       github: 'https://github.com/Vishnuat18'
     },
@@ -345,29 +334,10 @@ export const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: '2',
-<<<<<<< HEAD
-    name: 'Neevas Nagil AR',
-    role: 'Founder, Atideto',
-    bio: 'Co-founder driving product strategy, client partnerships, enterprise software deployment, and strategic business growth.',
-    social: { 
-      email: 'mailto:Neevasramesh2020@gmail.com',
-      phone: 'tel:+919363600534',
-      whatsapp: 'https://wa.me/919363600534',
-      linkedin: 'https://www.linkedin.com/in/neevas-ramesh-6a3146366',
-      instagram: 'https://instagram.com/mr_cotton_candy_30',
-      facebook: 'https://www.facebook.com/share/1HQhn3yenG/'
-    },
-    image: neevasImg,
-    detailImage: neevasDetailImg
-  },
-  {
-    id: '3',
-=======
->>>>>>> 9afa06a (2.3)
     name: 'Kiran Balaso Patil',
     role: 'CPO, Atideto',
     bio: 'Chief Product Officer & cloud infrastructure expert specializing in Kubernetes, AWS, and enterprise architecture scaling.',
-    social: { 
+    social: {
       email: 'mailto:kiranbalasopatil33@gmail.com',
       phone: 'tel:+918610641610',
       whatsapp: 'https://wa.me/918610641610',
@@ -387,7 +357,8 @@ export const TESTIMONIALS: Testimonial[] = [
     company: 'TechVentures Inc.',
     content: 'ATIDETO transformed our entire digital infrastructure. The team delivered a complex AI automation system in record time. Exceptional quality and professionalism.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&q=80&auto=format&fit=crop'},
+    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&q=80&auto=format&fit=crop'
+  },
   {
     id: '2',
     name: 'Sarah Williams',
@@ -395,7 +366,8 @@ export const TESTIMONIALS: Testimonial[] = [
     company: 'FinovateCorp',
     content: 'The mobile app ATIDETO built for us achieved 4.9 stars on both stores. Their attention to UX details and performance optimization is unmatched.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&q=80&auto=format&fit=crop'},
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&q=80&auto=format&fit=crop'
+  },
   {
     id: '3',
     name: 'Marcus Johnson',
@@ -403,7 +375,8 @@ export const TESTIMONIALS: Testimonial[] = [
     company: 'HealthStream',
     content: 'We engaged ATIDETO for cloud migration. Zero downtime, 40% cost reduction. They know what they are doing at every level of the stack.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&q=80&auto=format&fit=crop'},
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80&q=80&auto=format&fit=crop'
+  },
   {
     id: '4',
     name: 'Aisha Patel',
@@ -411,7 +384,8 @@ export const TESTIMONIALS: Testimonial[] = [
     company: 'Google',
     content: 'The ATIDETO Academy Data Science program landed me my dream job at Google. The curriculum was industry-aligned and the mentorship was invaluable.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&q=80&auto=format&fit=crop'},
+    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=80&q=80&auto=format&fit=crop'
+  },
 ];
 
 export const STATS: Stat[] = [
