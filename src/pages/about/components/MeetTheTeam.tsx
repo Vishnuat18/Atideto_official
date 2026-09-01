@@ -17,8 +17,12 @@ import {
 
 const roleIcons: Record<string, typeof Crown> = {
   '1': Crown, // Vishnu (CEO & Founder)
+<<<<<<< HEAD
   '2': Sparkles, // Neevas (Founder)
   '3': Layers, // Kiran (CPO)
+=======
+  '2': Layers, // Kiran (CPO)
+>>>>>>> 9afa06a (2.3)
 };
 
 export default function MeetTheTeam() {

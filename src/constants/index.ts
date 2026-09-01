@@ -22,6 +22,7 @@ import mobileAppDevLightImg from '@/assets/service cards/mobile app dev-light.jp
 import uiUxDesignLightImg from '@/assets/service cards/ui ux design-light.jpg';
 import webDevLightImg from '@/assets/service cards/web dev-light.jpg';
 
+<<<<<<< HEAD
 import yokeshDetailImg from '@/assets/Team_atideto/yokesh-removebg-preview.png';
 import neevasDetailImg from '@/assets/Team_atideto/neevas-removebg-preview.png';
 import samDetailImg from '@/assets/Team_atideto/sam-removebg-preview.png';
@@ -37,6 +38,13 @@ import vishnuImg from '@/assets/team/vishnu_.png';
 import kiranImg from '@/assets/team/kiran.jpeg';
 import sanjayImg from '@/assets/team/sanjay.jpeg';
 import sachinImg from '@/assets/team/sachin.png';
+=======
+import vishnuDetailImg from '@/assets/Team_atideto/vishnu_-removebg-preview.png';
+import kiranDetailImg from '@/assets/Team_atideto/kiran-removebg-preview.png';
+
+import vishnuImg from '@/assets/team/vishnu_.png';
+import kiranImg from '@/assets/team/kiran.jpeg';
+>>>>>>> 9afa06a (2.3)
 
 import javaLogo from '@/assets/course_logos/java.jpg';
 import pythonLogo from '@/assets/course_logos/python.jpg';
@@ -50,8 +58,11 @@ import dataScienceLogo from '@/assets/course_logos/data_science.jpg';
 import dataAnalyticsLogo from '@/assets/course_logos/data_analytics.jpg';
 import androidLogo from '@/assets/course_logos/android.jpg';
 
+<<<<<<< HEAD
 import { Brain, Code, Cpu, Database, Globe, LineChart, Server, Shield, Smartphone } from 'lucide-react';
 
+=======
+>>>>>>> 9afa06a (2.3)
 
 // Internship logos
 import javaFullStackIntImg from '@/assets/internship/java full stack.png';
@@ -334,6 +345,7 @@ export const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: '2',
+<<<<<<< HEAD
     name: 'Neevas Nagil AR',
     role: 'Founder, Atideto',
     bio: 'Co-founder driving product strategy, client partnerships, enterprise software deployment, and strategic business growth.',
@@ -350,6 +362,8 @@ export const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: '3',
+=======
+>>>>>>> 9afa06a (2.3)
     name: 'Kiran Balaso Patil',
     role: 'CPO, Atideto',
     bio: 'Chief Product Officer & cloud infrastructure expert specializing in Kubernetes, AWS, and enterprise architecture scaling.',

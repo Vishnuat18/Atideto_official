@@ -54,10 +54,16 @@ export const generateCEOSchema = () => {
 };
 
 /**
+<<<<<<< HEAD
  * Generate Schema.org Person entities for the 3 Core Leaders:
  * 1. Vishnu R (CEO & Founder)
  * 2. Neevas Nagil AR (Founder)
  * 3. Kiran Balaso Patil (CPO)
+=======
+ * Generate Schema.org Person entities for Leadership:
+ * 1. Vishnu R (CEO & Founder)
+ * 2. Kiran Balaso Patil (CPO)
+>>>>>>> 9afa06a (2.3)
  */
 export const generateLeadershipSchema = () => {
   return [
@@ -66,7 +72,11 @@ export const generateLeadershipSchema = () => {
       "@type": "Person",
       "@id": "https://www.atideto.in/#ceo",
       "name": "Vishnu R",
+<<<<<<< HEAD
       "alternateName": ["Vishnu", "Vishnu Atideto"],
+=======
+      "alternateName": ["Vishnu", "Vishnu Atideto", "Vishnu R Atideto"],
+>>>>>>> 9afa06a (2.3)
       "jobTitle": "Chief Executive Officer (CEO) & Founder",
       "description": "Chief Executive Officer and Full-Stack Architect. Directs company vision, enterprise engineering, AI innovation, and scalable system infrastructure at ATIDETO Technologies.",
       "image": "https://www.atideto.in/og-image.jpg",
@@ -76,6 +86,18 @@ export const generateLeadershipSchema = () => {
         "@id": "https://www.atideto.in/#organization",
         "name": "ATIDETO Technologies"
       },
+<<<<<<< HEAD
+=======
+      "knowsAbout": [
+        "Software Architecture",
+        "Artificial Intelligence & GenAI",
+        "Cloud Infrastructure (AWS, GCP, Kubernetes)",
+        "Enterprise Resource Planning (ERP)",
+        "CRM & Sales Automation Systems",
+        "Full-Stack Web & Mobile Engineering",
+        "Executive Technology Leadership"
+      ],
+>>>>>>> 9afa06a (2.3)
       "sameAs": [
         "https://www.linkedin.com/in/vishnu-r-a41884300/",
         "https://github.com/Vishnuat18"
@@ -84,6 +106,7 @@ export const generateLeadershipSchema = () => {
     {
       "@context": "https://schema.org",
       "@type": "Person",
+<<<<<<< HEAD
       "@id": "https://www.atideto.in/#founder-neevas",
       "name": "Neevas Nagil AR",
       "alternateName": ["Neevas Nagil", "Neevas Atideto"],
@@ -104,6 +127,8 @@ export const generateLeadershipSchema = () => {
     {
       "@context": "https://schema.org",
       "@type": "Person",
+=======
+>>>>>>> 9afa06a (2.3)
       "@id": "https://www.atideto.in/#cpo-kiran",
       "name": "Kiran Balaso Patil",
       "alternateName": ["Kiran Patil", "Kiran Atideto"],
@@ -143,7 +168,11 @@ export const generateBrandEntitySchema = () => {
 };
 
 /**
+<<<<<<< HEAD
  * Generate Schema.org Organization entity with CEO Vishnu R, Founders, and all 17 business solutions
+=======
+ * Generate Schema.org Organization entity with CEO Vishnu R and all 17 business solutions
+>>>>>>> 9afa06a (2.3)
  */
 export const generateOrganizationSchema = () => {
   return {
@@ -167,12 +196,15 @@ export const generateOrganizationSchema = () => {
         "@id": "https://www.atideto.in/#ceo",
         "name": "Vishnu R",
         "jobTitle": "Chief Executive Officer (CEO) & Founder"
+<<<<<<< HEAD
       },
       {
         "@type": "Person",
         "@id": "https://www.atideto.in/#founder-neevas",
         "name": "Neevas Nagil AR",
         "jobTitle": "Founder"
+=======
+>>>>>>> 9afa06a (2.3)
       }
     ],
     "ceo": {
