@@ -1,0 +1,23 @@
+{
+  "name": "Atideto - Building Digital Experiences Beyond Imagination",
+  "short_name": "Atideto",
+  "description": "Premium software company delivering web, mobile, AI, and cloud solutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
