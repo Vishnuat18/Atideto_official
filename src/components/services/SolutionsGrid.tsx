@@ -254,7 +254,7 @@ export default function SolutionsGrid() {
   return (
     <section
       id="solutions-grid"
-      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-12 bg-[#050B17] text-white overflow-hidden"
+      className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-12 bg-black text-white overflow-hidden"
     >
       {/* Soft Ambient Glows */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-[#0052FF]/12 blur-[150px] pointer-events-none" />
@@ -295,7 +295,7 @@ export default function SolutionsGrid() {
                   className={`px-4 sm:px-4.5 py-2 rounded-full text-xs sm:text-[13px] font-semibold flex items-center gap-2 transition-all duration-200 cursor-pointer shadow-sm ${
                     isActive
                       ? 'bg-gradient-to-r from-[#0052FF] to-[#00F0FF] text-white shadow-[0_0_20px_rgba(0,82,255,0.4)] border border-blue-400/50'
-                      : 'bg-[#0A1224] text-slate-300 hover:text-white border border-white/10 hover:border-blue-400/40'
+                      : 'bg-[#0c0d14] text-slate-300 hover:text-white border border-white/10 hover:border-blue-400/40'
                   }`}
                 >
                   <TabIcon
@@ -319,7 +319,7 @@ export default function SolutionsGrid() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search services..."
-              className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-full bg-[#0A1224] border border-white/10 text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0052FF] shadow-sm transition-all"
+              className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-full bg-[#0c0d14] border border-white/10 text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0052FF] shadow-sm transition-all"
             />
           </div>
         </div>

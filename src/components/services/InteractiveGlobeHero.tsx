@@ -324,7 +324,7 @@ export default function InteractiveGlobeHero() {
   }, []);
 
   return (
-    <section className="relative w-full bg-[#050B17] text-white pt-24 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-12 overflow-hidden select-none">
+    <section className="relative w-full bg-black text-white pt-24 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-12 overflow-hidden select-none">
       
       {/* ── Ambient Background Radial Glows matching reference ── */}
       <div className="absolute top-1/4 right-1/4 w-[550px] sm:w-[680px] h-[550px] sm:h-[680px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />

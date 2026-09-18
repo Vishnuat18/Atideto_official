@@ -51,16 +51,16 @@ export default function ServiceHero() {
   };
 
   return (
-    <div className="w-full relative bg-[#050B17]">
+    <div className="w-full relative bg-black">
       {/* ── 3D Interactive Digital Globe Hero (Matching Reference Image 2) ── */}
       <InteractiveGlobeHero />
 
       {/* ── Services Dual-Row Running Marquee Ticker (No BG lines) ── */}
-      <div className="w-full relative bg-[#050B17] py-2 sm:py-3">
+      <div className="w-full relative bg-black py-2 sm:py-3">
         <div className="w-full relative overflow-hidden bg-transparent">
           {/* Left & Right Gradient Fade Masks */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 z-20 pointer-events-none bg-gradient-to-r from-[#050B17] via-[#050B17]/80 to-transparent" />
-          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 z-20 pointer-events-none bg-gradient-to-l from-[#050B17] via-[#050B17]/80 to-transparent" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 z-20 pointer-events-none bg-gradient-to-r from-black via-black/80 to-transparent" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 z-20 pointer-events-none bg-gradient-to-l from-black via-black/80 to-transparent" />
 
           {/* ── ROW 1 (Running Left: AI Automation, AI Agents, Custom Software, etc.) ── */}
           <div className="flex overflow-hidden select-none py-1 sm:py-1.5">

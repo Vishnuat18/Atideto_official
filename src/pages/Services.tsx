@@ -11,7 +11,7 @@ export default function Services() {
   }, []);
 
   return (
-    <div className="min-h-screen font-sans selection:bg-[#00F0FF] selection:text-black overflow-x-hidden bg-[#030712] text-white">
+    <div className="min-h-screen font-sans selection:bg-[#00F0FF] selection:text-black overflow-x-hidden bg-black text-white">
       <SEO 
         title="Our Services & Solutions | Atideto"
         description="Innovative solutions to grow your business with technology and creativity. Explore Atideto's enterprise systems: CRM, ERP, Billing, SCM, LMS, and custom platforms."

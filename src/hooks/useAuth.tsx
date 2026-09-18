@@ -34,7 +34,7 @@ export function useAuth() {
         
         setUser({
           uid: firebaseUser.uid,
-          name: firebaseUser.displayName || 'User',
+          name: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
           email: firebaseUser.email,
           role: role
         });

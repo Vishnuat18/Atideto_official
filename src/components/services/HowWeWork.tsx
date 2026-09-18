@@ -42,7 +42,7 @@ const STEPS: Step[] = [
 
 export default function HowWeWork() {
   return (
-    <section className="relative w-full bg-[#050B17] py-14 sm:py-20 px-4 sm:px-6 lg:px-12 border-t border-white/10 overflow-hidden text-white">
+    <section className="relative w-full bg-black py-14 sm:py-20 px-4 sm:px-6 lg:px-12 border-t border-white/10 overflow-hidden text-white">
       
       {/* ── Soft Ambient Glow ── */}
       <div 

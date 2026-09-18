@@ -6,7 +6,7 @@ export default function SignalCtaBanner() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative w-full bg-[#05070B] py-16 sm:py-24 px-4 sm:px-6 lg:px-12 overflow-hidden border-t border-white/5">
+    <section className="relative w-full bg-black py-16 sm:py-24 px-4 sm:px-6 lg:px-12 overflow-hidden border-t border-white/5">
       
       {/* ── Top Subtle Cyan/Blue Gradient Divider (Matching About Page) ── */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#3B82F6]/25 to-transparent pointer-events-none" />
