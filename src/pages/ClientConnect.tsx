@@ -264,7 +264,7 @@ export default function ClientConnect() {
       {/* Hero Section with Ribbon Background */}
       {!submitted && (
         <section 
-          className="relative min-h-[65vh] sm:min-h-[75vh] w-full px-8 lg:px-16 pt-32 pb-12 mb-8 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
+          className="relative min-h-[92vh] lg:min-h-screen w-full px-6 sm:px-8 lg:px-16 pt-32 pb-16 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
           style={{
             backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${contactBg})`,
             backgroundSize: 'cover',

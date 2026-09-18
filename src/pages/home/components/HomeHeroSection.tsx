@@ -9,7 +9,7 @@ export default function HomeHeroSection() {
   const isLight = theme === 'light';
 
   return (
-    <section className={`relative h-screen min-h-[640px] max-h-[1050px] lg:h-screen flex flex-col justify-between overflow-hidden pt-20 sm:pt-24 pb-0 transition-colors duration-300 ${
+    <section className={`relative min-h-[92vh] lg:min-h-screen w-full flex flex-col justify-between overflow-hidden pt-20 sm:pt-24 pb-0 transition-colors duration-300 ${
       isLight ? 'bg-[#F4F5F7] border-b border-black/10 text-black' : 'bg-[#050505] border-b border-white/10 text-white'
     }`}>
       {/* ── Blueprint Grid & Ambient Center Glow ── */}
