@@ -13,7 +13,6 @@ import BackToTop from '@/components/features/BackToTop';
 import FloatingLetsTalk from '@/components/layout/FloatingLetsTalk';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 import CookieBanner from '@/components/layout/CookieBanner';
-import StickyMobileCTA from '@/components/layout/StickyMobileCTA';
 
 const Index = lazy(() => import('./pages/Index'));
 const Services = lazy(() => import('./pages/Services'));
@@ -86,7 +85,6 @@ const App = () => {
             <Navigation />
             <BackToTop />
             <FloatingLetsTalk />
-            <StickyMobileCTA />
 
             <AnimatedRoutes />
 
