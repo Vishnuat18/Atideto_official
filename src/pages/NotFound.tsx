@@ -32,6 +32,13 @@ const NotFound = () => {
 
       {/* Hero Content */}
       <div className="relative z-10 text-center max-w-2xl mx-auto p-4 md:p-8 mt-[30vh]">
+          <h1 className="text-6xl sm:text-8xl font-black text-white mb-2 tracking-tight drop-shadow-[0_0_30px_rgba(47,47,228,0.4)]">
+            404
+          </h1>
+          <p className="text-xl sm:text-2xl font-bold text-white/90 mb-2">Page Not Found</p>
+          <p className="text-[#A7B3C7] text-sm sm:text-base mb-8 max-w-md mx-auto">
+            The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+          </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link 
               to="/" 

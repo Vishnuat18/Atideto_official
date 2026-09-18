@@ -12,6 +12,8 @@ import Footer from '@/components/layout/Footer';
 import BackToTop from '@/components/features/BackToTop';
 import FloatingLetsTalk from '@/components/layout/FloatingLetsTalk';
 import ScrollToTop from '@/components/layout/ScrollToTop';
+import CookieBanner from '@/components/layout/CookieBanner';
+import StickyMobileCTA from '@/components/layout/StickyMobileCTA';
 
 const Index = lazy(() => import('./pages/Index'));
 const Services = lazy(() => import('./pages/Services'));
@@ -23,6 +25,8 @@ const RequirementGathering = lazy(() => import('./pages/RequirementGathering'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ThemeProvider } from '@/context/ThemeContext';
 import LogoLoader from '@/components/ui/LogoLoader';
@@ -58,6 +62,8 @@ const AnimatedRoutes = () => {
           <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
           <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
           <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
+          <Route path="/privacy-policy" element={<PageWrapper><PrivacyPolicy /></PageWrapper>} />
+          <Route path="/terms-and-conditions" element={<PageWrapper><TermsAndConditions /></PageWrapper>} />
           <Route path="/dashboard" element={<ProtectedRoute><PageWrapper><Dashboard /></PageWrapper></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
           <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
@@ -80,11 +86,13 @@ const App = () => {
             <Navigation />
             <BackToTop />
             <FloatingLetsTalk />
+            <StickyMobileCTA />
 
             <AnimatedRoutes />
 
             <PreFooterCTA />
             <Footer />
+            <CookieBanner />
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

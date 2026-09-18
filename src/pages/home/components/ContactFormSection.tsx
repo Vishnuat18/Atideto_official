@@ -1,8 +1,28 @@
 import { useState } from 'react';
-import { MapPin, Mail, Phone, Send, Loader2 } from 'lucide-react';
+import { MapPin, Mail, Phone, Send, Loader2, AlertCircle } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
+
+function validateEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+interface FieldErrors {
+  name?: string;
+  email?: string;
+  message?: string;
+}
+
+function ErrorMessage({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <p className="flex items-center gap-1 text-red-400 text-xs mt-1 animate-[fadeInDown_0.2s_ease-out]">
+      <AlertCircle size={12} className="shrink-0" />
+      <span>{message}</span>
+    </p>
+  );
+}
 
 export default function ContactFormSection() {
   const [name, setName] = useState('');
@@ -10,11 +30,49 @@ export default function ContactFormSection() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'name':
+        if (!value.trim()) return 'Name is required';
+        if (value.trim().length < 2) return 'Name must be at least 2 characters';
+        return undefined;
+      case 'email':
+        if (!value.trim()) return 'Email is required';
+        if (!validateEmail(value)) return 'Please enter a valid email address';
+        return undefined;
+      case 'message':
+        if (!value.trim()) return 'Message is required';
+        if (value.trim().length < 10) return 'Please provide a more detailed message';
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    setTouched(t => ({ ...t, [field]: true }));
+    const error = validateField(field, value);
+    setErrors(e => ({ ...e, [field]: error }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error('Please fill in your name, email, and message.');
+
+    // Validate all fields
+    const newErrors: FieldErrors = {
+      name: validateField('name', name),
+      email: validateField('email', email),
+      message: validateField('message', message),
+    };
+    setErrors(newErrors);
+    setTouched({ name: true, email: true, message: true });
+
+    // Check if any errors exist
+    if (newErrors.name || newErrors.email || newErrors.message) {
+      toast.error('Please fix the errors below before submitting.');
       return;
     }
 
@@ -34,12 +92,19 @@ export default function ContactFormSection() {
       setEmail('');
       setSubject('');
       setMessage('');
+      setErrors({});
+      setTouched({});
     } catch (err) {
       console.error('Error submitting contact form:', err);
       toast.error('Failed to send message. Please try again or email us directly.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getInputClass = (field: keyof FieldErrors, baseClass: string) => {
+    const hasError = touched[field] && errors[field];
+    return `${baseClass} ${hasError ? 'ring-2 ring-red-500/60 border-red-500/40' : ''}`;
   };
 
   return (
@@ -105,32 +170,44 @@ export default function ContactFormSection() {
 
           {/* Right Column - Form */}
           <div className="bg-[#101018]/80 backdrop-blur-md rounded-[32px] p-8 md:p-12 border border-white/5 shadow-2xl relative">
-            <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+            <form className="flex flex-col gap-6" onSubmit={handleSubmit} noValidate>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Name</label>
+                  <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Name <span className="text-red-400">*</span></label>
                   <input 
                     type="text" 
                     placeholder="John Doe" 
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="bg-white rounded-lg px-4 py-3.5 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00C6FF] transition-all"
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (touched.name) {
+                        setErrors(er => ({ ...er, name: validateField('name', e.target.value) }));
+                      }
+                    }}
+                    onBlur={() => handleBlur('name', name)}
+                    className={getInputClass('name', 'bg-white rounded-lg px-4 py-3.5 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00C6FF] transition-all')}
                   />
+                  <ErrorMessage message={touched.name ? errors.name : undefined} />
                 </div>
                 
                 {/* Email */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Email Address</label>
+                  <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Email Address <span className="text-red-400">*</span></label>
                   <input 
                     type="email" 
                     placeholder="john@company.com" 
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-white rounded-lg px-4 py-3.5 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00C6FF] transition-all"
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (touched.email) {
+                        setErrors(er => ({ ...er, email: validateField('email', e.target.value) }));
+                      }
+                    }}
+                    onBlur={() => handleBlur('email', email)}
+                    className={getInputClass('email', 'bg-white rounded-lg px-4 py-3.5 text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00C6FF] transition-all')}
                   />
+                  <ErrorMessage message={touched.email ? errors.email : undefined} />
                 </div>
               </div>
 
@@ -148,15 +225,21 @@ export default function ContactFormSection() {
 
               {/* Message */}
               <div className="flex flex-col gap-2">
-                <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Message</label>
+                <label className="text-white/60 text-xs font-bold tracking-widest uppercase">Message <span className="text-red-400">*</span></label>
                 <textarea 
                   placeholder="Detail your requirements..." 
                   rows={4}
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  required
-                  className="bg-transparent border border-white/10 rounded-lg px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00C6FF] transition-all resize-none"
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (touched.message) {
+                      setErrors(er => ({ ...er, message: validateField('message', e.target.value) }));
+                    }
+                  }}
+                  onBlur={() => handleBlur('message', message)}
+                  className={getInputClass('message', 'bg-transparent border border-white/10 rounded-lg px-4 py-3.5 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00C6FF] transition-all resize-none')}
                 />
+                <ErrorMessage message={touched.message ? errors.message : undefined} />
               </div>
 
               {/* Submit Button with Rich Animation */}
@@ -193,3 +276,4 @@ export default function ContactFormSection() {
     </section>
   );
 }
+
