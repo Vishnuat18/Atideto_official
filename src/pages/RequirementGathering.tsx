@@ -79,15 +79,9 @@ export default function RequirementGathering() {
       <section className="py-16 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="relative max-w-4xl mx-auto px-6">
-          {preselected && (
-            <div className="flex items-center gap-3 mb-6">
-              <div>
-                <span className="section-tag" style={{ marginBottom: 0 }}>
-                  {preselected.title}
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]">
+            {preselected ? preselected.title : 'PROJECT REQUIREMENTS'}
+          </div>
           <h1 className="text-4xl lg:text-6xl font-black text-white mb-4" style={{ letterSpacing: '-0.02em' }}>
             Tell Us About <span className="gradient-text">Your Project</span>
           </h1>

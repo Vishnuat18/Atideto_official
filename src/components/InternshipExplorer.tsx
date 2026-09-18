@@ -897,21 +897,21 @@ export default function InternshipExplorer() {
       {/* 3. Full Width Sections (Below Explorer) */}
       
       {/* Why Learn */}
-      <div className="mb-10">
-        <h2 className="text-3xl font-bold text-center text-white mb-12">Why Learn With Atideto Academy?</h2>
-        <div className="flex flex-wrap justify-center gap-6">
+      <div className="mb-14">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-8 sm:mb-12 font-montserrat">Why Learn With Atideto Academy?</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
           {[
             { icon: Users, t: 'Industry Experts', d: 'Learn from professionals working in top companies.' },
             { icon: Code2, t: 'Hands-on Projects', d: 'Build real-world projects for your portfolio.' },
             { icon: Award, t: 'Certificate', d: 'Earn industry-recognized internship certificate.' },
-            { icon: Clock, t: 'Flexible Learning', d: 'Live classes + recorded sessions for revision.' }
+            { icon: Clock, t: 'Flexible Learning', d: 'Live classes + recorded sessions' }
           ].map(feat => (
-            <div key={feat.t} className="flex-1 min-w-[200px] flex flex-col items-center text-center group">
-              <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/10 flex items-center justify-center mb-4 group-hover:bg-[#0052FF]/10 group-hover:border-[#0052FF]/30 transition-all group-hover:shadow-[0_0_20px_rgba(0,82,255,0.2)]">
-                <feat.icon className="w-8 h-8 text-[#00A3FF]" />
+            <div key={feat.t} className="flex flex-col items-center text-center p-3 sm:p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-[#0052FF]/30 transition-all group">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-[#0052FF]/10 group-hover:border-[#0052FF]/40 transition-all group-hover:shadow-[0_0_20px_rgba(0,82,255,0.25)]">
+                <feat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#00A3FF]" />
               </div>
-              <h4 className="font-bold text-[15px] text-white mb-2">{feat.t}</h4>
-              <p className="text-[12px] text-white/50 leading-relaxed max-w-[200px]">{feat.d}</p>
+              <h4 className="font-bold text-xs sm:text-[15px] text-white mb-1 sm:mb-2">{feat.t}</h4>
+              <p className="text-[11px] sm:text-[12px] text-white/60 leading-relaxed max-w-[200px]">{feat.d}</p>
             </div>
           ))}
         </div>

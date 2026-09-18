@@ -341,9 +341,8 @@ export default function InteractiveGlobeHero() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center px-3.5 sm:px-4 py-1.5 rounded-full bg-[#0A1A3B]/80 border border-blue-500/30 text-[#38BDF8] text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 sm:mb-6 shadow-[0_0_15px_rgba(56,189,248,0.15)]"
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse mr-2" />
             OUR SERVICES
           </motion.div>
 

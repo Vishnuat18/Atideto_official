@@ -264,7 +264,7 @@ export default function ClientConnect() {
       {/* Hero Section with Ribbon Background */}
       {!submitted && (
         <section 
-          className="relative min-h-screen w-full px-8 lg:px-16 pt-32 pb-8 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
+          className="relative min-h-[65vh] sm:min-h-[75vh] w-full px-8 lg:px-16 pt-32 pb-12 mb-8 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
           style={{
             backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${contactBg})`,
             backgroundSize: 'cover',
@@ -276,15 +276,15 @@ export default function ClientConnect() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-bold tracking-[0.2em] uppercase mb-6"
+            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
           >
-            Connect
+            CONNECT WITH US
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl md:text-7xl font-black mb-6 tracking-tight text-white drop-shadow-2xl"
+            className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 tracking-tight text-white drop-shadow-2xl font-montserrat"
           >
             Start Your <span className="text-[#3B82F6]">Project</span>
           </motion.h1>
