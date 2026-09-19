@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import * as LucideIcons from 'lucide-react';
+import { ArrowRight, type LucideIcon } from 'lucide-react';
 
 interface MenuItemProps {
   label: string;
   href: string;
   index: number;
-  iconName: keyof typeof LucideIcons;
+  IconComponent: LucideIcon;
   onClick: () => void;
   activeThemeColor: string;
 }
@@ -16,10 +16,9 @@ export default function MenuItem({
   label,
   href,
   index,
-  iconName,
+  IconComponent,
   onClick,
   activeThemeColor}: MenuItemProps) {
-  const IconComponent = LucideIcons[iconName] as React.ComponentType<any>;
 
   return (
     <motion.div
@@ -52,7 +51,7 @@ export default function MenuItem({
 
         {/* Arrow indicator */}
         <span className="ml-auto opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
-          <LucideIcons.ArrowRight className="w-4 h-4" style={{ color: activeThemeColor }} />
+          <ArrowRight className="w-4 h-4" style={{ color: activeThemeColor }} />
         </span>
 
         {/* Hover animated underline */}

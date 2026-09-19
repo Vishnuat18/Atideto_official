@@ -280,40 +280,47 @@ export default function InteractiveGlobeHero() {
 
         if (pt.isLand) {
           if (isFront) {
-            // Glowing cyan/sky on front continents
-            const alpha = Math.min(1, 0.45 + depthFactor * 0.55) * pt.alpha;
-            ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
-            if (pt.size > 2.0 && depthFactor > 0.7) {
-              ctx.shadowBlur = 8 * dpr;
-              ctx.shadowColor = '#00F0FF';
-            } else {
-              ctx.shadowBlur = 0;
-            }
+            // Glowing cyan/sky on front continents (high performance alpha instead of costly shadowBlur)
+            const alpha = Math.min(1, 0.5 + depthFactor * 0.5) * pt.alpha;
+            ctx.fillStyle = depthFactor > 0.75 
+              ? `rgba(0, 240, 255, ${alpha})` 
+              : `rgba(56, 189, 248, ${alpha})`;
           } else {
             // Dim sapphire on backside continents
             const alpha = Math.max(0.12, depthFactor * 0.35) * pt.alpha;
             ctx.fillStyle = `rgba(37, 99, 235, ${alpha})`;
-            ctx.shadowBlur = 0;
           }
         } else {
           // Sparse ocean points
           const alpha = isFront ? 0.22 : 0.08;
           ctx.fillStyle = `rgba(30, 58, 138, ${alpha})`;
-          ctx.shadowBlur = 0;
         }
 
         ctx.fill();
       }
 
-      ctx.shadowBlur = 0; // reset
-      animationFrameId = requestAnimationFrame(render);
+      if (isVisible) {
+        animationFrameId = requestAnimationFrame(render);
+      }
     };
+
+    // Pause rendering when off-screen to save 100% of GPU/CPU resources
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(render);
+      }
+    });
+    visibilityObserver.observe(canvas);
 
     render();
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
       canvas.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);

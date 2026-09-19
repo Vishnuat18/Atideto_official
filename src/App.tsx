@@ -28,51 +28,51 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ThemeProvider } from '@/context/ThemeContext';
-import LogoLoader from '@/components/ui/LogoLoader';
+import TopProgressBar from '@/components/ui/TopProgressBar';
+import { initIdlePreload } from '@/utils/preload';
+import { useEffect } from 'react';
 
 const queryClient = new QueryClient();
 
+// Fast, non-blocking page transition (0.15s instant fade without freezing wait cycles)
 const PageWrapper = ({ children, isOverlay = false }: { children: React.ReactNode; isOverlay?: boolean }) => (
   <motion.div
-    initial={{ opacity: 0, y: 15 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -15 }}
-    transition={{ duration: 0.3, ease: 'easeInOut' }}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.15, ease: 'easeOut' }}
     className={isOverlay ? "relative z-[200]" : "relative z-0"}
   >
     {children}
   </motion.div>
 );
 
-const PageLoader = () => (
-  <LogoLoader size="fullscreen" />
-);
-
 const AnimatedRoutes = () => {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
-          <Route path="/services" element={<PageWrapper><Services /></PageWrapper>} />
-          <Route path="/academy" element={<PageWrapper><Academy /></PageWrapper>} />
-          <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
-          <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
-          <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
-          <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
-          <Route path="/privacy-policy" element={<PageWrapper><PrivacyPolicy /></PageWrapper>} />
-          <Route path="/terms-and-conditions" element={<PageWrapper><TermsAndConditions /></PageWrapper>} />
-          <Route path="/dashboard" element={<ProtectedRoute><PageWrapper><Dashboard /></PageWrapper></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
-          <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
-        </Routes>
-      </Suspense>
-    </AnimatePresence>
+    <Suspense fallback={<TopProgressBar />}>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageWrapper><Index /></PageWrapper>} />
+        <Route path="/services" element={<PageWrapper><Services /></PageWrapper>} />
+        <Route path="/academy" element={<PageWrapper><Academy /></PageWrapper>} />
+        <Route path="/about" element={<PageWrapper><About /></PageWrapper>} />
+        <Route path="/client-connect" element={<PageWrapper><ClientConnect /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper isOverlay><Login /></PageWrapper>} />
+        <Route path="/requirement-gathering" element={<PageWrapper><RequirementGathering /></PageWrapper>} />
+        <Route path="/privacy-policy" element={<PageWrapper><PrivacyPolicy /></PageWrapper>} />
+        <Route path="/terms-and-conditions" element={<PageWrapper><TermsAndConditions /></PageWrapper>} />
+        <Route path="/dashboard" element={<ProtectedRoute><PageWrapper><Dashboard /></PageWrapper></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><PageWrapper><Profile /></PageWrapper></ProtectedRoute>} />
+        <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
+      </Routes>
+    </Suspense>
   );
 };
 
 const App = () => {
+  useEffect(() => {
+    // Automatically prefetch primary pages in idle time for zero-latency clicks
+    initIdlePreload();
+  }, []);
 
   return (
     <ThemeProvider>

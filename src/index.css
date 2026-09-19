@@ -74,6 +74,13 @@
     scroll-behavior: smooth;
   }
 
+  /* Desktop Web View: 100% default zoom calibrated to 80% scale */
+  @media (min-width: 1024px) {
+    html {
+      zoom: 0.8;
+    }
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Google Sans', 'Product Sans', sans-serif;
@@ -1254,5 +1261,17 @@ html.light footer .border-t {
 
 .font-space {
   font-family: 'Space Grotesk', sans-serif !important;
+}
+
+@keyframes pullSway {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(0px) rotate(2deg);
+  }
+  75% {
+    transform: translateY(0px) rotate(-2deg);
+  }
 }
 

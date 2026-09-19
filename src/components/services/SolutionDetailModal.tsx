@@ -5,13 +5,14 @@ import type { SolutionItem } from '@/constants/solutions';
 
 interface SolutionDetailModalProps {
   solution: SolutionItem | null;
+  isOpen?: boolean;
   onClose: () => void;
 }
 
-export default function SolutionDetailModal({ solution, onClose }: SolutionDetailModalProps) {
+export default function SolutionDetailModal({ solution, isOpen = true, onClose }: SolutionDetailModalProps) {
   const navigate = useNavigate();
 
-  if (!solution) return null;
+  if (!solution || !isOpen) return null;
 
   const Icon = solution.icon;
 

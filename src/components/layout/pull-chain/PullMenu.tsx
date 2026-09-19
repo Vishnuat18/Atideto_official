@@ -1,10 +1,23 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { NAV_ITEMS } from '@/constants';
-import * as LucideIcons from 'lucide-react';
+import {
+  Home,
+  Briefcase,
+  GraduationCap,
+  Info,
+  MessageCircle,
+  LogIn,
+  User,
+  LayoutDashboard,
+  LogOut,
+  Circle,
+  type LucideIcon
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { preloadRoute } from '@/utils/preload';
 
 interface PullMenuProps {
   isOpen: boolean;
@@ -12,15 +25,15 @@ interface PullMenuProps {
   theme: string;
 }
 
-const iconMap: Record<string, keyof typeof LucideIcons> = {
-  '/': 'Home',
-  '/services': 'Briefcase',
-  '/academy': 'GraduationCap',
-  '/about': 'Info',
-  '/client-connect': 'MessageCircle',
-  '/login': 'LogIn',
-  '/profile': 'User',
-  '/dashboard': 'LayoutDashboard',
+const iconMap: Record<string, LucideIcon> = {
+  '/': Home,
+  '/services': Briefcase,
+  '/academy': GraduationCap,
+  '/about': Info,
+  '/client-connect': MessageCircle,
+  '/login': LogIn,
+  '/profile': User,
+  '/dashboard': LayoutDashboard,
 };
 
 export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
@@ -43,8 +56,7 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
       {/* Menu Items */}
       <div className="py-3 px-2">
         {menuItems.map((item, index) => {
-          const iconName = iconMap[item.href] || 'Circle';
-          const IconComponent = LucideIcons[iconName] as React.ComponentType<any>;
+          const IconComponent = iconMap[item.href] || Circle;
           const isActive = location.pathname === item.href;
 
           return (
@@ -57,6 +69,8 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
               <Link
                 to={item.href}
                 onClick={onClose}
+                onMouseEnter={() => preloadRoute(item.href)}
+                onTouchStart={() => preloadRoute(item.href)}
                 className={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm transition-all duration-200 group ${
                   isActive 
                     ? 'text-white' 
@@ -109,7 +123,7 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
               }}
               className="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm text-red-400 hover:text-red-300 transition-all duration-200 group text-left cursor-pointer"
             >
-              <LucideIcons.LogOut className="w-[18px] h-[18px] shrink-0" />
+              <LogOut className="w-[18px] h-[18px] shrink-0" />
               <span className="font-medium text-[14px] tracking-wide">Sign Out</span>
             </button>
           </motion.div>

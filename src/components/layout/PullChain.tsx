@@ -10,10 +10,8 @@ export default function PullChain() {
   const [isOpen, setIsOpen] = useState(false);
   const [pullAmount, setPullAmount] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [rotation, setRotation] = useState(0);
   
   const dragStartY = useRef(0);
-  const animFrameRef = useRef<number>(0);
   const springFrameRef = useRef<number>(0);
   const location = useLocation();
 
@@ -28,25 +26,6 @@ export default function PullChain() {
   };
 
   const theme = getThemeFromPath(location.pathname);
-
-  // Gentle idle sway — smooth sine wave
-  useEffect(() => {
-    const startTime = Date.now();
-
-    const animateSway = () => {
-      if (!isDragging) {
-        const time = (Date.now() - startTime) / 1000;
-        const amplitude = isOpen ? 0.8 : 3;
-        setRotation(Math.sin(time * 1.5) * amplitude);
-      } else {
-        setRotation(0);
-      }
-      animFrameRef.current = requestAnimationFrame(animateSway);
-    };
-
-    animateSway();
-    return () => cancelAnimationFrame(animFrameRef.current);
-  }, [isDragging, isOpen]);
 
   // Handle drag mechanics
   const handleStart = useCallback((clientY: number) => {
@@ -133,22 +112,6 @@ export default function PullChain() {
     return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [isOpen]);
 
-  // Subtle scroll swing
-  useEffect(() => {
-    let scrollTimeout: ReturnType<typeof setTimeout>;
-    const handleScrollSwing = () => {
-      setRotation(prev => prev + (Math.random() > 0.5 ? 1.5 : -1.5));
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => setRotation(0), 200);
-    };
-
-    window.addEventListener('scroll', handleScrollSwing, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScrollSwing);
-      clearTimeout(scrollTimeout);
-    };
-  }, []);
-
   // Document-level drag listeners using PointerEvents
   useEffect(() => {
     const onPointerMove = (e: PointerEvent) => handleMove(e.clientY);
@@ -193,11 +156,13 @@ export default function PullChain() {
 
         {/* The Interactive Pull Chain */}
         <div 
-          className="pointer-events-auto flex flex-col items-center mr-6 cursor-grab active:cursor-grabbing"
+          className={`pointer-events-auto flex flex-col items-center mr-6 cursor-grab active:cursor-grabbing ${
+            !isDragging && pullAmount === 0 ? 'animate-[pullSway_3.2s_ease-in-out_infinite]' : ''
+          }`}
           style={{ 
             width: '44px', 
             transformOrigin: 'top center',
-            transform: `translateY(${pullAmount}px) rotate(${rotation}deg)`,
+            transform: `translateY(${pullAmount}px)`,
             transition: isDragging ? 'none' : 'transform 0.15s ease-out',
             touchAction: 'none'
           }}

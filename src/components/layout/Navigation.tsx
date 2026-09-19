@@ -8,6 +8,7 @@ import PullChain from './PullChain';
 import { useTheme } from '@/context/ThemeContext';
 import atidetoLogo from '@/assets/atideto/logo.png';
 import atidetoText from '@/assets/atideto/text.png';
+import { preloadRoute } from '@/utils/preload';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
@@ -35,10 +36,6 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-
-
-
-
   const { user: currentUser } = useAuth();
 
   // Standard Navigation for all other pages
@@ -65,7 +62,11 @@ export default function Navigation() {
         />
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between relative z-10 w-full">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 group"
+            onMouseEnter={() => preloadRoute('/')}
+          >
             <img 
               src={atidetoLogo} 
               alt="Atideto Logo" 
@@ -95,6 +96,8 @@ export default function Navigation() {
                 <Link
                   key={item.href}
                   to={item.href}
+                  onMouseEnter={() => preloadRoute(item.href)}
+                  onTouchStart={() => preloadRoute(item.href)}
                   className={`text-sm font-medium transition-colors duration-200 relative group ${
                     isActive 
                       ? (theme === 'light' ? 'text-black font-semibold' : 'text-white font-semibold')
@@ -133,14 +136,22 @@ export default function Navigation() {
                   <div className={`absolute right-0 mt-2 w-48 rounded-xl py-2 shadow-2xl invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50 ${
                     theme === 'light' ? 'bg-white border border-zinc-200 text-black' : 'bg-[#050505] border border-white/10'
                   }`}>
-                    <Link to="/profile" className={`block px-4 py-2 text-sm transition-colors ${
-                      theme === 'light' ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-[#AFAFAF] hover:text-white hover:bg-white/5'
-                    }`}>
+                    <Link 
+                      to="/profile" 
+                      onMouseEnter={() => preloadRoute('/profile')}
+                      className={`block px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-[#AFAFAF] hover:text-white hover:bg-white/5'
+                      }`}
+                    >
                       My Profile
                     </Link>
-                    <Link to="/dashboard" className={`block px-4 py-2 text-sm transition-colors ${
-                      theme === 'light' ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-[#AFAFAF] hover:text-white hover:bg-white/5'
-                    }`}>
+                    <Link 
+                      to="/dashboard" 
+                      onMouseEnter={() => preloadRoute('/dashboard')}
+                      className={`block px-4 py-2 text-sm transition-colors ${
+                        theme === 'light' ? 'text-zinc-700 hover:text-black hover:bg-zinc-100' : 'text-[#AFAFAF] hover:text-white hover:bg-white/5'
+                      }`}
+                    >
                       My Dashboard
                     </Link>
                     <hr className={theme === 'light' ? 'border-zinc-200 my-1' : 'border-white/5 my-1'} />
@@ -161,6 +172,8 @@ export default function Navigation() {
               ) : (
                 <Link
                   to="/login"
+                  onMouseEnter={() => preloadRoute('/login')}
+                  onTouchStart={() => preloadRoute('/login')}
                   className={`group relative inline-flex items-center justify-center p-[2px] rounded-full border transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ${
                     theme === 'light'
                       ? 'border-zinc-300 hover:border-zinc-400 bg-zinc-100 shadow-sm'
