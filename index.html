@@ -3,6 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Immediately disable browser scroll restoration on reload so it never jumps to the footer
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    </script>
     <title>Atideto – Building Digital Experiences Beyond Imagination</title>
     <meta name="description" content="Atideto is a premium software company delivering web, mobile, AI, and cloud solutions. Join our academy for world-class tech internships." />
     <meta name="theme-color" content="#050505" />

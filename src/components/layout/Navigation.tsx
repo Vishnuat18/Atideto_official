@@ -174,21 +174,13 @@ export default function Navigation() {
                   to="/login"
                   onMouseEnter={() => preloadRoute('/login')}
                   onTouchStart={() => preloadRoute('/login')}
-                  className={`group relative inline-flex items-center justify-center p-[2px] rounded-full border transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ${
+                  className={`inline-flex items-center justify-center px-5 py-1.5 rounded-full border text-sm font-semibold tracking-wide transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer bg-transparent ${
                     theme === 'light'
-                      ? 'border-zinc-300 hover:border-zinc-400 bg-zinc-100 shadow-sm'
-                      : 'border-[#55647a] hover:border-[#38BDF8] bg-[#0B1020] hover:shadow-[0_0_15px_rgba(56,189,248,0.25)]'
+                      ? 'border-zinc-300 text-zinc-800 hover:border-zinc-800 hover:bg-zinc-900/5'
+                      : 'border-white/25 text-white hover:border-[#38BDF8] hover:text-[#38BDF8] hover:bg-[#38BDF8]/10 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)]'
                   }`}
                 >
-                  <span
-                    className={`inline-flex items-center justify-center rounded-full border px-5 py-1.5 font-bold text-sm tracking-wide transition-colors ${
-                      theme === 'light'
-                        ? 'border-zinc-200 bg-white text-zinc-900 group-hover:border-zinc-300'
-                        : 'border-[#3b475d] group-hover:border-[#38BDF8]/60 bg-[#0c1222] text-white'
-                    }`}
-                  >
-                    Login
-                  </span>
+                  Login
                 </Link>
               )}
             </div>

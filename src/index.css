@@ -71,7 +71,7 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   /* Desktop Web View: 100% default zoom calibrated to 80% scale */

@@ -19,23 +19,23 @@ export default function LogoLoader({
   };
 
   const containerClasses = size === 'fullscreen' 
-    ? 'fixed inset-0 z-50 flex items-center justify-center bg-[#050505]'
+    ? 'fixed inset-0 z-[9999] flex items-center justify-center bg-[#050505]'
     : 'flex items-center justify-center p-8 w-full';
 
   return (
     <div className={`${containerClasses} ${className}`} role="status" aria-label="Loading">
       <div className={`relative ${logoDimensions[size]} flex items-center justify-center select-none`}>
-        {/* Strictly the Atideto logo with an elegant breathing skeleton pulse */}
+        {/* Strictly the Atideto 'A' logo with an elegant breathing pulse */}
         <motion.img
           src={atidetoLogo}
           alt="Loading..."
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain filter drop-shadow-[0_0_24px_rgba(0,102,255,0.5)]"
           animate={{
             opacity: [0.35, 1, 0.35],
-            scale: [0.96, 1.04, 0.96]
+            scale: [0.95, 1.05, 0.95]
           }}
           transition={{
-            duration: 1.6,
+            duration: 1.5,
             repeat: Infinity,
             ease: 'easeInOut'
           }}
