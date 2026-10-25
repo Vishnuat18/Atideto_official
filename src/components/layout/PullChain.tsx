@@ -1,85 +1,183 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import PullChainRope from './pull-chain/PullChainRope';
+import PullChainHandle from './pull-chain/PullChainHandle';
 import PullMenu from './pull-chain/PullMenu';
 import BackgroundBlur from './pull-chain/BackgroundBlur';
 
 export default function PullChain() {
   const [isOpen, setIsOpen] = useState(false);
+  const [pullAmount, setPullAmount] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const dragStartY = useRef(0);
+  const springFrameRef = useRef<number>(0);
   const location = useLocation();
 
-  // Close menu on route change
-  useEffect(() => {
-    setIsOpen(false);
-  }, [location.pathname]);
+  // Determine current page theme
+  const getThemeFromPath = (path: string) => {
+    if (path === '/') return 'home';
+    if (path.startsWith('/services')) return 'services';
+    if (path.startsWith('/academy')) return 'academy';
+    if (path.startsWith('/about')) return 'about';
+    if (path.startsWith('/client-connect')) return 'client-connect';
+    return 'home';
+  };
 
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
+  const theme = getThemeFromPath(location.pathname);
+
+  // Handle drag mechanics
+  const handleStart = useCallback((clientY: number) => {
+    setIsDragging(true);
+    dragStartY.current = clientY - pullAmount;
+  }, [pullAmount]);
+
+  const handleMove = useCallback((clientY: number) => {
+    if (!isDragging) return;
+    const deltaY = clientY - dragStartY.current;
+    setPullAmount(Math.max(0, Math.min(200, deltaY)));
+  }, [isDragging]);
+
+  // Smooth spring return with higher quality physics
+  const springReturn = useCallback(() => {
+    cancelAnimationFrame(springFrameRef.current);
+    
+    let current = pullAmount;
+    let velocity = 0;
+    const stiffness = 120;
+    const damping = 16;
+    const mass = 1;
+    let lastTime = performance.now();
+
+    const step = (now: number) => {
+      const dt = Math.min((now - lastTime) / 1000, 0.032); // cap at ~30fps minimum
+      lastTime = now;
+
+      const force = -stiffness * current;
+      const dampForce = -damping * velocity;
+      const acceleration = (force + dampForce) / mass;
+      velocity += acceleration * dt;
+      current += velocity * dt;
+
+      if (Math.abs(current) < 0.3 && Math.abs(velocity) < 0.3) {
+        setPullAmount(0);
+        return;
+      }
+
+      setPullAmount(current);
+      springFrameRef.current = requestAnimationFrame(step);
     };
+
+    springFrameRef.current = requestAnimationFrame(step);
+  }, [pullAmount]);
+
+  const handleEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setIsOpen(prev => !prev);
+
+    // Soft click sound
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.08);
+    } catch {
+      // AudioContext browser policy
+    }
+
+    springReturn();
+  }, [isDragging, springReturn]);
+
+  // Click outside to close
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      if (isOpen) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.pull-chain-container')) {
+          setIsOpen(false);
+        }
+      }
+    };
+
+    window.addEventListener('mousedown', handleGlobalClick);
+    return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [isOpen]);
 
-  // Close on Escape key
+  // Document-level drag listeners using PointerEvents
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
+    const onPointerMove = (e: PointerEvent) => handleMove(e.clientY);
+    const onPointerUp = () => handleEnd();
+
+    if (isDragging) {
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+    }
+
+    return () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isDragging, handleMove, handleEnd]);
 
   return (
-    <div className="lg:hidden relative flex items-center">
-      {/* Neat & Professional Native Mobile Menu Bar Button */}
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-expanded={isOpen}
-        aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 border bg-white/[0.08] hover:bg-white/[0.14] border-white/20 text-white active:scale-95 shadow-sm cursor-pointer select-none"
-      >
-        <span className="text-[11px] font-bold tracking-wider uppercase text-slate-200">
-          {isOpen ? 'Close' : 'Menu'}
-        </span>
-        <div className="w-3.5 h-3.5 flex flex-col justify-center items-center gap-1">
-          <span
-            className={`w-3.5 h-[1.5px] bg-[#2EA8FF] rounded-full transition-all duration-300 ${
-              isOpen ? 'rotate-45 translate-y-[2.5px]' : ''
-            }`}
-          />
-          <span
-            className={`w-3.5 h-[1.5px] bg-[#2EA8FF] rounded-full transition-all duration-300 ${
-              isOpen ? '-rotate-45 -translate-y-[2.5px]' : ''
-            }`}
-          />
-        </div>
-      </button>
-
+    <div className="pull-chain-container fixed top-0 right-0 z-50 h-screen pointer-events-none lg:hidden">
       {/* Background Dim & Blur Overlay */}
-      <AnimatePresence>
-        {isOpen && <BackgroundBlur isOpen={isOpen} onClose={() => setIsOpen(false)} />}
-      </AnimatePresence>
+      <BackgroundBlur isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
-      {/* Native-Style Mobile Menu Sheet (Top Slide-down, Rounded Bottom, Professional App Feel) */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="fixed top-0 left-0 right-0 z-50 w-full max-h-[92vh] overflow-hidden flex flex-col bg-[#07090E]/98 backdrop-blur-2xl border-b border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.85)] rounded-b-3xl pointer-events-auto"
-            initial={{ y: '-100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '-100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-          >
-            <PullMenu isOpen={isOpen} onClose={() => setIsOpen(false)} theme="home" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Container holding the menu and the chain in a column */}
+      <div className="fixed top-0 right-4 z-50 pointer-events-none flex flex-col items-end w-72">
+        {/* The Menu (slides down smoothly) */}
+        <motion.div
+          className="w-full pointer-events-auto origin-top"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{
+            height: isOpen ? 'auto' : 0,
+            opacity: isOpen ? 1 : 0,
+          }}
+          transition={{ 
+            type: 'spring', 
+            stiffness: 200, 
+            damping: 28, 
+            mass: 0.8 
+          }}
+          style={{ overflow: 'hidden' }}
+        >
+          <PullMenu isOpen={isOpen} onClose={() => setIsOpen(false)} theme={theme} />
+        </motion.div>
+
+        {/* The Interactive Pull Chain */}
+        <div 
+          className={`pointer-events-auto flex flex-col items-center mr-6 cursor-grab active:cursor-grabbing ${
+            !isDragging && pullAmount === 0 ? 'animate-[pullSway_3.2s_ease-in-out_infinite]' : ''
+          }`}
+          style={{ 
+            width: '44px', 
+            transformOrigin: 'top center',
+            transform: `translateY(${pullAmount}px)`,
+            transition: isDragging ? 'none' : 'transform 0.15s ease-out',
+            touchAction: 'none'
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            handleStart(e.clientY);
+          }}
+        >
+          {/* Thin Rope */}
+          <PullChainRope pullAmount={pullAmount} />
+
+          {/* Atideto Logo Handle */}
+          <PullChainHandle isDragging={isDragging} />
+        </div>
+      </div>
     </div>
   );
 }

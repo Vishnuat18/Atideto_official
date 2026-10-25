@@ -2034,18 +2034,6 @@ html.dashboard-80-view #root {
   }
 }
 
-/* Prevent horizontal scroll entirely in mobile dashboards */
-@media (max-width: 1023px) {
-  html:has([data-slot="dashboard"]),
-  body:has([data-slot="dashboard"]),
-  [data-slot="dashboard"] {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-    width: 100% !important;
-    touch-action: pan-y !important;
-  }
-}
-
 /* Clean Enterprise Input Fields for Admin Drawers & Modals (Prevents dark / black backgrounds) */
 .admin-erp-root input,
 .admin-erp-root select,

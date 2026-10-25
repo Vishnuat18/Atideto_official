@@ -203,18 +203,6 @@ interface RightPanelState {
 export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel = 0.8, onZoomChange }: AdminErpProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
-  const mainScrollRef = useRef<HTMLElement | null>(null);
-
-  // Always scroll to top on tab change and mount
-  useEffect(() => {
-    if (mainScrollRef.current) {
-      mainScrollRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    }
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, [activeTab]);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileMoreSheetOpen, setMobileMoreSheetOpen] = useState(false);
@@ -726,24 +714,24 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     return 'bg-[#F8FAFC] text-[#64748B] border-[#E2E8F0]';
   };
 
-  // State to toggle between Table (List) and Grid ("Small icons") view for each panel - defaults to Small icons initially
+  // State to toggle between Table (List) and Grid ("Small icons") view for each panel
   const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>({
-    'all-students': 'grid',
-    'registrations': 'grid',
-    'courses': 'grid',
-    'internships': 'grid',
-    'attendance': 'grid',
-    'clients': 'grid',
-    'staff': 'grid',
-    'reports': 'grid',
-    'student-payments': 'grid',
-    'finance-payments': 'grid',
-    'billing': 'grid',
-    'certificates': 'grid',
-    'offer-letters': 'grid',
+    'all-students': 'list',
+    'registrations': 'list',
+    'courses': 'list',
+    'internships': 'list',
+    'attendance': 'list',
+    'clients': 'list',
+    'staff': 'list',
+    'reports': 'list',
+    'student-payments': 'list',
+    'finance-payments': 'list',
+    'billing': 'list',
+    'certificates': 'list',
+    'offer-letters': 'list',
   });
 
-  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'grid'): 'list' | 'grid' => {
+  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'list'): 'list' | 'grid' => {
     return panelViewMode[tab] || defaultMode;
   };
 
@@ -764,7 +752,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
   const isPaneAnalyticsOpen = (tab: string) => !!analyticsExpandedPanes[tab];
 
   // Minimal Two-Color View Switcher (Small icons / List) matching reference + Analytic Insights Toggle
-  const ViewSwitcher = ({ tab, defaultMode = 'grid', hideAnalyticsToggle = false }: { tab: string; defaultMode?: 'list' | 'grid'; hideAnalyticsToggle?: boolean }) => {
+  const ViewSwitcher = ({ tab, defaultMode = 'list', hideAnalyticsToggle = false }: { tab: string; defaultMode?: 'list' | 'grid'; hideAnalyticsToggle?: boolean }) => {
     const currentMode = getViewMode(tab, defaultMode);
     const analyticsOpen = isPaneAnalyticsOpen(tab);
 
@@ -1929,7 +1917,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {/* MAIN WORKSPACE CONTENT: Clean Minimal Canvas (Independent Scroll)    */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
-        <main ref={mainScrollRef} className="flex-1 h-full overflow-y-auto overflow-x-hidden min-h-0 w-full max-w-full bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
+        <main className="flex-1 h-full overflow-y-auto min-h-0 bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
           
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 1: OVERVIEW & ANALYTICS (Exact Reference Image 2 Layout)       */}
@@ -2221,8 +2209,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     Complete roster of registered candidates with editable course start dates and internship payment clearance
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="all-students" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="all-students" defaultMode="list" />
                   <button
                     type="button"
                     onClick={() => setRightPanel({
@@ -2502,8 +2490,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   </h1>
                   <p className="text-xs text-[#64748B]">Real-time submissions received via website 4-stepper registration with complete candidate details</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="registrations" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="registrations" defaultMode="list" />
                 </div>
               </div>
 
@@ -2669,8 +2657,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">Technical Course Tracks & Curriculum</h1>
                   <p className="text-xs text-[#64748B]">All 12 official Atideto Academy technical courses from the website</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="courses" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="courses" defaultMode="list" />
                 </div>
               </div>
 
@@ -2954,8 +2942,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     Manage candidate registered internship tracks, manual start date, end date, duration, and completion status
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="internships" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="internships" defaultMode="list" />
                 </div>
               </div>
 
@@ -4002,8 +3990,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">Cohort Attendance Register</h1>
                   <p className="text-xs text-[#64748B]">Real-time student attendance tracking across active training batches</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="attendance" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="attendance" defaultMode="list" />
                 </div>
               </div>
 
@@ -4287,8 +4275,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   </div>
                   <p className="text-xs text-[#64748B] mt-1">Enterprise client accounts, collaborator partner companies, campus hiring MOUs, and custom projects</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="clients" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="clients" defaultMode="list" />
                   <button
                     onClick={() => {
                       setClientForm({
@@ -4687,8 +4675,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     Leadership and core team members ({staffMembers.length} active) • Editable in MySQL Database
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="staff" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="staff" defaultMode="list" />
                   <button
                     onClick={() => {
                       setStaffForm(getPopulatedStaffForm());
@@ -5192,8 +5180,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     Academic progress reports, attendance compliance, and capstone milestones for registered cohort
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="reports" defaultMode="grid" />
+                <div className="flex items-center gap-2">
+                  <ViewSwitcher tab="reports" defaultMode="list" />
                   <button
                     type="button"
                     onClick={() => toast.success('Exporting full batch evaluation dossier as PDF...')}
@@ -5410,8 +5398,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                       Fee settlements, tuition collection registers, and balance records for registered candidates
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-                    <ViewSwitcher tab="student-payments" defaultMode="grid" />
+                  <div className="flex items-center gap-2.5">
+                    <ViewSwitcher tab="student-payments" defaultMode="list" />
                     <button
                       type="button"
                       onClick={() => toast.success('Generated fee settlement statement!')}
@@ -5698,8 +5686,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <ViewSwitcher tab="finance-payments" defaultMode="grid" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <ViewSwitcher tab="finance-payments" defaultMode="list" />
                   <button
                     onClick={() => {
                       setPaymentForm({
@@ -6173,8 +6161,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <ViewSwitcher tab="certificates" defaultMode="grid" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ViewSwitcher tab="certificates" defaultMode="list" />
                     <button
                       type="button"
                       onClick={() => setRightPanel({
