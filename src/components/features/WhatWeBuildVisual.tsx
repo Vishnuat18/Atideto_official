@@ -85,7 +85,7 @@ const FloatingCard: React.FC<FloatingCardProps> = ({
         >
           <Icon size={16} className="text-[#2EA8FF]" />
         </div>
-        <h5 className="font-bold text-[14px] text-white tracking-wide uppercase font-space">{title}</h5>
+        <h5 className="font-semibold text-[14px] text-white tracking-wide uppercase font-heading">{title}</h5>
       </div>
       <p className="text-[#A7B3C7] text-[11px] leading-relaxed mb-3">{desc}</p>
       <div
@@ -263,7 +263,7 @@ export default function WhatWeBuildVisual() {
                 <div className="w-8 h-8 rounded-xl bg-[#005DFF]/15 border border-[#2EA8FF]/20 flex items-center justify-center text-[#2EA8FF]">
                   <Icon size={16} />
                 </div>
-                <h4 className="font-space font-bold text-[15px] text-white tracking-wide uppercase">{c.title}</h4>
+                <h4 className="font-heading font-semibold text-[15px] text-white tracking-wide uppercase">{c.title}</h4>
               </div>
               <p className="text-[#A7B3C7] text-[11px] leading-relaxed mb-4">{c.desc}</p>
               <div className="flex items-center gap-1">

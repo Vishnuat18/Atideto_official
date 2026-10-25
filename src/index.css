@@ -1,5 +1,3 @@
-@import url('https://fonts.cdnfonts.com/css/google-sans');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -53,15 +51,77 @@
 
     /* Atideto Brand Colors */
     --atideto-bg: #050505;
-    --atideto-bg2: #080616;
+    --atideto-bg2: #050814;
     --atideto-card: #111111;
-    --atideto-navy: #1A1953;
-    --atideto-blue: #2F2FE4;
-    --atideto-blue2: #162E93;
+    --atideto-navy: #0A1938;
+    --atideto-blue: #0052FF;
+    --atideto-blue2: #0038B8;
     --atideto-green: #00D26A;
     --atideto-crimson: #D2042D;
     --atideto-text: #AFAFAF;
+
+    /* ══════════════════════════════════════════════════════════════════
+       STRICT 2-FONT DESIGN SYSTEM
+       1. Headings: Plus Jakarta Sans (Modern, Premium, Bold)
+       2. Body & UI: Inter (Clean, Readable, Professional)
+       Never introduce a 3rd font family.
+       ══════════════════════════════════════════════════════════════════ */
+    --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --font-editorial-heading: var(--font-heading);
+    --font-editorial-body: var(--font-body);
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GLOBAL TYPOGRAPHY UTILITIES (STRICTLY 2 FONTS)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Headings (Plus Jakarta Sans) */
+.editorial-title,
+.editorial-heading,
+.font-editorial-heading,
+.font-heading,
+.font-display,
+.editorial-quote,
+.font-manrope,
+.font-jakarta,
+.font-montserrat,
+.font-space {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  letter-spacing: -0.02em;
+}
+
+/* Body & UI (Inter) */
+.editorial-sub,
+.editorial-body,
+.font-editorial-body,
+.font-ui,
+.font-sans,
+.font-inter,
+.font-num,
+.font-mono {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
+/* Italic accents mapped to Plus Jakarta Sans (no third font!) */
+.editorial-italic,
+.font-editorial-italic,
+.font-serif {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-style: italic;
+}
+
+.font-tag,
+.editorial-caps,
+.label-badge {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 @layer base {
@@ -72,25 +132,175 @@
 
   html {
     scroll-behavior: auto;
+    font-size: 16px;
   }
 
-  /* Desktop Web View: 100% default zoom calibrated to 80% scale */
-  @media (min-width: 1024px) {
+  /* Desktop & Tablet Web View: 90% view (100% -> 90% scale across entire website) */
+  html {
+    zoom: 0.9;
+  }
+
+  @media (max-width: 640px) {
     html {
-      zoom: 0.8;
+      zoom: 1;
+    }
+  }
+
+  /* Full screen pages (Dashboard & Login) render at 100% full screen width & height edge-to-edge */
+  html:has([data-slot="dashboard"]),
+  html:has([data-slot="login"]),
+  body:has([data-slot="dashboard"]),
+  body:has([data-slot="login"]) {
+    zoom: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Full Viewport Height Hero (Compensates for html { zoom: 0.9 } so hero is 100% of physical screen height) */
+  .hero-fullscreen {
+    height: calc(100vh / 0.9);
+    min-height: calc(100vh / 0.9);
+    max-height: calc(100vh / 0.9);
+    overflow: hidden;
+  }
+
+  @media (max-width: 640px) {
+    .hero-fullscreen {
+      height: auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      max-height: none;
+      overflow: visible;
     }
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Google Sans', 'Product Sans', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.011em;
     background-color: #050505;
     color: #ffffff;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Google Sans', 'Product Sans', sans-serif;
+  /* ══════════════════════════════════════════════════════════════════
+     EXACT FONT SIZE SCALE
+     Hero heading (H1)     : 44px max desktop | 32px mobile (weight 700, line-height 1.15)
+     H2 — Section title    : 36px desktop     | 28px mobile (weight 600–700)
+     H3 — Subheading       : 28px desktop     | 24px mobile (weight 600–700)
+     H4 — Card heading     : 22px desktop     | 20px mobile (weight 600)
+     H5 — Small heading    : 18px desktop     | 18px mobile (weight 600)
+     H6 — Minor heading    : 16px desktop     | 16px mobile (weight 600)
+     Body large            : 18px desktop     | 17px mobile
+     Body paragraph        : 16px desktop     | 16px mobile (weight 400, line-height 1.6)
+     Secondary text        : 14px desktop     | 14px mobile
+     Caption / Helper text : 12px desktop     | 12px mobile
+     Navigation links      : 14px desktop     | 14px mobile
+     Buttons               : 14–16px          (weight 600)
+     Labels / Badges       : 12px desktop     | 12px mobile
+     ══════════════════════════════════════════════════════════════════ */
+
+  h1, .hero-h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: clamp(32px, 4vw, 44px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+
+  h2, .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: clamp(28px, 3.2vw, 36px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  h3, .subheading {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: clamp(24px, 2.5vw, 28px);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+
+  h4, .card-heading {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: clamp(20px, 2vw, 22px);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  h5, .small-heading {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  h6, .minor-heading {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  p, .body-paragraph {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+
+  .body-large {
+    font-family: 'Inter', sans-serif !important;
+    font-size: clamp(17px, 1.5vw, 18px);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .text-secondary {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .caption-text, .helper-text {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .nav-link {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  button, .btn, .btn-liquid-slide, .btn-primary, .btn-outline {
+    font-family: 'Inter', sans-serif !important;
+    font-size: clamp(14px, 1.2vw, 16px);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .badge-label, .capsule-label {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
   }
 }
 
@@ -234,12 +444,14 @@
   border-bottom: 1px solid rgba(47, 47, 228, 0.15);
 }
 
-/* Gradient Text */
-.gradient-text {
-  background: linear-gradient(135deg, #2F2FE4 0%, #818cf8 50%, #c7d2fe 100%);
+/* Gradient & Highlighted Text (Unified Brand Standard) */
+.gradient-text,
+.highlight-text {
+  background: linear-gradient(135deg, #0052FF 0%, #2EA8FF 50%, #38BDF8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(46, 168, 255, 0.35));
 }
 
 .gradient-text-gold {
@@ -417,17 +629,66 @@
   box-shadow: 0 20px 60px rgba(47, 47, 228, 0.2);
 }
 
-/* Intersection Observer Reveal */
+/* ══════════════════════════════════════════════════════════════════
+   SCROLL REVEAL ANIMATIONS (SMOOTH & CINEMATIC)
+   ══════════════════════════════════════════════════════════════════ */
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.7s ease;
+  transform: translateY(28px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal.revealed {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.93) translateY(24px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scale.revealed {
+  opacity: 1 !important;
+  transform: scale(1) translateY(0) !important;
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-left.revealed {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-right.revealed {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+}
+
+/* Stagger transition delays */
+.delay-75  { transition-delay: 75ms; }
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-250 { transition-delay: 250ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
 
 /* Pull Chain Styles */
 .pull-chain-container {
@@ -465,7 +726,7 @@
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #2F2FE4, #818cf8);
+  background: linear-gradient(90deg, #0052FF, #38BDF8);
   z-index: 9999;
   transition: width 0.1s ease;
 }
@@ -499,9 +760,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(47, 47, 228, 0.1);
-  border: 1px solid rgba(47, 47, 228, 0.3);
-  color: #818cf8;
+  background: rgba(0, 82, 255, 0.1);
+  border: 1px solid rgba(0, 82, 255, 0.3);
+  color: #38BDF8;
   padding: 6px 16px;
   border-radius: 100px;
   font-size: 12px;
@@ -513,7 +774,7 @@
 
 /* Nav Active */
 .nav-link-active {
-  color: #818cf8 !important;
+  color: #38BDF8 !important;
 }
 
 /* Loading */
@@ -539,7 +800,7 @@
 
 .loading-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2F2FE4, #818cf8);
+  background: linear-gradient(90deg, #0052FF, #38BDF8);
   border-radius: 1px;
   animation: loadingFill 1.5s ease-out forwards;
 }
@@ -616,14 +877,6 @@
   }
 }
 
-/* Premium Hero Layout Utilities */
-.font-space {
-  font-family: 'Google Sans', 'Product Sans', sans-serif;
-}
-
-.font-montserrat {
-  font-family: 'Google Sans', 'Product Sans', sans-serif;
-}
 
 @keyframes gradientShiftText {
   0% { background-position: 0% 50%; }
@@ -894,6 +1147,7 @@ html.light .bg-\[\#050505\],
 html.light .bg-\[\#05070B\],
 html.light .bg-\[\#020208\],
 html.light .bg-\[\#080616\],
+html.light .bg-\[\#050814\],
 html.light div[style*="background: rgb(5, 5, 5)"],
 html.light div[style*="background: #050505"],
 html.light div[style*="background:#050505"] {
@@ -995,12 +1249,14 @@ html.light .animate-text-gradient {
   background: linear-gradient(90deg, #0A0A0A 0%, #3B82F6 40%, #0A0A0A 80%) !important;
   background-size: 200% auto !important;
   -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
 html.light .gradient-text {
   background: linear-gradient(135deg, #0A0A0A 0%, #2563EB 100%) !important;
   -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
@@ -1211,16 +1467,8 @@ html.light #pre-footer-cta p {
 }
 
 /* ── FOOTER IN LIGHT MODE ── */
-html.light footer {
-  background-color: #FFFFFF !important;
-  background-image: none !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #0A0A0A !important;
-}
+/* Maintain immersive brand visual footer background across themes */
 
-html.light footer .bg-black\/40 {
-  display: none !important;
-}
 
 html.light footer h4 {
   color: #0A0A0A !important;
@@ -1254,14 +1502,6 @@ html.light footer .border-t {
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Explicit font family utilities */
-.font-montserrat {
-  font-family: 'Montserrat', sans-serif !important;
-}
-
-.font-space {
-  font-family: 'Space Grotesk', sans-serif !important;
-}
 
 @keyframes pullSway {
   0%, 100% {
@@ -1275,3 +1515,654 @@ html.light footer .border-t {
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── From Uiverse.io by KINGFRESS (Rolling Text Button) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+.kingfress-btn {
+  font-weight: bold;
+  color: white;
+  border-radius: 2rem;
+  cursor: pointer;
+  width: 95.02px;
+  height: 42.66px;
+  border: none;
+  background-color: #3653f8;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  font-size: 13px;
+  box-shadow: 0 2px 14px rgba(54, 83, 248, 0.4);
+  transition: all 0.3s ease;
+}
+
+.kingfress-btn:hover {
+  background-color: #2744e8;
+  box-shadow: 0 4px 20px rgba(54, 83, 248, 0.6);
+}
+
+.kingfress-btn .span-mother {
+  display: flex;
+  overflow: hidden;
+}
+
+.kingfress-btn:hover .span-mother {
+  position: absolute;
+}
+
+.kingfress-btn:hover .span-mother span {
+  transform: translateY(1.2em);
+}
+
+.kingfress-btn .span-mother span:nth-child(1) {
+  transition: 0.2s;
+}
+
+.kingfress-btn .span-mother span:nth-child(2) {
+  transition: 0.3s;
+}
+
+.kingfress-btn .span-mother span:nth-child(3) {
+  transition: 0.4s;
+}
+
+.kingfress-btn .span-mother span:nth-child(4) {
+  transition: 0.5s;
+}
+
+.kingfress-btn .span-mother span:nth-child(5) {
+  transition: 0.6s;
+}
+
+.kingfress-btn .span-mother span:nth-child(6) {
+  transition: 0.7s;
+}
+
+.kingfress-btn .span-mother2 {
+  display: flex;
+  position: absolute;
+  overflow: hidden;
+}
+
+.kingfress-btn .span-mother2 span {
+  transform: translateY(-1.2em);
+  transition: 0.2s;
+}
+
+.kingfress-btn:hover .span-mother2 span {
+  transform: translateY(0);
+}
+
+.kingfress-btn .span-mother2 span:nth-child(2) {
+  transition: 0.3s;
+}
+
+.kingfress-btn .span-mother2 span:nth-child(3) {
+  transition: 0.4s;
+}
+
+.kingfress-btn .span-mother2 span:nth-child(4) {
+  transition: 0.5s;
+}
+
+.kingfress-btn .span-mother2 span:nth-child(5) {
+  transition: 0.6s;
+}
+
+.kingfress-btn .span-mother2 span:nth-child(6) {
+  transition: 0.7s;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── From Uiverse.io by Creatlydev (Course Action Button) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+.creatly-btn {
+  --clr: #0066FF;
+  line-height: 1;
+  text-decoration: none;
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--clr);
+  color: #fff;
+  border-radius: 10rem;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  padding-left: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  transition: background-color 0.3s, border-color 0.3s;
+  box-shadow: none;
+}
+
+.creatly-btn .button__icon-wrapper {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  position: relative;
+  color: var(--clr);
+  background-color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transition: color 0.3s;
+}
+
+.creatly-btn:hover {
+  background-color: #000;
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: none;
+}
+
+.creatly-btn:hover .button__icon-wrapper {
+  color: #000;
+}
+
+.creatly-btn .button__icon-svg--copy {
+  position: absolute;
+  transform: translate(-150%, 150%);
+}
+
+.creatly-btn:hover .button__icon-svg:first-child {
+  transition: transform 0.3s ease-in-out;
+  transform: translate(150%, -150%);
+}
+
+.creatly-btn:hover .button__icon-svg--copy {
+  transition: transform 0.3s ease-in-out 0.1s;
+  transform: translate(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── From Uiverse.io (Course Sub-courses Learn More Button) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+button.learn-more {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  outline: none;
+  border: 0;
+  vertical-align: middle;
+  text-decoration: none;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  width: 12rem;
+  height: auto;
+}
+
+button.learn-more .circle {
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  position: relative;
+  display: block;
+  margin: 0;
+  width: 3rem;
+  height: 3rem;
+  background: #282936;
+  border-radius: 1.625rem;
+}
+
+button.learn-more .circle .icon {
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  background: #fff;
+}
+
+button.learn-more .circle .icon.arrow {
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  left: 0.625rem;
+  width: 1.125rem;
+  height: 0.125rem;
+  background: none;
+}
+
+button.learn-more .circle .icon.arrow::before {
+  position: absolute;
+  content: "";
+  top: -0.29rem;
+  right: 0.0625rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-top: 0.125rem solid #fff;
+  border-right: 0.125rem solid #fff;
+  transform: rotate(45deg);
+}
+
+button.learn-more .button-text {
+  transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.75rem 0;
+  margin: 0 0 0 1.85rem;
+  color: #CBD5E1;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.learn-more:hover .circle {
+  width: 100%;
+  background: #0066FF;
+}
+
+button.learn-more:hover .circle .icon.arrow {
+  background: #fff;
+  transform: translate(1rem, 0);
+}
+
+button.learn-more:hover .button-text {
+  color: #fff;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── From Uiverse.io (Liquid Blobs Menu Button) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+.menu-blob-btn {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  color: white;
+  background-color: #171717;
+  padding: 0.9em 1.8em;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: .6rem;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.menu-blob-btn span:not(:nth-child(6)) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 30px;
+  width: 30px;
+  background-color: #0c66ed;
+  border-radius: 50%;
+  transition: .6s ease;
+  pointer-events: none;
+}
+
+.menu-blob-btn span:nth-child(6) {
+  position: relative;
+  z-index: 1;
+}
+
+.menu-blob-btn span:nth-child(1) {
+  transform: translate(-3.3em, -4em);
+}
+
+.menu-blob-btn span:nth-child(2) {
+  transform: translate(-6em, 1.3em);
+}
+
+.menu-blob-btn span:nth-child(3) {
+  transform: translate(-.2em, 1.8em);
+}
+
+.menu-blob-btn span:nth-child(4) {
+  transform: translate(3.5em, 1.4em);
+}
+
+.menu-blob-btn span:nth-child(5) {
+  transform: translate(3.5em, -3.8em);
+}
+
+.menu-blob-btn:hover {
+  border-color: rgba(12, 102, 237, 0.5);
+}
+
+.menu-blob-btn:hover span:not(:nth-child(6)) {
+  transform: translate(-50%, -50%) scale(4);
+  transition: 1.5s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════ */
+/* ── From Uiverse.io (Fancy Keyed Menu Button) ── */
+/* ══════════════════════════════════════════════════════════════════════ */
+.fancy {
+ background-color: transparent;
+ border: 2px solid #0066FF;
+ border-radius: 0;
+ box-sizing: border-box;
+ color: #fff;
+ cursor: pointer;
+ display: inline-block;
+ font-weight: 700;
+ letter-spacing: 0.05em;
+ margin: 0;
+ outline: none;
+ overflow: visible;
+ padding: 0.8em 1.6em;
+ position: relative;
+ text-align: center;
+ text-decoration: none;
+ text-transform: none;
+ transition: all 0.3s ease-in-out;
+ user-select: none;
+ font-size: 12px;
+ font-family: 'Inter', sans-serif;
+}
+
+.fancy::before {
+ content: " ";
+ width: 1.5625rem;
+ height: 2px;
+ background: #0066FF;
+ top: 50%;
+ left: 1.2em;
+ position: absolute;
+ transform: translateY(-50%);
+ transform-origin: center;
+ transition: background 0.3s linear, width 0.3s linear;
+}
+
+.fancy .text {
+ font-size: 1em;
+ line-height: 1.33333em;
+ padding-left: 1.8em;
+ display: block;
+ text-align: left;
+ transition: all 0.3s ease-in-out;
+ text-transform: uppercase;
+ text-decoration: none;
+ color: #fff;
+ font-weight: 700;
+ letter-spacing: 0.06em;
+}
+
+.fancy .top-key {
+ height: 2px;
+ width: 1.5625rem;
+ top: -2px;
+ left: 0.625rem;
+ position: absolute;
+ background: #38BDF8;
+ transition: width 0.5s ease-out, left 0.3s ease-out;
+}
+
+.fancy .bottom-key-1 {
+ height: 2px;
+ width: 1.5625rem;
+ right: 1.875rem;
+ bottom: -2px;
+ position: absolute;
+ background: #38BDF8;
+ transition: width 0.5s ease-out, right 0.3s ease-out;
+}
+
+.fancy .bottom-key-2 {
+ height: 2px;
+ width: 0.625rem;
+ right: 0.625rem;
+ bottom: -2px;
+ position: absolute;
+ background: #38BDF8;
+ transition: width 0.5s ease-out, right 0.3s ease-out;
+}
+
+.fancy:hover {
+ color: white;
+ background: #0066FF;
+ box-shadow: 0 0 20px rgba(0, 102, 255, 0.45);
+}
+
+.fancy:hover::before {
+ width: 0.9375rem;
+ background: white;
+}
+
+.fancy:hover .text {
+ color: white;
+ padding-left: 1.4em;
+}
+
+.fancy:hover .top-key {
+ left: -2px;
+ width: 0px;
+}
+
+.fancy:hover .bottom-key-1,
+.fancy:hover .bottom-key-2 {
+ right: 0;
+ width: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ERP & DASHBOARD INDEPENDENT PANEL SCROLLING UTILITIES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Hide scrollbar completely on left panel while keeping full scrollability */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important;    /* Firefox */
+}
+
+/* Sleek subtle scrollbar for right panel & drawer */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DASHBOARD FULL SCREEN VIEWPORT & SEPARATE PANEL SCROLLING
+   Applied exclusively to Admin ERP Dashboard and Student Dashboard
+   ══════════════════════════════════════════════════════════════════ */
+html.dashboard-80-view {
+  scroll-behavior: auto !important;
+  background-color: #F8FAFC !important;
+  overflow: hidden !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+html.dashboard-80-view body {
+  background-color: #F8FAFC !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+html.dashboard-80-view #root {
+  background-color: #F8FAFC !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Fallback for legacy browsers without native CSS zoom support */
+@supports not (zoom: 0.8) {
+  html.dashboard-80-view body {
+    transform: scale(0.8);
+    transform-origin: top left;
+    width: 125vw !important;
+    height: 125vh !important;
+  }
+}
+
+/* Clean Enterprise Input Fields for Admin Drawers & Modals (Prevents dark / black backgrounds) */
+.admin-erp-root input,
+.admin-erp-root select,
+.admin-erp-root textarea,
+[data-slot="dashboard"] input,
+[data-slot="dashboard"] select,
+[data-slot="dashboard"] textarea,
+aside input,
+aside select {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+.admin-erp-root input::placeholder,
+[data-slot="dashboard"] input::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DEDICATED PURE ISOLATED DOCUMENT PRINTING
+   When printing anywhere, hide all navigation, headers, sidebars,
+   drawers, and web UI. Only print the official certificate or offer letter.
+   ══════════════════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    size: 210mm 297mm;
+    margin: 0 !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide all dashboard chrome, navigation, headers, modals, drawers */
+  header, nav, aside, footer, .admin-nav, button, 
+  .no-print {
+    display: none !important;
+  }
+
+  /* Internship Certificate: Vertically placed in the center of A4 sheet */
+  [data-printable="certificate"],
+  #official-authentic-certificate {
+    position: fixed !important;
+    top: calc((297mm - 140mm) / 2) !important;
+    left: 0 !important;
+    width: 210mm !important;
+    height: 140mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    visibility: visible !important;
+    display: block !important;
+    z-index: 999999 !important;
+  }
+
+  /* Attendance Certificate: Standard A4 portrait */
+  [data-printable="attendance-certificate"],
+  #official-authentic-attendance-certificate {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    visibility: visible !important;
+    display: block !important;
+    z-index: 999999 !important;
+  }
+
+  /* Offer Letter: Standard A4 portrait */
+  [data-printable="offer-letter"],
+  #official-authentic-offer-letter {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    visibility: visible !important;
+    display: block !important;
+    z-index: 999999 !important;
+  }
+
+  [data-printable] * {
+    visibility: visible !important;
+  }
+}
+/* ========================================================================= */
+/* NATIVE APPLE / ANDROID MOBILE APP UTILITIES                               */
+/* ========================================================================= */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+[data-slot="dashboard"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+[data-slot="dashboard"] * {
+  -webkit-overflow-scrolling: touch;
+}

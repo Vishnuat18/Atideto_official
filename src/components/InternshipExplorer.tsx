@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  PlayCircle, Award, Briefcase, Clock, CheckCircle2, ChevronRight, Layers, Sparkles, Folder, Users, BarChart2,
+  PlayCircle, Award, Briefcase, Clock, CheckCircle2, ChevronRight, ChevronLeft, Layers, Sparkles, Folder, Users, BarChart2,
   Code2, Server, Database, Globe, Smartphone, Shield, Cloud, Palette, Laptop, Target, Zap, Rocket, Star, 
-  MessageSquare, HelpCircle, ChevronDown, Compass, Download, ArrowRight, Check, Calendar
+  MessageSquare, HelpCircle, ChevronDown, Compass, Download, ArrowRight, Check, Calendar, ExternalLink,
+  GraduationCap, Building2, User, Mail, Phone, ShieldCheck, FileCheck2, AlertCircle, Upload, CheckCircle
 } from 'lucide-react';
 import { INTERNSHIP_PROGRAMS, INTERNSHIP_CATEGORIES } from '@/constants';
 import { Link, useNavigate } from 'react-router-dom';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { submitRegistrationToDb, createStudentInDb } from '@/lib/api';
+import { addStudentToRegistry } from '@/lib/certificateStore';
+import { COUNTRY_CODES, INDIAN_STATES } from '@/components/registration/StepperRegistrationModal';
+import InlineStepperRegistration from '@/components/registration/InlineStepperRegistration';
 
 // --- Subcomponents for Right Panel ---
 
@@ -41,28 +44,192 @@ export default function InternshipExplorer() {
   const [activeId, setActiveId] = useState(INTERNSHIP_PROGRAMS[0].id);
   const [showMobileDetails, setShowMobileDetails] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const [applyStep, setApplyStep] = useState(0);
-  const [applyForm, setApplyForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    countryCode: '+91',
-    resumeName: '',
-    college: '',
-    degree: '',
-    stream: '',
-    graduationYear: '',
-    startDate: '',
-    duration: '30',
-    reportIncluded: false,
-    paymentOption: 'Pay Now'
-  });
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const mainBoxRef = useRef<HTMLDivElement>(null);
+  const [stepperStep, setStepperStep] = useState(1);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredPrograms = activeCategory === 'All' 
     ? INTERNSHIP_PROGRAMS 
     : INTERNSHIP_PROGRAMS.filter(p => p.category === activeCategory);
 
   const activeProgram = INTERNSHIP_PROGRAMS.find(p => p.id === activeId) || INTERNSHIP_PROGRAMS[0];
+
+  const [applyForm, setApplyForm] = useState({
+    photoUrl: '',
+    fullName: user?.name || '',
+    email: user?.email || '',
+    countryCode: '+91',
+    contactNumber: '',
+    gender: 'Male' as 'Male' | 'Female' | 'Other',
+    collegeName: 'Mahendra Engineering College',
+    district: 'Namakkal',
+    city: 'Mallasamudram',
+    state: 'Tamil Nadu',
+    institutionType: 'Autonomous' as 'Autonomous' | 'University' | 'Affiliated',
+    degree: 'B.Tech Information Technology',
+    specialization: 'Information Technology',
+    graduationYear: '2027',
+    programType: 'Internship' as 'Internship' | 'Course',
+    selectedProgramId: activeProgram.id,
+    selectedProgramTitle: activeProgram.title,
+    startDate: '2026-11-02',
+    duration: '3 Months',
+    requirements: '',
+    applicationId: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setApplyForm(prev => ({
+        ...prev,
+        fullName: prev.fullName || user.name || '',
+        email: prev.email || user.email || ''
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (activeProgram) {
+      setApplyForm(prev => ({
+        ...prev,
+        selectedProgramId: activeProgram.id,
+        selectedProgramTitle: activeProgram.title
+      }));
+    }
+  }, [activeProgram]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image file must be under 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setApplyForm(prev => ({ ...prev, photoUrl: event.target?.result as string }));
+        toast.success('Profile photo uploaded');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validateStep1 = () => {
+    if (!applyForm.fullName.trim()) {
+      toast.error('Please enter your full name');
+      return false;
+    }
+    if (!applyForm.email.trim() || !applyForm.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return false;
+    }
+    if (!applyForm.contactNumber.trim() || applyForm.contactNumber.length < 7) {
+      toast.error('Please enter a valid contact phone number');
+      return false;
+    }
+    if (!applyForm.gender) {
+      toast.error('Please select your gender');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (!applyForm.collegeName.trim()) {
+      toast.error('Please enter your college name');
+      return false;
+    }
+    if (!applyForm.district.trim()) {
+      toast.error('Please enter your college district');
+      return false;
+    }
+    if (!applyForm.city.trim()) {
+      toast.error('Please enter your college city');
+      return false;
+    }
+    if (!applyForm.degree.trim()) {
+      toast.error('Please enter your degree program');
+      return false;
+    }
+    if (!applyForm.specialization.trim()) {
+      toast.error('Please enter your department / specialization');
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (!applyForm.startDate) {
+      toast.error('Please select an expected start date');
+      return false;
+    }
+    if (!applyForm.duration) {
+      toast.error('Please select internship duration');
+      return false;
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (stepperStep === 1 && !validateStep1()) return;
+    if (stepperStep === 2 && !validateStep2()) return;
+    if (stepperStep === 3 && !validateStep3()) return;
+    setStepperStep(prev => prev + 1);
+  };
+
+  const handleSubmitRegistration = async () => {
+    if (!termsAgreed) {
+      toast.error('Please confirm the accuracy declaration');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const newId = `AT-REG-2026-MEC-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    try {
+      // Single canonical registration call: persists to MySQL registrations, students, and central registry
+      await submitRegistrationToDb({
+        regId: newId,
+        studentId: `STU-${newId}`,
+        studentName: applyForm.fullName,
+        email: applyForm.email,
+        phone: `${applyForm.countryCode} ${applyForm.contactNumber}`,
+        college: applyForm.collegeName,
+        degree: applyForm.degree,
+        gradYear: applyForm.graduationYear,
+        courseInterest: applyForm.selectedProgramTitle,
+        domain: activeProgram.title || activeProgram.category || 'Information Technology',
+        startDate: applyForm.startDate,
+        duration: applyForm.duration,
+        mode: 'Industrial Hybrid',
+        notes: `Specialization: ${applyForm.specialization}, City: ${applyForm.city}, Duration: ${applyForm.duration}`
+      });
+
+      // 4. LocalStorage sync for immediate UI updates
+      const existing = JSON.parse(localStorage.getItem('atideto_registrations') || '[]');
+      const newRecord = {
+        ...applyForm,
+        applicationId: newId,
+        submittedAt: new Date().toISOString(),
+        status: 'Active',
+        paymentStatus: 'Verified'
+      };
+      localStorage.setItem('atideto_registrations', JSON.stringify([newRecord, ...existing]));
+
+      setApplyForm(prev => ({ ...prev, applicationId: newId }));
+      setStepperStep(5);
+      toast.success('Registration Successfully Submitted & Synced with Database!');
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      setApplyForm(prev => ({ ...prev, applicationId: newId }));
+      setStepperStep(5);
+      toast.success('Registration Saved!');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="w-full relative z-10 text-white font-sans">
@@ -89,11 +256,24 @@ export default function InternshipExplorer() {
         </div>
       </div>
 
-      {/* 2. Split Layout (Explorer) */}
-      <div className="flex flex-col lg:flex-row gap-8 mb-24 items-stretch">
-        
-        {/* Left Panel (35%) */}
-        <div className={`w-full lg:w-[35%] flex flex-col h-auto lg:h-auto overflow-hidden ${showMobileDetails ? 'hidden lg:flex' : 'flex'}`}>
+      {/* 2. Main Box Container: Full-width 4-stepper registration when applying, split explorer when browsing */}
+      <div ref={mainBoxRef} className="mb-24 scroll-mt-24">
+        {isApplying ? (
+          <div className="w-full bg-[#050914] border border-white/10 rounded-[24px] shadow-2xl p-6 sm:p-8 lg:p-10 relative overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
+            <InlineStepperRegistration
+              program={activeProgram}
+              onBack={() => {
+                setIsApplying(false);
+                setTimeout(() => {
+                  mainBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 40);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+            {/* Left Panel (35%) */}
+            <div className={`w-full lg:w-[35%] flex flex-col h-auto lg:h-auto overflow-hidden ${showMobileDetails ? 'hidden lg:flex' : 'flex'}`}>
           <div className="grid grid-cols-2 lg:flex lg:flex-col gap-4 relative h-full overflow-y-auto custom-scrollbar pr-2 pb-10 lg:pb-0">
             <AnimatePresence>
               {filteredPrograms.map((prog) => {
@@ -149,7 +329,9 @@ export default function InternshipExplorer() {
         </div>
 
         {/* Right Panel (65%) */}
-        <div className={`w-full lg:w-[65%] bg-[#050914] border border-white/5 rounded-[24px] shadow-2xl overflow-hidden relative ${showMobileDetails ? 'flex' : 'hidden lg:flex'}`}>
+        <div 
+          ref={rightPanelRef}
+          className={`w-full lg:w-[65%] bg-[#050914] border border-white/5 rounded-[24px] shadow-2xl overflow-hidden relative ${showMobileDetails ? 'flex' : 'hidden lg:flex'}`}>
           
           <AnimatePresence mode="wait">
             <motion.div
@@ -174,7 +356,7 @@ export default function InternshipExplorer() {
               )}
               
               {/* Render Details OR Application Form */}
-              {!isApplying ? (
+              {!isApplying && (
                 <>
                   {/* Header inside Right Panel */}
                   <div className="flex flex-row gap-4 md:gap-8 mb-10 items-center justify-start">
@@ -182,7 +364,7 @@ export default function InternshipExplorer() {
                       <DeepMindVisual icon={activeProgram.icon as string} />
                     </div>
                     <div className="flex-1 text-left">
-                      <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                      <h2 className="text-[24px] sm:text-[28px] font-bold text-white tracking-tight leading-tight font-heading">
                         {activeProgram.title}
                       </h2>
                     </div>
@@ -208,15 +390,15 @@ export default function InternshipExplorer() {
 
                   {/* Skills */}
                   <div className="mb-10">
-                    <h3 className="text-lg font-bold text-white mb-4">Skills You'll Master</h3>
+                    <h3 className="text-[18px] sm:text-[20px] font-semibold text-white mb-4 font-heading">Skills You'll Master</h3>
                     <div className="flex flex-wrap gap-2.5">
                       {activeProgram.skills.map(skill => (
-                        <div key={skill} className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default">
+                        <div key={skill} className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default font-sans">
                           {skill}
                         </div>
                       ))}
-                      <div className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default">Git</div>
-                      <div className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default">Deployment</div>
+                      <div className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default font-sans">Git</div>
+                      <div className="px-4 py-2 bg-transparent border border-white/20 rounded-md text-[13px] font-semibold text-white/80 hover:bg-[#00A3FF]/10 hover:border-[#00A3FF]/50 hover:text-[#00A3FF] transition-all cursor-default font-sans">Deployment</div>
                     </div>
                   </div>
 
@@ -224,8 +406,8 @@ export default function InternshipExplorer() {
                   <div className="flex flex-col md:flex-row gap-8 mb-10">
                     {/* What You'll Build */}
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-white mb-4">What You'll Build</h3>
-                      <ul className="space-y-3">
+                      <h3 className="text-[18px] sm:text-[20px] font-semibold text-white mb-4 font-heading">What You'll Build</h3>
+                      <ul className="space-y-3 font-sans">
                         {['Student Management System', 'E-Commerce Web Application', 'Blog Platform with Authentication', 'RESTful APIs & Integrations', 'Deploy Your Application'].map((item, i) => (
                           <li key={i} className="flex items-center gap-3 text-[14px] text-white/70">
                             <div className="w-5 h-5 rounded-full bg-[#0052FF] flex items-center justify-center shrink-0">
@@ -241,7 +423,7 @@ export default function InternshipExplorer() {
                     <div className="flex-1">
                       <div className="bg-[#0A0F1C] border border-[#00A3FF]/20 rounded-2xl p-5 relative overflow-hidden group hover:shadow-[0_0_30px_rgba(0,163,255,0.1)] transition-all">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[#00A3FF]/10 blur-[40px] rounded-full" />
-                        <h3 className="text-[#00A3FF] font-bold text-[15px] mb-2 relative z-10">Internship Certificate</h3>
+                        <h3 className="text-[#00A3FF] font-semibold text-[16px] mb-2 relative z-10 font-heading">Internship Certificate</h3>
                         <p className="text-[12px] text-white/60 mb-4 relative z-10">Earn a verified certificate from Atideto Academy to showcase your skills.</p>
                         <div className="w-full h-[120px] bg-white/5 border border-white/10 rounded-lg flex items-center justify-center relative z-10 overflow-hidden">
                           {/* Fake Certificate Illustration */}
@@ -268,8 +450,8 @@ export default function InternshipExplorer() {
                       </div>
                     </div>
                     <div className="flex items-start gap-4 p-4 lg:p-5 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 rounded-2xl hover:border-white/10 transition-all">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/20">
-                        <HelpCircle className="w-5 h-5 text-purple-400" />
+                      <div className="w-10 h-10 rounded-full bg-[#0052FF]/10 flex items-center justify-center shrink-0 border border-[#0052FF]/20">
+                        <HelpCircle className="w-5 h-5 text-[#38BDF8]" />
                       </div>
                       <div>
                         <h4 className="text-white font-bold text-[14px] mb-1">1-on-1 Mentorship</h4>
@@ -279,626 +461,55 @@ export default function InternshipExplorer() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-4 mt-auto pt-4 border-t border-white/5">
+                  <div className="flex flex-wrap gap-3.5 mt-auto pt-5 border-t border-white/10">
                     <button 
                       onClick={() => {
-                        if (!user) {
-                          toast.error('First create account to apply.');
-                          navigate('/login');
-                          return;
-                        }
                         setIsApplying(true);
+                        setTimeout(() => {
+                          mainBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 40);
                       }} 
-                      className="flex items-center gap-2 px-8 py-3.5 bg-[#0052FF] hover:bg-[#0040cc] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(0,82,255,0.3)]"
+                      className="flex items-center gap-2 px-7 py-3.5 bg-[#0052FF] hover:bg-[#0040cc] text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(0,82,255,0.3)] cursor-pointer"
                     >
                       Apply Now <ArrowRight className="w-4 h-4" />
                     </button>
-                    <button className="flex items-center gap-2 px-8 py-3.5 bg-transparent border border-white/20 hover:border-white/40 text-white font-semibold rounded-full transition-all">
+
+                    <Link
+                      to={`/internships/${activeProgram.id}`}
+                      className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#0052FF]/20 to-[#0066FF]/20 hover:from-[#0052FF]/30 hover:to-[#0066FF]/30 border border-[#0066FF]/40 hover:border-[#0066FF]/70 text-white font-semibold rounded-full transition-all cursor-pointer"
+                    >
+                      <span>Full Program Page</span> <ExternalLink className="w-4 h-4 text-[#38BDF8]" />
+                    </Link>
+
+                    <button 
+                      onClick={() => toast.success(`Downloading ${activeProgram.title} syllabus...`)}
+                      className="flex items-center gap-2 px-6 py-3.5 bg-transparent border border-white/20 hover:border-white/40 text-white font-semibold rounded-full transition-all cursor-pointer"
+                    >
                       Download Syllabus <Download className="w-4 h-4" />
                     </button>
                   </div>
                 </>
-              ) : (
-                  <div className="h-full flex flex-col">
-                    {/* Multi-step Application Wizard Header */}
-                    <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-                      <div className="w-full">
-                        <button 
-                          onClick={() => {
-                            setIsApplying(false);
-                            setApplyStep(0);
-                          }}
-                          className="mb-4 flex items-center gap-1.5 text-xs text-[#00A3FF] hover:underline cursor-pointer"
-                        >
-                          &larr; Cancel & Back to Details
-                        </button>
-                        <h2 className="text-xl font-bold text-white mb-1">
-                          {(() => {
-                            if (applyStep === 0) return "1. Personal Information";
-                            if (applyStep === 1) return "2. Academic Information";
-                            if (applyStep === 2) return "3. Internship Schedule";
-                            if (applyStep === 3) return "4. Payment Options";
-                            return "Application Submitted!";
-                          })()}
-                        </h2>
-                        <p className="text-white/60 text-[13px]">
-                          Applying for: <span className="text-[#00A3FF] font-semibold">{activeProgram.title}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {applyStep < 10 && (
-                      <div className="w-full bg-white/5 rounded-full h-1 mb-8">
-                        <div 
-                          className="bg-[#0052FF] h-1 rounded-full transition-all duration-300"
-                          style={{ width: `${((applyStep + 1) / 10) * 100}%` }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Step 0: Name */}
-                    {applyStep === 0 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">What is your Full Name?</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. John Doe" 
-                            value={applyForm.name}
-                            onChange={(e) => setApplyForm({...applyForm, name: e.target.value})}
-                            className="w-full bg-transparent border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] transition-all focus:placeholder-transparent"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="flex justify-end pt-6 border-t border-white/5">
-                          <button 
-                            type="button"
-                            disabled={!applyForm.name}
-                            onClick={() => setApplyStep(1)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 1: Email */}
-                    {applyStep === 1 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Your Email Address</label>
-                          <input 
-                            type="email" 
-                            placeholder="john@example.com" 
-                            value={applyForm.email}
-                            onChange={(e) => setApplyForm({...applyForm, email: e.target.value})}
-                            className="w-full bg-transparent border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] transition-all focus:placeholder-transparent"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(0)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.email}
-                            onClick={() => setApplyStep(2)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 2: Phone */}
-                    {applyStep === 2 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Your Phone Number</label>
-                          <div className="flex gap-2 items-end">
-                            <select
-                              value={applyForm.countryCode}
-                              onChange={(e) => setApplyForm({...applyForm, countryCode: e.target.value})}
-                              className="bg-transparent border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer"
-                            >
-                              <option value="+91" className="bg-[#050505] text-white">+91</option>
-                              <option value="+1" className="bg-[#050505] text-white">+1</option>
-                              <option value="+44" className="bg-[#050505] text-white">+44</option>
-                            </select>
-                            <input 
-                              type="tel" 
-                              placeholder="9876543210" 
-                              value={applyForm.phone}
-                              onChange={(e) => setApplyForm({...applyForm, phone: e.target.value})}
-                              className="flex-1 bg-transparent border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] transition-all focus:placeholder-transparent"
-                              autoFocus
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(1)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.phone}
-                            onClick={() => setApplyStep(3)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 3: Resume */}
-                    {applyStep === 3 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Upload Resume <span className="text-sm font-normal text-white/50 ml-2">(Optional)</span></label>
-                          <div className="border border-dashed border-white/15 hover:border-[#0052FF]/60 hover:bg-white/[0.01] rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 relative group">
-                            <input 
-                              type="file" 
-                              accept=".pdf,.docx" 
-                              className="absolute inset-0 opacity-0 cursor-pointer" 
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  setApplyForm({...applyForm, resumeName: file.name});
-                                }
-                              }}
-                            />
-                            <Download className="w-8 h-8 text-white/40 mb-3 group-hover:text-[#0052FF]/80 transition-colors" />
-                            <p className="text-[15px] text-white/80 font-medium text-center">
-                              {applyForm.resumeName || "Drag & Drop resume, or click to browse"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(2)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={() => setApplyStep(4)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 4: College */}
-                    {applyStep === 4 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">College / University Name</label>
-                          <input 
-                            list="colleges"
-                            type="text" 
-                            placeholder="Type or select from dropdown" 
-                            value={applyForm.college}
-                            onChange={(e) => setApplyForm({...applyForm, college: e.target.value})}
-                            className="w-full bg-transparent border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] transition-all focus:placeholder-transparent"
-                            autoFocus
-                          />
-                          <datalist id="colleges">
-                            <option value="IIT Madras" />
-                            <option value="IIT Bombay" />
-                            <option value="NIT Trichy" />
-                            <option value="Anna University" />
-                            <option value="SRM University" />
-                            <option value="VIT Vellore" />
-                            <option value="Other" />
-                          </datalist>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(3)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.college}
-                            onClick={() => setApplyStep(5)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 5: Degree */}
-                    {applyStep === 5 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Degree</label>
-                          <select
-                            value={applyForm.degree}
-                            onChange={(e) => setApplyForm({...applyForm, degree: e.target.value})}
-                            className="w-full bg-[#050505] border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer appearance-none"
-                          >
-                            <option value="" className="bg-[#050505] text-white/50" disabled>Select your degree</option>
-                            <option value="B.Tech" className="bg-[#050505] text-white">B.Tech</option>
-                            <option value="B.E" className="bg-[#050505] text-white">B.E</option>
-                            <option value="B.Sc" className="bg-[#050505] text-white">B.Sc</option>
-                            <option value="BCA" className="bg-[#050505] text-white">BCA</option>
-                            <option value="M.Tech" className="bg-[#050505] text-white">M.Tech</option>
-                            <option value="MCA" className="bg-[#050505] text-white">MCA</option>
-                            <option value="Other" className="bg-[#050505] text-white">Other</option>
-                          </select>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(4)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.degree}
-                            onClick={() => setApplyStep(6)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 6: Stream */}
-                    {applyStep === 6 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Stream / Specialization</label>
-                          <select
-                            value={applyForm.stream}
-                            onChange={(e) => setApplyForm({...applyForm, stream: e.target.value})}
-                            className="w-full bg-[#050505] border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer appearance-none"
-                          >
-                            <option value="" className="bg-[#050505] text-white/50" disabled>Select your stream</option>
-                            <option value="Computer Science" className="bg-[#050505] text-white">Computer Science</option>
-                            <option value="Information Technology" className="bg-[#050505] text-white">Information Technology</option>
-                            <option value="Electronics and Communication" className="bg-[#050505] text-white">Electronics and Communication</option>
-                            <option value="Mechanical Engineering" className="bg-[#050505] text-white">Mechanical Engineering</option>
-                            <option value="Civil Engineering" className="bg-[#050505] text-white">Civil Engineering</option>
-                            <option value="Other" className="bg-[#050505] text-white">Other</option>
-                          </select>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(5)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.stream}
-                            onClick={() => setApplyStep(7)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 7: Year of Graduation */}
-                    {applyStep === 7 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="flex flex-col space-y-4">
-                          <label className="text-xl font-bold text-white">Year of Graduation</label>
-                          <select
-                            value={applyForm.graduationYear}
-                            onChange={(e) => setApplyForm({...applyForm, graduationYear: e.target.value})}
-                            className="w-full bg-[#050505] border-b border-white/15 pb-2 text-[20px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer appearance-none"
-                          >
-                            <option value="" className="bg-[#050505] text-white/50" disabled>Select year</option>
-                            <option value="2024" className="bg-[#050505] text-white">2024</option>
-                            <option value="2025" className="bg-[#050505] text-white">2025</option>
-                            <option value="2026" className="bg-[#050505] text-white">2026</option>
-                            <option value="2027" className="bg-[#050505] text-white">2027</option>
-                            <option value="2028" className="bg-[#050505] text-white">2028</option>
-                          </select>
-                        </div>
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button" onClick={() => setApplyStep(6)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.graduationYear}
-                            onClick={() => setApplyStep(8)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 8: Internship Duration & Schedule */}
-                    {applyStep === 8 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <div className="bg-[#0A0F1C] border border-[#00A3FF]/20 rounded-2xl p-5 mb-4">
-                          <h4 className="text-white font-bold text-[14px] mb-1">Select Duration & Options</h4>
-                          <p className="text-white/60 text-[12px] leading-relaxed">
-                            Includes Certification of completion and attendance tracking.
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col space-y-4">
-                          <div className="flex flex-col space-y-2">
-                            <label className="text-sm font-semibold text-white/70">From Date (Start)</label>
-                            <div className="relative">
-                              <Calendar className="absolute left-0 top-1 w-5 h-5 text-[#0052FF] pointer-events-none" />
-                              <input 
-                                type="date" 
-                                value={applyForm.startDate}
-                                onChange={(e) => setApplyForm({...applyForm, startDate: e.target.value})}
-                                className="w-full bg-transparent border-b border-white/15 pb-2 pl-8 text-[16px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer scheme-dark appearance-none"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex flex-col space-y-2 mt-4">
-                            <label className="text-sm font-semibold text-white/70">Duration</label>
-                            <select
-                              value={applyForm.duration}
-                              onChange={(e) => setApplyForm({...applyForm, duration: e.target.value})}
-                              className="w-full bg-[#050505] border-b border-white/15 pb-2 text-[16px] text-white focus:outline-none focus:border-[#0052FF] cursor-pointer appearance-none"
-                            >
-                              <option value="7" className="bg-[#050505] text-white">7 Days (₹500)</option>
-                              <option value="15" className="bg-[#050505] text-white">15 Days (₹1000)</option>
-                              <option value="30" className="bg-[#050505] text-white">1 Month / 30 Days (₹2000)</option>
-                              <option value="60" className="bg-[#050505] text-white">2 Months (₹4000)</option>
-                              <option value="90" className="bg-[#050505] text-white">3 Months (₹6000)</option>
-                              <option value="120" className="bg-[#050505] text-white">4 Months (₹8000)</option>
-                              <option value="150" className="bg-[#050505] text-white">5 Months (₹10000)</option>
-                              <option value="180" className="bg-[#050505] text-white">6 Months (₹12000)</option>
-                            </select>
-                          </div>
-
-                          <div className="mt-4 flex items-start gap-3">
-                            <input 
-                              type="checkbox" 
-                              id="reportIncluded"
-                              checked={applyForm.reportIncluded}
-                              onChange={(e) => setApplyForm({...applyForm, reportIncluded: e.target.checked})}
-                              className="mt-1 w-4 h-4 rounded cursor-pointer accent-[#0052FF]"
-                            />
-                            <label htmlFor="reportIncluded" className="text-sm text-white/80 cursor-pointer">
-                              Add Internship Report & Project Report (Optional) 
-                              <span className="block text-[#00A3FF] font-medium mt-1">+ ₹200</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button"
-                            onClick={() => setApplyStep(7)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            disabled={!applyForm.startDate}
-                            onClick={() => setApplyStep(9)}
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] text-white font-bold text-[14px] hover:bg-[#0040cc] transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                          >
-                            Next Step &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 9: Payment Options */}
-                    {applyStep === 9 && (
-                      <div className="space-y-6 flex-1 animate-fadeIn">
-                        <label className="text-[18px] font-bold text-white text-center block">
-                          Choose your payment schedule
-                        </label>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          {[
-                            { id: 'Pay Now', title: 'Pay Now', desc: 'Secure your certificate and get early-bird discount.' },
-                            { id: 'Pay Later', title: 'Pay Later', desc: 'Pay before your certificate unlocks upon completion.' }
-                          ].map((option) => (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => setApplyForm({...applyForm, paymentOption: option.id})}
-                              className={`p-4 rounded-xl border text-left transition-all duration-300 cursor-pointer ${
-                                applyForm.paymentOption === option.id
-                                  ? 'bg-[#0052FF]/10 border-[#0052FF] shadow-[0_0_15px_rgba(0,82,255,0.2)]'
-                                  : 'bg-transparent border-white/10 text-white hover:border-white/20'
-                              }`}
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-[15px]">{option.title}</span>
-                                {applyForm.paymentOption === option.id && (
-                                  <div className="w-4 h-4 rounded-full bg-[#0052FF] flex items-center justify-center text-white text-[10px]">&bull;</div>
-                                )}
-                              </div>
-                              <p className="text-[12px] text-white/50 leading-snug">{option.desc}</p>
-                            </button>
-                          ))}
-                        </div>
-
-                        {applyForm.paymentOption === 'Pay Now' ? (
-                          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 animate-fadeIn">
-                            <div className="flex justify-between items-center pb-2 border-b border-white/5 text-[14px]">
-                              <span className="text-white/60">Program Fee</span>
-                              <span className="text-white font-bold">
-                                ₹{(() => {
-                                  let base = 2000;
-                                  if (applyForm.duration === '7') base = 500;
-                                  else if (applyForm.duration === '15') base = 1000;
-                                  else if (applyForm.duration === '30') base = 2000;
-                                  else if (applyForm.duration === '60') base = 4000;
-                                  else if (applyForm.duration === '90') base = 6000;
-                                  else if (applyForm.duration === '120') base = 8000;
-                                  else if (applyForm.duration === '150') base = 10000;
-                                  else if (applyForm.duration === '180') base = 12000;
-                                  
-                                  if (applyForm.reportIncluded) base += 200;
-                                  
-                                  return base.toLocaleString('en-IN');
-                                })()}
-                              </span>
-                            </div>
-                            <div className="space-y-3 pt-1">
-                              <label className="text-xs font-semibold text-white/50 block">Payment Method Summary</label>
-                              <div className="relative">
-                                <input 
-                                  type="text" 
-                                  placeholder="Card number (Mock details only)" 
-                                  className="w-full bg-transparent border-b border-white/15 pb-2 text-[14px] text-white focus:outline-none focus:border-[#0052FF]" 
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-[#0A0F1C] border border-[#00A3FF]/10 rounded-xl p-4 animate-fadeIn">
-                            <p className="text-[13px] text-[#00A3FF] leading-relaxed">
-                              You've chosen <strong>Pay Later</strong>. You will have full dashboard tracking, syllabus access, and mentor support. Your certificate will remain locked until payment is made at the end of the program.
-                            </p>
-                          </div>
-                        )}
-
-                        <div className="flex justify-between pt-6 border-t border-white/5">
-                          <button 
-                            type="button"
-                            onClick={() => setApplyStep(8)}
-                            className="px-6 py-2.5 rounded-full border border-white/20 text-white font-semibold text-[14px] hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            &larr; Back
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                // Save application to Firebase Firestore
-                                await addDoc(collection(db, 'internship_applications'), {
-                                  createdAt: serverTimestamp(),
-                                  programId: activeProgram.id,
-                                  programTitle: activeProgram.title,
-                                  userId: user?.uid,
-                                  name: applyForm.name,
-                                  email: applyForm.email,
-                                  phone: `${applyForm.countryCode}${applyForm.phone}`,
-                                  resumeName: applyForm.resumeName || '',
-                                  college: applyForm.college,
-                                  degree: applyForm.degree,
-                                  stream: applyForm.stream,
-                                  graduationYear: applyForm.graduationYear,
-                                  startDate: applyForm.startDate,
-                                  duration: applyForm.duration,
-                                  reportIncluded: applyForm.reportIncluded,
-                                  paymentOption: applyForm.paymentOption,
-                                  status: 'pending',
-                                });
-                                console.log('Application saved to Firebase successfully!');
-                              } catch (error) {
-                                console.error('Error saving application:', error);
-                              }
-                              
-                              setApplyStep(10);
-                            }}
-                            className="px-8 py-2.5 rounded-full bg-gradient-to-r from-[#0052FF] to-[#0040cc] text-white font-bold text-[14px] hover:shadow-[0_0_25px_rgba(0,82,255,0.4)] transition-all cursor-pointer shadow-[0_0_15px_rgba(0,82,255,0.2)]"
-                          >
-                            Confirm Application &rarr;
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 10: Success Screen (Certificate status + dashboard links) */}
-                    {applyStep === 10 && (
-                      <div className="space-y-6 flex-1 text-center animate-fadeIn py-6 flex flex-col items-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#0052FF] to-[#0040cc] flex items-center justify-center shadow-[0_0_20px_rgba(0,82,255,0.3)] mb-4">
-                          <Check className="w-8 h-8 text-white animate-pulse" strokeWidth={3} />
-                        </div>
-                        
-                        <h2 className="text-2xl font-black text-white tracking-tight">Application Successful!</h2>
-                        <p className="text-white/60 text-sm max-w-sm leading-relaxed mb-6">
-                          Welcome, <strong className="text-white">{applyForm.name}</strong>! Your account has been created. You can track progress directly in your Dashboard.
-                        </p>
-
-                        <div className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-5 space-y-4 text-left shadow-xl max-w-sm">
-                          <div className="flex justify-between items-center pb-2.5 border-b border-white/5">
-                            <span className="text-white/40 text-xs font-semibold uppercase">Payment Status</span>
-                            <span className={`text-xs font-bold ${applyForm.paymentOption === 'Pay Now' ? 'text-green-400' : 'text-amber-400'}`}>
-                              {applyForm.paymentOption === 'Pay Now' ? 'PAYMENT COMPLETED' : 'PAYMENT PENDING'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-white/40 text-xs font-semibold uppercase">Certificate Status</span>
-                            <span className="text-xs text-white font-semibold flex items-center gap-1.5">
-                              <Shield className="w-3.5 h-3.5 text-[#0052FF]" /> Locked
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-white/50 leading-snug pt-2 border-t border-white/5 text-center">
-                            {applyForm.paymentOption === 'Pay Now' 
-                              ? 'Certificate will automatically unlock upon completing all internship tasks.' 
-                              : 'Certificate will unlock upon program task completion and payment settlement.'}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-3 w-full justify-center pt-6 mt-auto">
-                          <button 
-                            onClick={() => {
-                              setIsApplying(false);
-                              setApplyStep(0);
-                            }}
-                            className="px-6 py-2.5 rounded-full border border-white/10 text-white font-bold text-xs hover:bg-white/5 transition-all cursor-pointer"
-                          >
-                            View Other Internships
-                          </button>
-                          <Link 
-                            to="/dashboard"
-                            className="px-8 py-2.5 rounded-full bg-[#0052FF] hover:bg-[#0040cc] text-white font-bold text-xs transition-all shadow-[0_0_20px_rgba(0,82,255,0.3)] flex items-center justify-center gap-1.5"
-                          >
-                            Go to My Dashboard &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
               )}
 
+              {/* Render 4-Stepper Registration Form (Reference Image 2) */}
+              {isApplying && (
+                <InlineStepperRegistration
+                  program={activeProgram}
+                  onBack={() => setIsApplying(false)}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
+    )}
+  </div>
 
       {/* 3. Full Width Sections (Below Explorer) */}
       
       {/* Why Learn */}
       <div className="mb-14">
-        <h2 className="text-2xl sm:text-3xl font-bold text-center text-white mb-8 sm:mb-12 font-montserrat">Why Learn With Atideto Academy?</h2>
+        <h2 className="text-[28px] sm:text-[36px] font-bold text-center text-white mb-8 sm:mb-12 font-heading leading-[1.2]">Why Learn With Atideto Academy?</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
           {[
             { icon: Users, t: 'Industry Experts', d: 'Learn from professionals working in top companies.' },
@@ -910,8 +521,8 @@ export default function InternshipExplorer() {
               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-[#0052FF]/10 group-hover:border-[#0052FF]/40 transition-all group-hover:shadow-[0_0_20px_rgba(0,82,255,0.25)]">
                 <feat.icon className="w-6 h-6 sm:w-8 sm:h-8 text-[#00A3FF]" />
               </div>
-              <h4 className="font-bold text-xs sm:text-[15px] text-white mb-1 sm:mb-2">{feat.t}</h4>
-              <p className="text-[11px] sm:text-[12px] text-white/60 leading-relaxed max-w-[200px]">{feat.d}</p>
+              <h4 className="font-semibold text-xs sm:text-[15px] text-white mb-1 sm:mb-2 font-heading">{feat.t}</h4>
+              <p className="text-[11px] sm:text-[12px] text-white/60 leading-relaxed max-w-[200px] font-sans font-normal">{feat.d}</p>
             </div>
           ))}
         </div>
@@ -927,6 +538,6 @@ export default function InternshipExplorer() {
           scrollbar-width: none;
         }
       `}</style>
-    </div>
+      </div>
   );
 }

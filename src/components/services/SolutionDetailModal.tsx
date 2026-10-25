@@ -52,7 +52,7 @@ export default function SolutionDetailModal({ solution, isOpen = true, onClose }
                   </span>
                 ))}
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white leading-snug font-montserrat">
+              <h2 className="text-[24px] sm:text-[28px] font-bold text-white leading-snug font-heading">
                 {solution.title}
               </h2>
               <p className="text-slate-400 text-sm md:text-base mt-0.5">

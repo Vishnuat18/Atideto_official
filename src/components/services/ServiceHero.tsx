@@ -10,7 +10,6 @@ import {
   Database,
   Rocket,
   Wand2,
-  Cloud,
   Monitor,
   ArrowRight
 } from 'lucide-react';
@@ -30,9 +29,9 @@ const ROW1_SERVICES = [
 const ROW2_SERVICES = [
   { title: 'API Development', icon: Server },
   { title: 'Database Solutions', icon: Database },
-  { title: 'DevOps & Deployment', icon: Rocket },
+  { title: 'System Architecture', icon: Rocket },
   { title: 'Digital Transformation', icon: Wand2 },
-  { title: 'Cloud Solutions', icon: Cloud },
+  { title: 'Business Systems', icon: Layers },
   { title: 'Desktop Applications', icon: Monitor },
 ];
 

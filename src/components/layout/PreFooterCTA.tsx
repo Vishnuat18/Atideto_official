@@ -18,6 +18,7 @@ export default function PreFooterCTA() {
   if (
     location.pathname === '/login' ||
     location.pathname === '/dashboard' ||
+    location.pathname.startsWith('/admin') ||
     location.pathname === '/profile' ||
     location.pathname === '/services'
   ) {
@@ -146,18 +147,18 @@ export default function PreFooterCTA() {
             
             {/* Left Column: Eyebrow & Headline */}
             <div className="max-w-xl">
-              <p className="text-blue-200/90 text-xs sm:text-[13px] font-bold tracking-[0.18em] uppercase mb-4 sm:mb-6">
+              <p className="text-blue-200/90 text-xs sm:text-[13px] font-bold tracking-[0.18em] uppercase mb-4 sm:mb-6 font-inter">
                 {eyebrow}
               </p>
 
-              <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-[46px] leading-[1.14] tracking-tight font-montserrat">
+              <h2 className="text-white font-bold text-[28px] sm:text-[36px] leading-[1.2] tracking-tight font-heading">
                 {title}
               </h2>
             </div>
 
             {/* Right Column: Copy & Interactive Button */}
             <div className="max-w-md flex flex-col items-start">
-              <p className="text-blue-100/90 text-sm sm:text-base lg:text-[16px] leading-relaxed mb-6 sm:mb-8 font-normal">
+              <p className="text-blue-100/90 text-sm sm:text-base lg:text-[16px] leading-relaxed mb-6 sm:mb-8 font-normal font-inter">
                 {subtitle}
               </p>
 

@@ -104,7 +104,7 @@ export default function ProjectInformation({ register, errors, control, selected
                 <input
                   type="radio"
                   value={option}
-                  className="accent-[#5B5EFF] h-4 w-4"
+                  className="accent-[#0052FF] h-4 w-4"
                   {...register('designStatus')}
                 />
                 <span className="text-[15px]">{option}</span>
@@ -124,7 +124,7 @@ export default function ProjectInformation({ register, errors, control, selected
               id="aiGoal"
               type="text"
               placeholder="e.g. HubSpot, Salesforce, PostgreSQL database..."
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300"
+              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300"
               {...register('aiIntegrations')}
             />
           </div>
@@ -143,7 +143,7 @@ export default function ProjectInformation({ register, errors, control, selected
             rows={2}
             placeholder="Describe the scope, goals, and key features of your project..."
             onInput={handleTextareaInput}
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent resize-none overflow-hidden min-h-[60px]"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent resize-none overflow-hidden min-h-[60px]"
             {...register('description', { required: 'Please enter a project description' })}
           />
         </div>
@@ -164,7 +164,7 @@ export default function ProjectInformation({ register, errors, control, selected
             {techField.value.map((tech: string) => (
               <span 
                 key={tech} 
-                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#5B5EFF]/10 border border-[#5B5EFF]/30 text-white rounded-full text-sm font-semibold transition-all hover:bg-[#5B5EFF]/20"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#0052FF]/10 border border-[#0052FF]/30 text-white rounded-full text-sm font-semibold transition-all hover:bg-[#0052FF]/20"
               >
                 {tech}
                 <button 
@@ -191,7 +191,7 @@ export default function ProjectInformation({ register, errors, control, selected
             }}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300"
           />
 
           {/* Suggestions Dropdown */}
@@ -202,7 +202,7 @@ export default function ProjectInformation({ register, errors, control, selected
                   key={tech}
                   type="button"
                   onMouseDown={() => addTech(tech)}
-                  className="w-full px-4 py-2.5 text-left text-[16px] text-white/80 hover:text-white hover:bg-[#5B5EFF]/20 transition-all font-medium"
+                  className="w-full px-4 py-2.5 text-left text-[16px] text-white/80 hover:text-white hover:bg-[#0052FF]/20 transition-all font-medium"
                 >
                   {tech}
                 </button>
@@ -222,8 +222,8 @@ export default function ProjectInformation({ register, errors, control, selected
           {...getRootProps()} 
           className={`border border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 ${
             isDragActive 
-              ? 'border-[#5B5EFF] bg-[#5B5EFF]/5' 
-              : 'border-white/15 hover:border-[#5B5EFF]/60 hover:bg-white/[0.01]'
+              ? 'border-[#0052FF] bg-[#0052FF]/5' 
+              : 'border-white/15 hover:border-[#0052FF]/60 hover:bg-white/[0.01]'
           }`}
         >
           <input {...getInputProps()} />
@@ -245,7 +245,7 @@ export default function ProjectInformation({ register, errors, control, selected
                 className="flex items-center justify-between p-3.5 bg-white/[0.02] border border-white/5 rounded-xl hover:border-white/10 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-[#5B5EFF]" />
+                  <FileText className="w-5 h-5 text-[#38BDF8]" />
                   <div>
                     <p className="text-sm font-semibold text-white/95 max-w-xs md:max-w-md truncate">{file.name}</p>
                     <span className="text-xs text-white/45">{(file.size / 1024 / 1024).toFixed(2)} MB</span>

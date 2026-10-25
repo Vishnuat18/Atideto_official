@@ -5,7 +5,7 @@ import heroBg from '@/assets/section/hero.png';
 export default function HeroSection() {
   return (
     <section 
-      className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center overflow-hidden z-10 border-b border-[#3B82F6]/20 bg-[#030611]"
+      className="relative min-h-screen w-full flex items-center overflow-hidden z-10 border-b border-[#3B82F6]/20 bg-[#030611]"
       style={{ 
         backgroundImage: `url(${heroBg})`,
         backgroundSize: 'cover',
@@ -27,27 +27,30 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-16 pt-32 pb-20 z-10">
         <div className="max-w-2xl text-left flex flex-col items-start">
           
-          {/* Eyebrow Pill */}
+          {/* Eyebrow Tagline (Matching 2nd Reference Image) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
+            className="flex items-center gap-3 mb-4 select-none"
           >
-            ABOUT ATIDETO
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              ABOUT ATIDETO
+            </span>
           </motion.div>
 
-          {/* Main Headline */}
+          {/* Main Headline (Max 44px Desktop, 30px Mobile, Weight 700, Line-Height 1.18) */}
           <motion.h1 
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-7xl font-black mb-6 tracking-tight text-white drop-shadow-2xl leading-[1.08] font-montserrat"
+            className="text-[30px] sm:text-[36px] lg:text-[44px] font-bold mb-6 tracking-tight text-white drop-shadow-2xl leading-[1.18] font-heading max-w-2xl"
           >
-            Pioneering The <br />
-            <span className="bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#0052FF] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(0,240,255,0.45)]">
+            Pioneering The{' '}
+            <span className="italic text-[#38BDF8] drop-shadow-[0_0_35px_rgba(56,189,248,0.45)]">
               Next Frontier
-            </span> <br />
+            </span>{' '}
             of Technology
           </motion.h1>
 
@@ -56,7 +59,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-slate-300/90 text-base sm:text-lg lg:text-xl max-w-xl leading-relaxed font-normal mb-10"
+            className="text-slate-300/90 text-base sm:text-lg lg:text-xl max-w-xl leading-relaxed font-normal mb-10 font-inter"
           >
             Atideto is an elite software engineering studio and technology academy. We build resilient enterprise architectures, intelligent automation pipelines, and high-impact digital products calibrated for explosive growth.
           </motion.p>
@@ -69,22 +72,22 @@ export default function HeroSection() {
             className="grid grid-cols-3 gap-4 sm:gap-8 pt-6 border-t border-white/10 w-full max-w-lg mb-8"
           >
             <div>
-              <div className="text-2xl sm:text-3xl font-black text-white font-montserrat tracking-tight">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white font-heading tracking-tight">
                 100<span className="text-cyan-400">+</span>
               </div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Projects Delivered</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium font-sans">Projects Delivered</div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-black text-white font-montserrat tracking-tight">
+              <div className="text-2xl sm:text-3xl font-extrabold text-white font-heading tracking-tight">
                 99.9<span className="text-cyan-400">%</span>
               </div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">System Uptime</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium font-sans">Uptime SLA</div>
             </div>
             <div>
-              <div className="text-2xl sm:text-3xl font-black text-white font-montserrat tracking-tight">
-                50<span className="text-cyan-400">+</span>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white font-heading tracking-tight">
+                10x<span className="text-cyan-400">+</span>
               </div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Global Clients</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium font-sans">Efficiency ROI</div>
             </div>
           </motion.div>
 

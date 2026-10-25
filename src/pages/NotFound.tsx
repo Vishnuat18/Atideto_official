@@ -32,17 +32,19 @@ const NotFound = () => {
 
       {/* Hero Content */}
       <div className="relative z-10 text-center max-w-2xl mx-auto p-4 md:p-8 mt-[30vh]">
-          <h1 className="text-6xl sm:text-8xl font-black text-white mb-2 tracking-tight drop-shadow-[0_0_30px_rgba(47,47,228,0.4)]">
+          <h1 className="text-[32px] sm:text-[44px] font-bold text-white mb-2 tracking-tight drop-shadow-[0_0_30px_rgba(47,47,228,0.4)] font-heading leading-[1.15]">
             404
           </h1>
-          <p className="text-xl sm:text-2xl font-bold text-white/90 mb-2">Page Not Found</p>
-          <p className="text-[#A7B3C7] text-sm sm:text-base mb-8 max-w-md mx-auto">
+          <p className="text-lg sm:text-xl font-semibold text-white/90 mb-2 font-heading">
+            Page <span className="italic text-[#38BDF8]">Not Found</span>
+          </p>
+          <p className="text-slate-300 text-sm sm:text-base mb-8 max-w-md mx-auto font-inter font-normal">
             The page you're looking for doesn't exist or has been moved. Let's get you back on track.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link 
               to="/" 
-              className="inline-flex items-center justify-center px-8 py-4 bg-[#2F2FE4] hover:bg-[#3A3DFF] text-white rounded-lg font-medium transition-all duration-300 shadow-[0_0_20px_rgba(47,47,228,0.3)] hover:shadow-[0_0_30px_rgba(47,47,228,0.5)] tracking-wide uppercase text-sm"
+              className="inline-flex items-center justify-center px-8 py-4 bg-[#0052FF] hover:bg-[#0038B8] text-white rounded-lg font-medium transition-all duration-300 shadow-[0_0_20px_rgba(0,82,255,0.3)] hover:shadow-[0_0_30px_rgba(0,82,255,0.5)] tracking-wide uppercase text-sm"
             >
               ← Back to Home
             </Link>

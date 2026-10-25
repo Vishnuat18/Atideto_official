@@ -65,24 +65,26 @@ export default function OurDNA() {
     <section id="our-dna" className="relative w-full py-20 md:py-28 bg-[#05070B] overflow-hidden text-white">
       {/* ── Background Ambience Glow ── */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] md:w-[950px] h-[450px] bg-gradient-to-r from-blue-600/10 via-cyan-500/10 to-indigo-600/10 blur-[140px] rounded-full pointer-events-none -z-10" 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] md:w-[950px] h-[450px] bg-gradient-to-r from-blue-600/10 via-cyan-500/10 to-[#0052FF]/15 blur-[140px] rounded-full pointer-events-none -z-10" 
         aria-hidden="true"
       />
 
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* ── Section Header ── */}
-        <div className="text-center max-w-3xl mx-auto mb-14 md:mb-18">
+        <div className="text-left max-w-3xl mb-14 md:mb-18">
           {/* Eyebrow Badge */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold tracking-[0.25em] uppercase mb-4 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+            className="flex items-center gap-3 mb-4 select-none"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            Our DNA
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              Our DNA
+            </span>
           </motion.div>
 
           {/* Main Heading */}
@@ -91,7 +93,8 @@ export default function OurDNA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12] mb-5 font-montserrat"
+            className="text-[28px] sm:text-[36px] font-bold text-white tracking-tight leading-[1.2] mb-5 font-heading"
+            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
           >
             The Principles That{' '}
             <span className="bg-gradient-to-r from-[#0052FF] via-[#00F0FF] to-[#38BDF8] bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(0,240,255,0.45)]">
@@ -105,7 +108,8 @@ export default function OurDNA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-slate-400 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-light"
+            className="text-slate-400 text-base sm:text-lg leading-relaxed max-w-2xl text-left font-light"
+            style={{ fontFamily: 'Inter, sans-serif' }}
           >
             The foundational ethos underpinning every engineering standard, creative exploration, and high-stakes partnership we forge.
           </motion.p>
@@ -166,10 +170,10 @@ export default function OurDNA() {
                     <>
                       {/* Left: Number + Title (e.g. 01 PROBLEM SOLVER) */}
                       <div className="col-span-5 flex items-center gap-3.5 pr-4">
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#0B1528] dark:text-white font-montserrat tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-[#0B1528] dark:text-white font-heading tracking-tight">
                           {principle.id}
                         </span>
-                        <span className="text-sm sm:text-base font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-montserrat">
+                        <span className="text-sm sm:text-base font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-heading">
                           {principle.title}
                         </span>
                       </div>
@@ -198,10 +202,10 @@ export default function OurDNA() {
 
                       {/* Right: Title + Number (e.g. CURIOSITY 02) */}
                       <div className="col-span-5 flex items-center justify-end gap-3.5 pl-4">
-                        <span className="text-sm sm:text-base font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-montserrat">
+                        <span className="text-sm sm:text-base font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-heading">
                           {principle.title}
                         </span>
-                        <span className="text-3xl sm:text-4xl font-extrabold text-[#0B1528] dark:text-white font-montserrat tracking-tight">
+                        <span className="text-3xl sm:text-4xl font-extrabold text-[#0B1528] dark:text-white font-heading tracking-tight">
                           {principle.id}
                         </span>
                       </div>
@@ -213,10 +217,10 @@ export default function OurDNA() {
                 <div className="md:hidden py-5 px-5 flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-2xl font-extrabold text-[#0B1528] dark:text-white font-montserrat">
+                      <span className="text-2xl font-extrabold text-[#0B1528] dark:text-white font-heading">
                         {principle.id}
                       </span>
-                      <span className="text-xs font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-montserrat">
+                      <span className="text-xs font-extrabold tracking-wider text-[#0B1528] dark:text-white uppercase font-heading">
                         {principle.title}
                       </span>
                     </div>

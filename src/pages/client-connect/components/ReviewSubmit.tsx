@@ -23,7 +23,7 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
     const isOpen = openSection === id;
     return (
       <div className="flex items-center justify-between py-4 border-b border-white/10 cursor-pointer group" onClick={() => toggleSection(id)}>
-        <h3 className="text-[20px] font-bold text-white group-hover:text-[#5B5EFF] transition-colors duration-200">
+        <h3 className="text-[20px] font-bold text-white group-hover:text-[#0052FF] transition-colors duration-200">
           {title}
         </h3>
         <div className="flex items-center gap-4">
@@ -106,7 +106,7 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
                   <div className="space-y-1.5">
                     {formValues.attachments.map((file: File, i: number) => (
                       <div key={i} className="flex items-center gap-2 text-sm text-white/80 bg-white/5 px-3 py-2 rounded-lg border border-white/5">
-                        <FileText className="w-4 h-4 text-[#5B5EFF]" />
+                        <FileText className="w-4 h-4 text-[#38BDF8]" />
                         <span className="truncate max-w-[250px]">{file.name}</span>
                       </div>
                     ))}
@@ -159,7 +159,7 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
           { icon: Shield, text: 'Your information remains private and secure.' }
         ].map((card, i) => (
           <div key={i} className="flex flex-col items-center text-center p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all hover:bg-white/[0.03]">
-            <card.icon className="w-6 h-6 text-[#5B5EFF] mb-3" />
+            <card.icon className="w-6 h-6 text-[#0052FF] mb-3" />
             <p className="text-[13px] text-white/50 leading-relaxed">{card.text}</p>
           </div>
         ))}
@@ -170,7 +170,7 @@ export default function ReviewSubmit({ formValues, goToStep, isSubmitting }: Rev
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-[58px] rounded-full bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(91,94,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(91,94,255,0.3)]"
+          className="w-full h-[58px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#0038B8] text-white font-bold text-lg hover:shadow-[0_0_30px_rgba(0,82,255,0.45)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(0,82,255,0.3)]"
         >
           {isSubmitting ? (
             <div className="flex items-center gap-3">

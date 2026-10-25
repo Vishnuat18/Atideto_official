@@ -41,7 +41,7 @@ export default function OurVision() {
       <div className="relative max-w-6xl mx-auto w-full px-6 sm:px-10 lg:px-12 z-10">
         
         {/* ── Vision Header & Core Manifesto ── */}
-        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20 lg:mb-24">
+        <div className="text-left max-w-3xl mb-16 sm:mb-20 lg:mb-24">
           
           {/* Minimal Eyebrow Badge */}
           <motion.div
@@ -49,10 +49,12 @@ export default function OurVision() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2.5 px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/10 text-cyan-400 text-xs font-mono font-semibold tracking-[0.25em] uppercase mb-6"
+            className="flex items-center gap-3 mb-6 select-none"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            OUR VISION
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              OUR VISION
+            </span>
           </motion.div>
 
           {/* Main Vision Headline */}
@@ -61,7 +63,7 @@ export default function OurVision() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-6xl font-black font-montserrat tracking-tight leading-[1.12] mb-6 text-white"
+            className="text-[28px] sm:text-[36px] font-bold tracking-tight leading-[1.2] mb-6 text-white font-heading"
           >
             Ideas with Purpose.{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#0052FF] drop-shadow-[0_0_30px_rgba(0,240,255,0.35)]">
@@ -75,7 +77,7 @@ export default function OurVision() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-slate-300/90 text-base sm:text-lg lg:text-xl font-normal leading-relaxed max-w-2xl mx-auto"
+            className="editorial-sub text-slate-300/90 text-base sm:text-lg lg:text-xl font-normal leading-relaxed max-w-2xl text-left"
           >
             To be the trusted technology partner empowering visionary organizations to build intelligent, resilient, and human-centered software that shapes tomorrow.
           </motion.p>
@@ -98,7 +100,7 @@ export default function OurVision() {
                       <span className="font-mono text-cyan-400 text-sm font-extrabold tracking-wider shrink-0">
                         {pillar.index}.
                       </span>
-                      <span className="text-base sm:text-lg font-bold font-montserrat text-white tracking-tight">
+                      <span className="text-base sm:text-lg font-bold font-heading text-white tracking-tight">
                         {pillar.title}
                       </span>
                     </div>
@@ -136,7 +138,7 @@ export default function OurVision() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 font-montserrat tracking-tight group-hover:text-cyan-200 transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 font-heading tracking-tight group-hover:text-cyan-200 transition-colors">
                     {pillar.title}
                   </h3>
 

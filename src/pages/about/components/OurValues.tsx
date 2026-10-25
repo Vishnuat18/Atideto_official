@@ -26,9 +26,12 @@ export default function OurValues() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] font-bold tracking-[0.2em] uppercase border border-[#2EA8FF]/30 bg-[#05070B]/80 backdrop-blur-md text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
+            className="flex items-center gap-3 select-none"
           >
-            OUR VALUES
+            <span className="w-8 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              OUR VALUES
+            </span>
           </motion.div>
         </div>
       </div>
@@ -59,9 +62,12 @@ export default function OurValues() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold tracking-[0.2em] uppercase mb-4 lg:mb-6 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
+              className="flex items-center gap-3 mb-4 lg:mb-6 select-none"
             >
-              OUR VALUES
+              <span className="w-8 sm:w-10 h-[1.5px] bg-white/40 shrink-0" />
+              <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-white/90">
+                OUR VALUES
+              </span>
             </motion.div>
 
             {/* Headline */}
@@ -70,7 +76,7 @@ export default function OurValues() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white tracking-tight font-montserrat leading-[1.12] mb-4 lg:mb-6"
+              className="text-[28px] sm:text-[36px] font-bold text-white tracking-tight leading-[1.2] mb-4 lg:mb-6 font-heading"
             >
               Driven by Principle.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#2563EB] to-[#0052FF]">
@@ -84,7 +90,7 @@ export default function OurValues() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-slate-300/90 text-sm md:text-base lg:text-lg xl:text-xl leading-relaxed font-normal"
+              className="editorial-sub text-slate-300/90 text-sm md:text-base lg:text-lg xl:text-xl leading-relaxed font-normal"
             >
               We hold ourselves to the highest standards of engineering rigor, absolute transparency, and long-term commitment in every solution we engineer.
             </motion.p>

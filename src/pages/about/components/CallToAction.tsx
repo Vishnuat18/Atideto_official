@@ -14,7 +14,7 @@ export default function CallToAction() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tight"
+          className="text-[28px] sm:text-[36px] font-bold text-white mb-6 tracking-tight leading-[1.2] font-heading"
         >
           READY TO BUILD <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FF] to-[#3B82F6]">SOMETHING EXTRAORDINARY?</span>

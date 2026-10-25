@@ -52,7 +52,7 @@ export default function LadoAvatar({
         <linearGradient id="ladoRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#00F0FF" />
           <stop offset="45%" stopColor="#0062FF" />
-          <stop offset="85%" stopColor="#8A2BE2" />
+          <stop offset="85%" stopColor="#0052FF" />
           <stop offset="100%" stopColor="#00D2FF" />
         </linearGradient>
 

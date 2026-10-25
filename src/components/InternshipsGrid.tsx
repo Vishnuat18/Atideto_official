@@ -81,7 +81,7 @@ export default function InternshipsGrid() {
               <Sparkles className="w-4 h-4 text-[#00E5A8]" />
               <span className="text-sm font-medium text-white/80">Career Launcher</span>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            <h2 className="text-[28px] sm:text-[36px] font-bold tracking-tight mb-4 font-heading leading-[1.2]">
               Internship <span className="text-[#00E5A8] drop-shadow-[0_0_20px_rgba(0,229,168,0.4)]">Programs</span>
             </h2>
             <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
@@ -155,10 +155,10 @@ export default function InternshipsGrid() {
                       </div>
 
                       {/* Content */}
-                      <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[#00E5A8] transition-colors duration-300">
+                      <h3 className="text-[20px] sm:text-[22px] font-semibold text-white mb-3 group-hover:text-[#00E5A8] transition-colors duration-300 font-heading leading-snug">
                         {internship.title}
                       </h3>
-                      <p className="text-white/60 text-sm leading-relaxed mb-8 flex-1">
+                      <p className="text-white/60 text-sm leading-relaxed mb-8 flex-1 font-sans font-normal">
                         {internship.description}
                       </p>
 
@@ -175,7 +175,7 @@ export default function InternshipsGrid() {
                       </div>
 
                       {/* Action Button */}
-                      <div className="flex items-center text-[#00E5A8] font-semibold text-sm group-hover:gap-2 transition-all duration-300">
+                      <div className="flex items-center text-[#00E5A8] font-semibold text-sm group-hover:gap-2 transition-all duration-300 font-sans">
                         Learn More
                         <ArrowRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                       </div>
@@ -197,19 +197,19 @@ export default function InternshipsGrid() {
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#00E5A8]/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             
             <div className="md:w-2/3 mb-10 md:mb-0 relative z-10 text-center md:text-left">
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              <h2 className="text-[28px] sm:text-[36px] font-bold text-white mb-4 leading-[1.2] font-heading tracking-tight">
                 Ready to Launch Your Career?
               </h2>
-              <p className="text-lg text-white/60 leading-relaxed max-w-2xl">
+              <p className="text-base sm:text-lg text-white/60 leading-relaxed max-w-2xl font-sans font-normal">
                 Join Atideto Academy and gain real-world experience through industry-focused internships, live projects, mentorship, certificates, and placement support.
               </p>
             </div>
             
             <div className="md:w-1/3 flex flex-col sm:flex-row md:flex-col gap-4 relative z-10">
-              <button className="w-full px-8 py-4 bg-[#00E5A8] hover:bg-[#00c590] text-black font-bold rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(0,229,168,0.3)] hover:shadow-[0_0_40px_rgba(0,229,168,0.5)] hover:-translate-y-1">
+              <button className="w-full px-8 py-4 bg-[#00E5A8] hover:bg-[#00c590] text-black font-bold rounded-full transition-all duration-300 shadow-[0_0_30px_rgba(0,229,168,0.3)] hover:shadow-[0_0_40px_rgba(0,229,168,0.5)] hover:-translate-y-1 font-heading text-sm sm:text-base">
                 Apply Now
               </button>
-              <button className="w-full px-8 py-4 bg-transparent border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-semibold rounded-full transition-all duration-300">
+              <button className="w-full px-8 py-4 bg-transparent border border-white/20 hover:border-white/40 hover:bg-white/5 text-white font-semibold rounded-full transition-all duration-300 font-heading text-sm sm:text-base">
                 Download Brochure
               </button>
             </div>

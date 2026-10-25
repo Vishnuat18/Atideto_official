@@ -331,7 +331,7 @@ export default function InteractiveGlobeHero() {
   }, []);
 
   return (
-    <section className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center bg-black text-white pt-28 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-12 overflow-hidden select-none">
+    <section className="relative min-h-screen w-full flex items-center bg-black text-white pt-24 sm:pt-28 lg:pt-32 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-12 overflow-hidden select-none">
       
       {/* ── Ambient Background Radial Glows matching reference ── */}
       <div className="absolute top-1/4 right-1/4 w-[550px] sm:w-[680px] h-[550px] sm:h-[680px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
@@ -341,37 +341,100 @@ export default function InteractiveGlobeHero() {
         
         {/* ═════════════════════════════════════════════════════════════════ */}
         {/* ── 1. TITLE BLOCK: Badge & Headline (Order 1 on Mobile) ── */}
-        {/* ═════════════════════════════════════════════════════════════════ */}
-        <div className="order-1 lg:order-1 lg:col-span-7 lg:col-start-1 lg:row-start-1 w-full flex flex-col items-start text-left z-20">
-          {/* Top Pill Badge: OUR SERVICES */}
+        <div className="order-1 lg:order-1 lg:col-span-7 w-full flex flex-col items-start text-left z-20">
+          {/* Top Tagline: OUR SERVICES (Matching 2nd Reference Image) */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
+            className="flex items-center gap-3 mb-3 select-none"
           >
-            OUR SERVICES
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              OUR SERVICES
+            </span>
           </motion.div>
 
-          {/* Main Title: Turn Your Business Vision Into Revenue Growth (Slightly reduced on mobile) */}
+          {/* Main Title (Max 44px Desktop, 30px Mobile, Weight 700, Line-Height 1.18) */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl sm:text-5xl lg:text-[56px] xl:text-[62px] font-extrabold text-white leading-[1.12] tracking-tight font-montserrat"
+            className="text-[30px] sm:text-[36px] lg:text-[44px] font-bold text-white leading-[1.18] tracking-tight font-heading max-w-2xl mb-4 sm:mb-5"
           >
-            Turn Your Business<br />
-            Vision Into<br />
-            <span className="bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#0052FF] bg-clip-text text-transparent drop-shadow-[0_0_30px_rgba(0,240,255,0.4)]">
+            Turn Your Business Vision Into{' '}
+            <span className="italic text-[#38BDF8] drop-shadow-[0_0_30px_rgba(56,189,248,0.4)]">
               Revenue Growth
             </span>
           </motion.h1>
+
+          {/* Desktop Direct Stack: Subtitle & Buttons directly attached with reduced, tight spacing */}
+          <div className="hidden lg:flex flex-col items-start w-full">
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-slate-300 text-sm sm:text-base lg:text-[16px] leading-relaxed max-w-xl mb-6 font-normal font-sans"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              We build enterprise software, AI automation, custom platforms, and web & mobile ecosystems that deliver measurable results — not just software, real ROI.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 w-full"
+            >
+              <button
+                onClick={() => navigate('/client-connect')}
+                className="bg-[#0052FF] hover:bg-[#0048E6] text-white font-semibold px-7 sm:px-8 py-3.5 rounded-full text-xs sm:text-sm md:text-[15px] inline-flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(0,82,255,0.45)] hover:shadow-[0_0_35px_rgba(0,82,255,0.65)] hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer font-heading"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                <span>Book a Strategy Call</span>
+                <ArrowRight size={15} strokeWidth={2.5} />
+              </button>
+
+              <button
+                onClick={scrollToSolutions}
+                className="bg-white/5 hover:bg-white/10 text-white font-semibold px-6 sm:px-7 py-3.5 rounded-full text-xs sm:text-sm md:text-[15px] border border-white/20 hover:border-white/30 backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer text-center inline-flex items-center justify-center font-heading"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                View Our Work
+              </button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 0.4 }}
+              className="flex flex-wrap items-center gap-2.5 sm:gap-3.5"
+            >
+              <div className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#0B152A]/80 border border-blue-500/20 text-[11px] sm:text-xs font-medium text-slate-300">
+                <div className="w-4.5 sm:w-5 h-4.5 sm:h-5 rounded-full bg-[#0052FF]/25 flex items-center justify-center text-[#38BDF8]">
+                  <Zap size={11} strokeWidth={2.5} />
+                </div>
+                <span>Faster Delivery</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#0B152A]/80 border border-blue-500/20 text-[11px] sm:text-xs font-medium text-slate-300">
+                <div className="w-4.5 sm:w-5 h-4.5 sm:h-5 rounded-full bg-[#0052FF]/25 flex items-center justify-center text-[#38BDF8]">
+                  <TrendingUp size={11} strokeWidth={2.5} />
+                </div>
+                <span>Scalable Solutions</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#0B152A]/80 border border-blue-500/20 text-[11px] sm:text-xs font-medium text-slate-300">
+                <div className="w-4.5 sm:w-5 h-4.5 sm:h-5 rounded-full bg-[#0052FF]/25 flex items-center justify-center text-[#38BDF8]">
+                  <Briefcase size={11} strokeWidth={2.5} />
+                </div>
+                <span>Business Focused</span>
+              </div>
+            </motion.div>
+          </div>
         </div>
 
         {/* ═════════════════════════════════════════════════════════════════ */}
         {/* ── 2. GLOBE BLOCK: 3D Canvas & Floating Cards (Order 2 on Mobile) ── */}
-        {/* ═════════════════════════════════════════════════════════════════ */}
-        <div className="order-2 lg:order-2 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-2 relative w-full h-[280px] sm:h-[380px] lg:h-[530px] flex items-center justify-center my-3 sm:my-0">
+        <div className="order-2 lg:order-2 lg:col-span-5 relative w-full h-[280px] sm:h-[380px] lg:h-[530px] flex items-center justify-center my-3 sm:my-0">
           
           {/* Globe Atmosphere Glowing Orb */}
           <div className="absolute w-60 sm:w-96 h-60 sm:h-96 rounded-full bg-gradient-to-tr from-blue-600/30 to-cyan-400/20 blur-[75px] pointer-events-none" />
@@ -424,7 +487,7 @@ export default function InteractiveGlobeHero() {
               <span className="text-[9px] sm:text-[10px] text-slate-500 font-mono">×</span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg sm:text-2xl font-black font-montserrat text-[#00F0FF] tracking-tight">
+              <span className="text-lg sm:text-2xl font-black font-heading text-[#00F0FF] tracking-tight">
                 +72%
               </span>
               <span className="text-[10px] sm:text-xs font-bold text-emerald-400">↗</span>
@@ -482,7 +545,7 @@ export default function InteractiveGlobeHero() {
               <div className="w-5 sm:w-7 h-5 sm:h-7 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 border-2 border-[#091329] flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-white">
                 JD
               </div>
-              <div className="w-5 sm:w-7 h-5 sm:h-7 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-400 border-2 border-[#091329] flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-white">
+              <div className="w-5 sm:w-7 h-5 sm:h-7 rounded-full bg-gradient-to-tr from-[#0052FF] to-[#38BDF8] border-2 border-[#091329] flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-white">
                 AK
               </div>
               <div className="w-5 sm:w-7 h-5 sm:h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 border-2 border-[#091329] flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-white">
@@ -499,8 +562,7 @@ export default function InteractiveGlobeHero() {
           {/* ── Handwritten Annotation & Curved Arrow ("Building a smarter tomorrow") ── */}
           <div className="absolute bottom-20 right-8 sm:right-16 z-20 pointer-events-none hidden sm:flex flex-col items-center">
             <span
-              className="text-xs text-slate-300/90 font-medium rotate-[-8deg] tracking-wide"
-              style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}
+              className="text-xs text-slate-300/90 font-medium rotate-[-8deg] tracking-wide font-heading"
             >
               Building a<br />
               smarter tomorrow
@@ -527,9 +589,8 @@ export default function InteractiveGlobeHero() {
         </div>
 
         {/* ═════════════════════════════════════════════════════════════════ */}
-        {/* ── 3. CONTENT BLOCK: Subtitle, Buttons & Badges (Order 3 on Mobile) ── */}
-        {/* ═════════════════════════════════════════════════════════════════ */}
-        <div className="order-3 lg:order-3 lg:col-span-7 lg:col-start-1 lg:row-start-2 w-full flex flex-col items-start text-left z-20">
+        {/* ── 3. MOBILE-ONLY CONTENT BLOCK (Hidden on desktop as it is unified directly in order-1) ── */}
+        <div className="order-3 lg:hidden w-full flex flex-col items-start text-left z-20">
           
           {/* Subtitle matching reference */}
           <motion.p

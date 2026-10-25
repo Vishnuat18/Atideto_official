@@ -42,8 +42,8 @@ export default function ServiceSelection({ selectedServices, onToggleService, re
               onClick={() => onToggleService(service)}
               className={`px-8 h-[58px] rounded-full text-base font-semibold transition-all duration-300 flex items-center justify-center cursor-pointer border ${
                 isSelected
-                  ? 'bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] border-transparent shadow-[0_0_20px_rgba(91,94,255,0.35)] text-white scale-[1.02]'
-                  : 'bg-transparent border-[#5B5EFF]/40 text-white hover:border-[#5B5EFF] hover:shadow-[0_0_15px_rgba(91,94,255,0.2)] hover:scale-[1.03]'
+                  ? 'bg-gradient-to-r from-[#0052FF] to-[#0038B8] border-transparent shadow-[0_0_20px_rgba(0,82,255,0.35)] text-white scale-[1.02]'
+                  : 'bg-transparent border-[#0052FF]/40 text-white hover:border-[#0052FF] hover:shadow-[0_0_15px_rgba(0,82,255,0.2)] hover:scale-[1.03]'
               }`}
             >
               {service}
@@ -62,7 +62,7 @@ export default function ServiceSelection({ selectedServices, onToggleService, re
               id="otherDescription"
               type="text"
               placeholder="Tell us what you have in mind..."
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
               {...register('otherServiceDetails')}
             />
           </div>

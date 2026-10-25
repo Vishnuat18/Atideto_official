@@ -58,9 +58,11 @@ import uiUxIntImg from '@/assets/internship/ui ux design.png';
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'About Us', href: '/about' },
   { label: 'Services', href: '/services' },
-  { label: 'Academy', href: '/academy' },
+  { label: 'Courses', href: '/courses' },
+  { label: 'Upskill', href: '/upskill' },
+  { label: 'About Us', href: '/about' },
+  { label: 'Careers', href: '/careers' },
   { label: 'Connect', href: '/client-connect' },
   { label: 'Login / Register', href: '/login' },
 ];

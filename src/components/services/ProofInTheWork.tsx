@@ -18,16 +18,16 @@ export default function ProofInTheWork({
           <span className="text-[#38BDF8] text-xs font-bold tracking-[0.2em] uppercase mb-4">
             PROOF IN THE WORK
           </span>
-          <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-[50px] leading-[1.14] tracking-tight mb-6 font-montserrat">
+          <h2 className="text-white font-bold text-[28px] sm:text-[36px] leading-[1.2] tracking-tight mb-6 font-heading">
             Big enough to deliver.<br />
             Close enough to care.
           </h2>
-          <p className="text-slate-300/90 text-base sm:text-lg leading-relaxed max-w-lg mb-8">
+          <p className="text-slate-300/90 text-base leading-relaxed max-w-lg mb-8 font-sans">
             We bring a focused senior team to every engagement, so the work stays accountable, collaborative, and moving forward.
           </p>
           <Link
             to={ctaHref}
-            className="text-white hover:text-[#38BDF8] font-semibold text-sm sm:text-base inline-flex items-center gap-2 transition-colors group cursor-pointer"
+            className="text-white hover:text-[#38BDF8] font-semibold text-sm sm:text-base inline-flex items-center gap-2 transition-colors group cursor-pointer font-sans"
           >
             <span>{ctaText}</span>
             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -38,40 +38,40 @@ export default function ProofInTheWork({
         <div className="grid grid-cols-2 border border-white/10 rounded-2xl overflow-hidden bg-white/[0.02] shadow-2xl backdrop-blur-sm">
           {/* Stat 1: 100+ Projects Delivered */}
           <div className="p-5 sm:p-8 lg:p-10 border-r border-b border-white/10 flex flex-col justify-center">
-            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-montserrat">
+            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-heading">
               100+
             </span>
-            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase">
+            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase font-sans">
               PROJECTS DELIVERED
             </span>
           </div>
 
           {/* Stat 2: 98% Client Satisfaction */}
           <div className="p-5 sm:p-8 lg:p-10 border-b border-white/10 flex flex-col justify-center">
-            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-montserrat">
+            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-heading">
               98%
             </span>
-            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase">
+            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase font-sans">
               CLIENT SATISFACTION
             </span>
           </div>
 
           {/* Stat 3: 50+ Happy Clients */}
           <div className="p-5 sm:p-8 lg:p-10 border-r border-white/10 flex flex-col justify-center">
-            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-montserrat">
+            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-heading">
               50+
             </span>
-            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase">
+            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase font-sans">
               HAPPY CLIENTS
             </span>
           </div>
 
           {/* Stat 4: 2K+ Students Trained */}
           <div className="p-5 sm:p-8 lg:p-10 flex flex-col justify-center">
-            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-montserrat">
+            <span className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight mb-1 sm:mb-2 font-heading">
               2K+
             </span>
-            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase">
+            <span className="text-slate-400 font-semibold text-[10px] sm:text-xs tracking-wider uppercase font-sans">
               STUDENTS TRAINED
             </span>
           </div>

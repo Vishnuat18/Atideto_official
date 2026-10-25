@@ -19,10 +19,13 @@ export default function PrivacyPolicy() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]">
-            LEGAL
+          <div className="inline-flex items-center gap-3 mb-4 select-none">
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              LEGAL
+            </span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-4">
+          <h1 className="text-[32px] sm:text-[38px] lg:text-[44px] font-bold tracking-tight mb-4 leading-[1.15] font-heading">
             Privacy <span className="text-[#3B82F6]">Policy</span>
           </h1>
           <p className="text-[#A7B3C7] text-sm">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LucideIcon, Bot, Globe, Smartphone, Palette, Cloud, BarChart } from 'lucide-react';
-import atidetoLogo from '@/assets/atideto-logo.png';
+import atidetoLogo from '@/assets/atideto/logo.png';
 
 interface CardData {
   id: string;
@@ -211,7 +211,7 @@ export default function EcosystemHub() {
                     <Icon size={18} />
                   </div>
                 </div>
-                <h4 className="font-space font-bold text-[16px] text-white tracking-wide uppercase mb-3">{c.title}</h4>
+                <h4 className="font-heading font-semibold text-[16px] text-white tracking-wide uppercase mb-3">{c.title}</h4>
                 <ul className="space-y-1.5 mb-5 pointer-events-none">
                   {c.desc.map((d, index) => (
                     <li key={index} className="text-[#A7B3C7] text-[11px] leading-relaxed flex items-center gap-1.5">
@@ -237,7 +237,7 @@ export default function EcosystemHub() {
           <div className="w-20 h-20 rounded-full glass border border-[#2EA8FF]/20 flex items-center justify-center animate-ecosystem-center mb-4">
             <img src={atidetoLogo} alt="Atideto Logo" className="w-12 h-12 object-contain" />
           </div>
-          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2EA8FF] font-space"> Ecosytem Center</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2EA8FF] font-sans"> Ecosystem Center</span>
         </div>
 
         {cards.map((c) => {
@@ -253,7 +253,7 @@ export default function EcosystemHub() {
                   <Icon size={18} />
                 </div>
               </div>
-              <h4 className="font-space font-bold text-[15px] text-white tracking-wide uppercase mb-2">{c.title}</h4>
+              <h4 className="font-heading font-semibold text-[15px] text-white tracking-wide uppercase mb-2">{c.title}</h4>
               <ul className="space-y-1 mb-4">
                 {c.desc.map((d, index) => (
                   <li key={index} className="text-[#A7B3C7] text-[11px] leading-relaxed flex items-center gap-1.5">

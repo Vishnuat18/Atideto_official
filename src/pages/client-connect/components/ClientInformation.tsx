@@ -19,10 +19,10 @@ export default function ClientInformation({ register, errors }: ClientInfoProps)
             id="name"
             type="text"
             placeholder="John Doe"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
             {...register('name', { required: 'Name is required' })}
           />
-          <div className="absolute bottom-0 left-0 h-[2px] bg-[#5B5EFF] w-0 transition-all duration-300 focus-within:w-full" />
+          <div className="absolute bottom-0 left-0 h-[2px] bg-[#0052FF] w-0 transition-all duration-300 focus-within:w-full" />
         </div>
         {errors.name && (
           <span className="text-red-500 text-sm mt-1">{errors.name.message as string}</span>
@@ -39,7 +39,7 @@ export default function ClientInformation({ register, errors }: ClientInfoProps)
             id="email"
             type="email"
             placeholder="john@company.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
             {...register('email', { 
               required: 'Email is required',
               pattern: {
@@ -65,7 +65,7 @@ export default function ClientInformation({ register, errors }: ClientInfoProps)
             <select
               id="countryCode"
               aria-label="Country Code"
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 cursor-pointer"
+              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white focus:outline-none focus:border-[#0052FF] transition-all duration-300 cursor-pointer"
               {...register('countryCode')}
               defaultValue="+91"
             >
@@ -85,7 +85,7 @@ export default function ClientInformation({ register, errors }: ClientInfoProps)
               id="phone"
               type="tel"
               placeholder="9876543210"
-              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+              className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
               {...register('phone', { 
                 required: 'Phone number is required',
                 pattern: {

@@ -79,13 +79,16 @@ export default function RequirementGathering() {
       <section className="py-16 relative overflow-hidden">
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="relative max-w-4xl mx-auto px-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]">
-            {preselected ? preselected.title : 'PROJECT REQUIREMENTS'}
+          <div className="inline-flex items-center gap-3 mb-4 select-none">
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              {preselected ? preselected.title : 'PROJECT REQUIREMENTS'}
+            </span>
           </div>
-          <h1 className="text-4xl lg:text-6xl font-black text-white mb-4" style={{ letterSpacing: '-0.02em' }}>
-            Tell Us About <span className="gradient-text">Your Project</span>
+          <h1 className="text-[32px] sm:text-[38px] lg:text-[44px] font-bold text-white mb-4 tracking-tight font-heading leading-[1.15]">
+            Tell Us About <span className="italic text-[#38BDF8]">Your Project</span>
           </h1>
-          <p className="text-[#AFAFAF] text-lg max-w-xl">
+          <p className="text-slate-300 text-lg max-w-xl font-normal font-inter">
             Fill in your requirements and we'll analyze your needs to prepare a detailed proposal.
           </p>
         </div>

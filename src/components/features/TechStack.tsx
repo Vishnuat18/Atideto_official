@@ -8,7 +8,7 @@ export default function TechStack() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <div className="section-tag">Technology</div>
-          <h2 className="text-3xl lg:text-5xl font-bold text-white" >
+          <h2 className="text-[28px] sm:text-[36px] font-bold text-white leading-[1.2] tracking-tight font-heading">
             Our Tech Stack
           </h2>
           <p className="text-[#AFAFAF] mt-4 max-w-xl mx-auto">

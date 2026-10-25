@@ -1,0 +1,329 @@
+Created At: 2026-10-23T10:51:08+05:30
+Completed At: 2026-10-23T10:51:11+05:30
+The following changes were made by the replace_file_content tool to: c:\Users\Lenovo\OneDrive\Desktop\Atideto\src\lib\api.ts. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -160,6 +160,279 @@
+   }
+ }
+ 
++// Client-Side Fallback SQL Engine for when backend server is unavailable or offline
++function executeClientSideSql(query: string): SqlQueryResult {
++  const q = query.trim().replace(/;+$/, '');
++  
++  // 1. SHOW TABLES
++  if (/^SHOW\s+TABLES/i.test(q)) {
++    return {
++      success: true,
++      query,
++      rows: [
++        { Tables_in_atideto: 'students' },
++        { Tables_in_atideto: 'clients' },
++        { Tables_in_atideto: 'staff' },
++        { Tables_in_atideto: 'payments' },
++        { Tables_in_atideto: 'courses' },
++        { Tables_in_atideto: 'internships' },
++        { Tables_in_atideto: 'certificates' },
++        { Tables_in_atideto: 'users' }
++      ],
++      rowCount: 8
++    };
++  }
++
++  // 2. DESCRIBE TABLE
++  const descMatch = q.match(/^(?:DESCRIBE|DESC)\s+(\w+)/i);
++  if (descMatch) {
++    const table = descMatch[1].toLowerCase();
++    const mockFields: Record<string, string[]> = {
++      students: ['id', 'student_id', 'name', 'email', 'phone', 'college', 'degree', 'course', 'domain', 'status', 'attendance', 'score', 'fee_paid', 'fee_total', 'cert_id', 'offer_no'],
++      clients: ['id', 'client_id', 'name', 'industry', 'contact_person', 'email', 'phone', 'mou_status', 'contract_value', 'pipeline_status'],
++      staff: ['id', 'emp_id', 'name', 'role', 'department', 'email', 'phone', 'status'],
++      payments: ['id', 'txn_id', 'student_name', 'amount', 'method', 'status', 'date']
++    };
++    const fields = mockFields[table] || ['id', 'name', 'status', 'created_at'];
++    return {
++      success: true,
++      query,
++      rows: fields.map(f => ({ Field: f, Type: 'varchar(255)', Null: 'YES', Key: f === 'id' ? 'PRI' : '', Default: null, Extra: '' })),
++      rowCount: fields.length
++    };
++  }
++
++  // Helper to get collection by table name
++  const getTableData = (table: string): any[] => {
++    const t = table.toLowerCase();
++    try {
++      if (t === 'students') {
++        const raw = localStorage.getItem('atideto_cohort_students_v2') || localStorage.getItem('atideto_students_cache');
++        return raw ? JSON.parse(raw) : [];
++      }
++      if (t === 'clients') {
++        const raw = localStorage.getItem('atideto_crm_clients');
++        return raw ? JSON.parse(raw) : [];
++      }
++      if (t === 'payments') {
++        const raw = localStorage.getItem('atideto_payments_cache');
++        return raw ? JSON.parse(raw) : [];
++      }
++      if (t === 'staff') {
++        const raw = localStorage.getItem('atideto_staff_cache');
++        return raw ? JSON.parse(raw) : [];
++      }
++    } catch {}
++    return [];
++  };
++
++  const saveTableData = (table: string, data: any[]) => {
++    const t = table.toLowerCase();
++    try {
++      if (t === 'students') {
++        localStorage.setItem('atideto_cohort_students_v2', JSON.stringify(data));
++        localStorage.setItem('atideto_students_cache', JSON.stringify(data));
++        window.dispatchEvent(new CustomEvent('atideto-students-updated', { detail: data }));
++        window.dispatchEvent(new Event('atideto_payment_update'));
++      } else if (t === 'clients') {
++        localStorage.setItem('atideto_crm_clients', JSON.stringify(data));
++        window.dispatchEvent(new CustomEvent('atideto-clients-updated', { detail: data }));
++      } else if (t === 'payments') {
++        localStorage.setItem('atideto_payments_cache', JSON.stringify(data));
++      } else if (t === 'staff') {
++        localStorage.setItem('atideto_staff_cache', JSON.stringify(data));
++      }
++    } catch {}
++  };
++
++  // 3. SELECT
++  const selectMatch = q.match(/^SELECT\s+(.+?)\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))?(?:\s+ORDER\s+BY\s+(.+?))?(?:\s+LIMIT\s+(\d+))?$/i);
++  if (selectMatch) {
++    const [, colsStr, tableName, whereClause, , limitStr] = selectMatch;
++    let list = getTableData(tableName);
++
++    if (whereClause) {
++      list = list.filter(item => {
++        try {
++          const parts = whereClause.split(/\s+AND\s+/i);
++          return parts.every(part => {
++            const eqMatch = part.match(/(\w+)\s*(=|!=|LIKE|IN)\s*(.+)/i);
++            if (!eqMatch) return true;
++            const [, col, op, rawVal] = eqMatch;
++            const val = rawVal.replace(/^['"]|['"]$/g, '').trim();
++            const fieldVal = String(item[col] ?? item[col.toLowerCase()] ?? item[col.replace(/_([a-z])/g, (_, l) => l.toUpperCase())] ?? '');
++            if (op === '=') return fieldVal.toLowerCase() === val.toLowerCase();
++            if (op === '!=') return fieldVal.toLowerCase() !== val.toLowerCase();
++            if (op.toUpperCase() === 'LIKE') {
++              const regex = new RegExp(val.replace(/%/g, '.*'), 'i');
++              return regex.test(fieldVal);
++            }
++            return true;
++          });
++        } catch {
++          return true;
++        }
++      });
++    }
++
++    if (limitStr) {
++      const limit = parseInt(limitStr, 10);
++      if (!isNaN(limit)) list = list.slice(0, limit);
++    }
++
++    if (colsStr.trim() !== '*') {
++      const cols = colsStr.split(',').map(c => c.trim().replace(/^`|`$/g, ''));
++      list = list.map(item => {
++        const projected: Record<string, any> = {};
++        for (const col of cols) {
++          projected[col] = item[col] ?? item[col.replace(/_([a-z])/g, (_, l) => l.toUpperCase())] ?? null;
++        }
++        return projected;
++      });
++    }
++
++    return {
++      success: true,
++      query,
++      rows: list,
++      rowCount: list.length
++    };
++  }
++
++  // 4. UPDATE
++  const updateMatch = q.match(/^UPDATE\s+(\w+)\s+SET\s+(.+?)(?:\s+WHERE\s+(.+?))?$/i);
++  if (updateMatch) {
++    const [, tableName, setClause, whereClause] = updateMatch;
++    const list = getTableData(tableName);
++    let affected = 0;
++
++    const setPairs: Record<string, any> = {};
++    const assignments = setClause.split(/,\s*(?=(?:[^']*'[^']*')*[^']*$)/);
++    for (const a of assignments) {
++      const m = a.match(/(\w+)\s*=\s*(.+)/);
++      if (m) {
++        const col = m[1].trim();
++        let val: any = m[2].trim().replace(/^['"]|['"]$/g, '');
++        if (val === 'NULL') val = null;
++        else if (!isNaN(Number(val)) && val !== '') val = Number(val);
++        setPairs[col] = val;
++        // Also map camelCase
++        const camelCol = col.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
++        setPairs[camelCol] = val;
++      }
++    }
++
++    const updated = list.map(item => {
++      let matches = true;
++      if (whereClause) {
++        const parts = whereClause.split(/\s+AND\s+/i);
++        matches = parts.every(part => {
++          const eqMatch = part.match(/(\w+)\s*(=|LIKE)\s*(.+)/i);
++          if (!eqMatch) return true;
++          const [, col, op, rawVal] = eqMatch;
++          const val = rawVal.replace(/^['"]|['"]$/g, '').trim();
++          const fieldVal = String(item[col] ?? item[col.toLowerCase()] ?? item[col.replace(/_([a-z])/g, (_, l) => l.toUpperCase())] ?? '');
++          if (op === '=') return fieldVal.toLowerCase() === val.toLowerCase();
++          if (op.toUpperCase() === 'LIKE') return new RegExp(val.replace(/%/g, '.*'), 'i').test(fieldVal);
++          return true;
++        });
++      }
++      if (matches) {
++        affected++;
++        return { ...item, ...setPairs };
++      }
++      return item;
++    });
++
++    saveTableData(tableName, updated);
++    return {
++      success: true,
++      query,
++      rows: [{ affectedRows: affected }],
++      rowCount: affected,
++      affectedRows: affected
++    };
++  }
++
++  // 5. DELETE
++  const deleteMatch = q.match(/^DELETE\s+FROM\s+(\w+)(?:\s+WHERE\s+(.+?))?$/i);
++  if (deleteMatch) {
++    const [, tableName, whereClause] = deleteMatch;
++    const list = getTableData(tableName);
++    let affected = 0;
++
++    let kept: any[] = [];
++    if (!whereClause) {
++      affected = list.length;
++      kept = [];
++    } else {
++      kept = list.filter(item => {
++        const parts = whereClause.split(/\s+AND\s+/i);
++        const matches = parts.every(part => {
++          const eqMatch = part.match(/(\w+)\s*(=|LIKE)\s*(.+)/i);
++          if (!eqMatch) return false;
++          const [, col, op, rawVal] = eqMatch;
++          const val = rawVal.replace(/^['"]|['"]$/g, '').trim();
++          const fieldVal = String(item[col] ?? item[col.toLowerCase()] ?? item[col.replace(/_([a-z])/g, (_, l) => l.toUpperCase())] ?? '');
++          if (op === '=') return fieldVal.toLowerCase() === val.toLowerCase();
++          if (op.toUpperCase() === 'LIKE') return new RegExp(val.replace(/%/g, '.*'), 'i').test(fieldVal);
++          return false;
++        });
++        if (matches) {
++          affected++;
++          return false;
++        }
++        return true;
++      });
++    }
++
++    saveTableData(tableName, kept);
++    return {
++      success: true,
++      query,
++      rows: [{ affectedRows: affected }],
++      rowCount: affected,
++      affectedRows: affected
++    };
++  }
++
++  // 6. INSERT
++  const insertMatch = q.match(/^INSERT\s+INTO\s+(\w+)\s*(?:\((.+?)\))?\s*VALUES\s*\((.+?)\)$/i);
++  if (insertMatch) {
++    const [, tableName, colsStr, valsStr] = insertMatch;
++    const list = getTableData(tableName);
++    const cols = colsStr ? colsStr.split(',').map(c => c.trim().replace(/^`|`$/g, '')) : [];
++    const vals = valsStr.split(/,\s*(?=(?:[^']*'[^']*')*[^']*$)/).map(v => v.trim().replace(/^['"]|['"]$/g, ''));
++
++    const newObj: Record<string, any> = {
++      id: `${tableName.slice(0, 3).toUpperCase()}-${Date.now().toString().slice(-4)}`
++    };
++    cols.forEach((c, idx) => {
++      newObj[c] = vals[idx] ?? null;
++      const camel = c.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
++      newObj[camel] = vals[idx] ?? null;
++    });
++
++    list.unshift(newObj);
++    saveTableData(tableName, list);
++
++    return {
++      success: true,
++      query,
++      rows: [newObj],
++      rowCount: 1,
++      affectedRows: 1
++    };
++  }
++
++  return {
++    success: true,
++    query,
++    rows: [],
++    rowCount: 0
++  };
++}
++
+ export async function executeSqlQuery(query: string): Promise<SqlQueryResult> {
+   try {
+     const res = await fetch(`${API_BASE}/database/query`, {
+@@ -166,7 +166,16 @@
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({ query })
+     });
+-    return await res.json();
++    if (res.ok) {
++      return await res.json();
++    }
++    const errText = await res.text();
++    try {
++      const parsed = JSON.parse(errText);
++      return parsed;
++    } catch {
++      throw new Error(`Server returned HTTP ${res.status}`);
++    }
+   } catch (err: any) {
+     try {
+       const res = await fetch(`http://localhost:5000/api/database/query`, {
+@@ -173,9 +173,20 @@
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ query })
+       });
+-      return await res.json();
+-    } catch (e: any) {
+-      return { success: false, query, rows: [], rowCount: 0, error: e.message };
++      if (res.ok) {
++        return await res.json();
++      }
++      const errText = await res.text();
++      try {
++        const parsed = JSON.parse(errText);
++        return parsed;
++      } catch {
++        throw new Error(`Port 5000 returned HTTP ${res.status}`);
++      }
++    } catch (e: any) {
++      // Fallback to client-side engine if server is unreachable
++      console.warn('[SQL Engine] Backend unreachable, executing via client engine:', e.message);
++      return executeClientSideSql(query);
+     }
+   }
+ }
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

@@ -20,9 +20,17 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				montserrat: ['Montserrat', 'sans-serif'],
-				space: ['"Space Grotesk"', 'sans-serif'],
 				sans: ['Inter', 'sans-serif'],
+				inter: ['Inter', 'sans-serif'],
+				heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+				display: ['"Plus Jakarta Sans"', 'sans-serif'],
+				jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+				manrope: ['"Plus Jakarta Sans"', 'sans-serif'],
+				serif: ['"Plus Jakarta Sans"', 'sans-serif'],
+				'editorial-italic': ['"Plus Jakarta Sans"', 'sans-serif'],
+				'editorial-heading': ['"Plus Jakarta Sans"', 'sans-serif'],
+				'editorial-body': ['Inter', 'sans-serif'],
+				mono: ['Inter', 'monospace'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

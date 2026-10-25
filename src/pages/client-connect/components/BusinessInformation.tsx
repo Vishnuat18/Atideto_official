@@ -19,7 +19,7 @@ export default function BusinessInformation({ register, errors }: BusinessInfoPr
             id="company"
             type="text"
             placeholder="Acme Corporation"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
             {...register('company', { required: 'Company name is required' })}
           />
         </div>
@@ -38,7 +38,7 @@ export default function BusinessInformation({ register, errors }: BusinessInfoPr
             id="businessEmail"
             type="email"
             placeholder="hello@acme.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
             {...register('businessEmail', { 
               required: 'Business email is required',
               pattern: {
@@ -63,7 +63,7 @@ export default function BusinessInformation({ register, errors }: BusinessInfoPr
             id="website"
             type="text"
             placeholder="https://acme.com"
-            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#5B5EFF] transition-all duration-300 focus:placeholder-transparent"
+            className="w-full bg-transparent border-b border-white/15 pb-3 text-[20px] text-white placeholder-[#7D7D7D] focus:outline-none focus:border-[#0052FF] transition-all duration-300 focus:placeholder-transparent"
             {...register('website')}
           />
         </div>

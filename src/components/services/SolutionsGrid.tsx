@@ -1,733 +1,611 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Cpu,
+  Layers,
+  Smartphone,
+  TrendingUp,
+  Globe,
+  Code2,
+  Palette,
+  ChevronDown,
+  ArrowUpRight,
   ArrowRight,
-  Search,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight
+  Sparkles
 } from 'lucide-react';
-import {
-  SOLUTION_CATEGORY_TABS,
-  SOLUTIONS_DATA,
-  type SolutionItem
-} from '@/constants/solutions';
-import SolutionDetailModal from './SolutionDetailModal';
 
-// High-tech decorative dot matrix pattern matching the reference bento design
-function DotGrid({ theme }: { theme: 'dark' | 'light' | 'blue' }) {
-  const dotColor =
-    theme === 'dark'
-      ? '#38BDF8'
-      : theme === 'light'
-      ? '#94A3B8'
-      : '#BAE6FD';
+// Direct ES6 imports guarantee 100% reliable bundling and zero broken images
+import aiAutomationMockup from '@/assets/solutions/sol/ai_automation.png';
+import businessSystemsMockup from '@/assets/solutions/sol/business_systems.png';
+import appDevelopmentMockup from '@/assets/solutions/sol/app_development.png';
+import digitalMarketingMockup from '@/assets/solutions/sol/digital_marketing.png';
+import webDevelopmentMockup from '@/assets/solutions/sol/web_development.png';
+import customSoftwareMockup from '@/assets/solutions/sol/custom_software.png';
+import uiuxDesigningMockup from '@/assets/solutions/sol/uiux_designing.png';
+
+function SolutionPillButton({ pill, onClick }: { pill: string; onClick: () => void }) {
+  const isWhatsApp = pill.toLowerCase().includes('whatsapp');
+  const accent = isWhatsApp ? '#25D366' : '#00F0FF';
 
   return (
-    <svg
-      width="28"
-      height="22"
-      viewBox="0 0 28 22"
-      fill="none"
-      className="opacity-25 group-hover:opacity-60 transition-opacity duration-300 pointer-events-none"
-    >
-      <circle cx="3" cy="3" r="1.5" fill={dotColor} />
-      <circle cx="11" cy="3" r="1.5" fill={dotColor} />
-      <circle cx="19" cy="3" r="1.5" fill={dotColor} />
-      <circle cx="27" cy="3" r="1.5" fill={dotColor} />
-
-      <circle cx="3" cy="11" r="1.5" fill={dotColor} />
-      <circle cx="11" cy="11" r="1.5" fill={dotColor} />
-      <circle cx="19" cy="11" r="1.5" fill={dotColor} />
-      <circle cx="27" cy="11" r="1.5" fill={dotColor} />
-
-      <circle cx="3" cy="19" r="1.5" fill={dotColor} />
-      <circle cx="11" cy="19" r="1.5" fill={dotColor} />
-      <circle cx="19" cy="19" r="1.5" fill={dotColor} />
-      <circle cx="27" cy="19" r="1.5" fill={dotColor} />
-    </svg>
-  );
-}
-
-// Professional Bento Card Component with exact accent colors, clean 3D asset integration & no empty space
-function BentoServiceCard({
-  sol,
-  onOpenModal,
-  isWide = false,
-  className = ''
-}: {
-  sol: SolutionItem;
-  onOpenModal: (s: SolutionItem) => void;
-  isWide?: boolean;
-  className?: string;
-}) {
-  const isDark = sol.theme === 'dark';
-  const isLight = sol.theme === 'light';
-
-  return (
-    <div
-      onClick={() => onOpenModal(sol)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpenModal(sol);
-        }
-      }}
-      className={`group relative rounded-2xl sm:rounded-[22px] p-5 cursor-pointer select-none transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden h-full min-h-[190px] sm:min-h-[200px] border ${
-        isDark
-          ? 'bg-gradient-to-br from-[#0B1022] via-[#070A16] to-[#03060E] border-white/[0.09] hover:border-cyan-400/60 shadow-xl hover:shadow-[0_16px_36px_rgba(0,240,255,0.22)]'
-          : isLight
-          ? 'bg-gradient-to-br from-[#FFFFFF] via-[#F8FAFC] to-[#F1F5F9] border-slate-200/90 hover:border-blue-500/60 shadow-md hover:shadow-[0_16px_36px_rgba(0,82,255,0.18)]'
-          : 'bg-gradient-to-br from-[#0052FF] via-[#0047E0] to-[#0034A8] border-blue-400/40 hover:border-white/70 shadow-xl hover:shadow-[0_16px_40px_rgba(0,82,255,0.45)]'
-      } ${className}`}
-    >
-      {/* ── RIGHT: 3D Illustration fitted cleanly inside without distortion or overflow ── */}
-      <div
-        className={`absolute right-1 sm:right-2 bottom-2 top-2 flex items-center justify-end pointer-events-none overflow-hidden z-0 ${
-          isWide ? 'w-[42%] sm:w-[44%]' : 'w-[45%] sm:w-[47%]'
-        }`}
-      >
-        <img
-          src={sol.image}
-          alt={sol.title}
-          className={`w-auto max-w-full object-contain object-right transition-transform duration-500 group-hover:scale-105 group-hover:-translate-y-1 block ${
-            isWide
-              ? 'max-h-[145px] sm:max-h-[160px]'
-              : 'max-h-[130px] sm:max-h-[145px]'
-          }`}
-          loading="lazy"
-          draggable={false}
-        />
-      </div>
-
-      {/* ── LEFT: Content container (Number, Title, Subtitle, Arrow Button) ── */}
-      <div
-        className={`relative z-10 flex flex-col justify-between h-full ${
-          isWide ? 'max-w-[58%] sm:max-w-[59%]' : 'max-w-[55%] sm:max-w-[56%]'
-        }`}
-      >
-        {/* Top: Number Badge */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <span
-              className={`font-mono text-xs sm:text-[13px] font-extrabold tracking-wider ${
-                isDark
-                  ? 'text-[#38BDF8]'
-                  : isLight
-                  ? 'text-slate-500'
-                  : 'text-blue-200'
-              }`}
-            >
-              {sol.number}
-            </span>
-            <div
-              className={`w-3.5 h-0.5 rounded-full ${
-                isDark
-                  ? 'bg-cyan-400/50'
-                  : isLight
-                  ? 'bg-slate-300'
-                  : 'bg-blue-300/60'
-              }`}
-            />
-          </div>
-
-          {/* Solution Name */}
-          <h3
-            className={`font-extrabold text-[15px] sm:text-base lg:text-[17px] font-montserrat tracking-tight leading-snug transition-colors duration-200 ${
-              isDark
-                ? 'text-white group-hover:text-[#38BDF8]'
-                : isLight
-                ? 'text-[#0B0F19] group-hover:text-[#0052FF]'
-                : 'text-white group-hover:text-cyan-200'
-            }`}
-          >
-            {sol.title}
-          </h3>
-
-          {/* Subtitle / Tagline */}
-          <p
-            className={`text-xs sm:text-[12px] leading-relaxed mt-1.5 line-clamp-2 transition-colors duration-200 ${
-              isDark
-                ? 'text-slate-400 group-hover:text-slate-300'
-                : isLight
-                ? 'text-slate-600 group-hover:text-slate-700'
-                : 'text-blue-100 group-hover:text-white'
-            }`}
-          >
-            {sol.subtitle}
-          </p>
-        </div>
-
-        {/* Bottom: Action Arrow Button */}
-        <div className="pt-2.5 mt-auto flex items-center">
-          <div
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:translate-x-1.5 shadow-sm shrink-0 ${
-              isDark
-                ? 'bg-white/[0.08] text-slate-200 border border-white/10 group-hover:bg-[#00F0FF] group-hover:border-[#00F0FF] group-hover:text-black group-hover:shadow-[0_0_16px_rgba(0,240,255,0.45)]'
-                : isLight
-                ? 'bg-slate-100 text-slate-700 border border-slate-200 group-hover:bg-[#0052FF] group-hover:border-[#0052FF] group-hover:text-white group-hover:shadow-[0_0_16px_rgba(0,82,255,0.35)]'
-                : 'bg-white/15 text-white border border-white/25 group-hover:bg-white group-hover:text-[#0052FF] group-hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]'
-            }`}
-          >
-            <ArrowRight size={13} strokeWidth={2.5} />
-          </div>
-        </div>
-      </div>
-
-      {/* Decorative dot matrix in top right corner */}
-      <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-0 pointer-events-none">
-        <DotGrid theme={sol.theme} />
-      </div>
-    </div>
-  );
-}
-
-// Hotstar-styled Mobile Card with exact aspect ratio, neat spacing & perfectly contained 3D illustration
-function HotstarMobileCard({
-  sol,
-  onOpenModal
-}: {
-  sol: SolutionItem;
-  onOpenModal: (s: SolutionItem) => void;
-}) {
-  const isDark = sol.theme === 'dark';
-  const isLight = sol.theme === 'light';
-
-  return (
-    <div
-      onClick={() => onOpenModal(sol)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onOpenModal(sol);
-        }
-      }}
-      className={`group relative rounded-[20px] p-4 cursor-pointer select-none transition-all duration-200 active:scale-[0.98] flex flex-col justify-between overflow-hidden h-[162px] w-[248px] min-w-[248px] max-w-[248px] shrink-0 snap-start border ${
-        isDark
-          ? 'bg-gradient-to-br from-[#0D1326] via-[#090D1C] to-[#050711] border-white/[0.08] active:border-cyan-400/50 shadow-md'
-          : isLight
-          ? 'bg-gradient-to-br from-[#FFFFFF] via-[#F8FAFC] to-[#F1F5F9] border-slate-200/90 active:border-blue-500/50 shadow-sm'
-          : 'bg-gradient-to-br from-[#0052FF] via-[#0047E0] to-[#0034A8] border-blue-400/30 active:border-white/60 shadow-md'
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full group flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-white/[0.025] hover:bg-white/[0.06] border border-white/[0.07] hover:-translate-y-0.5 transition-all duration-200 text-left cursor-pointer ${
+        isWhatsApp
+          ? 'hover:border-[#25D366]/50 hover:bg-[#25D366]/15 hover:shadow-[0_4px_16px_rgba(37,211,102,0.25)]'
+          : 'hover:border-[#00F0FF]/40 hover:bg-[#0052FF]/15 hover:shadow-[0_4px_16px_rgba(0,82,255,0.25)]'
       }`}
     >
-      {/* ── RIGHT: 3D Illustration fitted cleanly inside without distortion or overflow ── */}
-      <div className="absolute right-2 bottom-2 top-2 w-[42%] flex items-center justify-center pointer-events-none overflow-hidden z-0">
-        <img
-          src={sol.image}
-          alt={sol.title}
-          className="w-auto max-w-full max-h-[110px] object-contain object-center transition-transform duration-300 group-hover:scale-105 block"
-          loading="lazy"
-          draggable={false}
+      <span className="text-xs font-medium text-slate-200 group-hover:text-white transition-colors flex items-center gap-1.5">
+        <span
+          className="w-1.5 h-1.5 rounded-full shrink-0"
+          style={{ backgroundColor: accent }}
         />
-      </div>
-
-      {/* ── LEFT: Content (Number, Title, Subtitle, Arrow) ── */}
-      <div className="relative z-10 flex flex-col justify-between h-full max-w-[58%] pr-1">
-        <div>
-          {/* Number badge */}
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span
-              className={`font-mono text-[11px] font-extrabold tracking-wider ${
-                isDark
-                  ? 'text-[#38BDF8]'
-                  : isLight
-                  ? 'text-slate-500'
-                  : 'text-blue-200'
-              }`}
-            >
-              {sol.number}
-            </span>
-            <div
-              className={`w-3 h-0.5 rounded-full ${
-                isDark
-                  ? 'bg-cyan-400/60'
-                  : isLight
-                  ? 'bg-slate-300'
-                  : 'bg-blue-300/60'
-              }`}
-            />
-          </div>
-
-          {/* Solution Title */}
-          <h4
-            className={`font-extrabold text-[14px] font-montserrat tracking-tight leading-snug line-clamp-2 ${
-              isDark
-                ? 'text-white'
-                : isLight
-                ? 'text-[#0B0F19]'
-                : 'text-white'
-            }`}
-          >
-            {sol.title}
-          </h4>
-
-          {/* Subtitle / Tagline */}
-          <p
-            className={`text-[10.5px] leading-tight mt-1 line-clamp-2 ${
-              isDark
-                ? 'text-slate-400'
-                : isLight
-                ? 'text-slate-600'
-                : 'text-blue-100'
-            }`}
-          >
-            {sol.subtitle}
-          </p>
-        </div>
-
-        {/* Action Button at bottom */}
-        <div className="pt-2 mt-auto flex items-center gap-1.5">
-          <div
-            className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 group-active:translate-x-1 shadow-sm shrink-0 ${
-              isDark
-                ? 'bg-white/[0.08] text-slate-200 border border-white/10'
-                : isLight
-                ? 'bg-slate-100 text-slate-700 border border-slate-200'
-                : 'bg-white/20 text-white border border-white/30'
-            }`}
-          >
-            <ArrowRight size={11} strokeWidth={2.5} />
-          </div>
-          <span
-            className={`text-[10px] font-bold tracking-tight ${
-              isDark
-                ? 'text-cyan-400'
-                : isLight
-                ? 'text-blue-600'
-                : 'text-blue-100'
-            }`}
-          >
-            View Details
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Interactive Mobile Rail Component: No header icon, proper margin, interactive swipe chevrons & progress dots
-function InteractiveMobileRail({
-  sec,
-  solutions,
-  onOpenModal
-}: {
-  sec: {
-    title: string;
-    description: string;
-    ids: string[];
-  };
-  solutions: SolutionItem[];
-  onOpenModal: (s: SolutionItem) => void;
-}) {
-  const railRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const checkScroll = () => {
-    if (!railRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
-    setCanScrollLeft(scrollLeft > 10);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-
-    // Approximate active item index for progress indicator
-    const cardWidth = 248 + 14; // card width + gap
-    const index = Math.round(scrollLeft / cardWidth);
-    setActiveIndex(Math.min(Math.max(0, index), solutions.length - 1));
-  };
-
-  useEffect(() => {
-    checkScroll();
-  }, [solutions]);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (!railRef.current) return;
-    const scrollAmount = 262; // card width (248) + gap (14)
-    railRef.current.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth'
-    });
-  };
-
-  const scrollToIndex = (index: number) => {
-    if (!railRef.current) return;
-    const scrollAmount = index * 262;
-    railRef.current.scrollTo({
-      left: scrollAmount,
-      behavior: 'smooth'
-    });
-  };
-
-  return (
-    <div className="w-full">
-      {/* ── Rail Header (NO icon next to title, proper margins & typography) ── */}
-      <div className="flex items-end justify-between px-1 mb-3.5">
-        <div className="max-w-[75%]">
-          <h3 className="font-extrabold text-white text-[16px] font-montserrat tracking-tight leading-tight">
-            {sec.title}
-          </h3>
-          <p className="text-[11px] text-slate-400 leading-tight mt-1">
-            {sec.description}
-          </p>
-        </div>
-
-        {/* Interactive Swipe Controls (tap to smoothly slide cards) */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => handleScroll('left')}
-            disabled={!canScrollLeft}
-            aria-label="Previous service"
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-              canScrollLeft
-                ? 'bg-white/10 text-white border border-white/20 active:scale-90 active:bg-blue-600 cursor-pointer'
-                : 'bg-white/5 text-slate-600 border border-white/5 cursor-not-allowed opacity-35'
-            }`}
-          >
-            <ChevronLeft size={14} strokeWidth={2.5} />
-          </button>
-          <button
-            type="button"
-            onClick={() => handleScroll('right')}
-            disabled={!canScrollRight}
-            aria-label="Next service"
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-              canScrollRight
-                ? 'bg-blue-600 text-white border border-blue-400/40 shadow-[0_0_12px_rgba(0,82,255,0.4)] active:scale-90 active:bg-blue-500 cursor-pointer'
-                : 'bg-white/5 text-slate-600 border border-white/5 cursor-not-allowed opacity-35'
-            }`}
-          >
-            <ChevronRight size={14} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Hotstar Horizontal Rail Track with touch snap & smooth swipe ── */}
-      <div
-        ref={railRef}
-        onScroll={checkScroll}
-        className="flex gap-3.5 overflow-x-auto pb-2 pt-1 px-3 snap-x snap-mandatory scrollbar-none -mx-3 scroll-smooth"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        <span>{pill}</span>
+      </span>
+      <span
+        className={`w-5 h-5 rounded-full bg-white/[0.05] text-slate-400 group-hover:text-white flex items-center justify-center shrink-0 ml-2 transition-all ${
+          isWhatsApp ? 'group-hover:bg-[#25D366] group-hover:text-black' : 'group-hover:bg-[#0052FF]'
+        }`}
       >
-        {solutions.map((sol) => (
-          <HotstarMobileCard
-            key={`mob-${sol.id}`}
-            sol={sol}
-            onOpenModal={onOpenModal}
-          />
-        ))}
-      </div>
-
-      {/* ── Interactive Swipe Progress Indicator Dots (tap to navigate) ── */}
-      <div className="flex items-center justify-center gap-1.5 mt-2.5">
-        {solutions.map((sol, idx) => (
-          <button
-            key={`dot-${sol.id}`}
-            type="button"
-            onClick={() => scrollToIndex(idx)}
-            aria-label={`Go to ${sol.title}`}
-            className={`transition-all duration-300 rounded-full cursor-pointer ${
-              activeIndex === idx
-                ? 'w-5 h-1.5 bg-[#00F0FF] shadow-[0_0_8px_rgba(0,240,255,0.6)]'
-                : 'w-1.5 h-1.5 bg-white/20 hover:bg-white/40'
-            }`}
-          />
-        ))}
-      </div>
-    </div>
+        <ArrowUpRight size={11} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+      </span>
+    </button>
   );
 }
 
-// Mobile category grouping starting with Business Portfolio as #01
-const MOBILE_CATEGORIES = [
+interface SubServiceCategory {
+  name: string;
+  count: string;
+  desc: string;
+  pills: string[];
+}
+
+interface ServiceSectionData {
+  id: string;
+  num: string;
+  title: string;
+  subDay: string;
+  lead: string;
+  mockup: string;
+  scope: string;
+  groups: SubServiceCategory[];
+}
+
+const CORE_SERVICES: ServiceSectionData[] = [
+  // ── 01. AI & AUTOMATION ────────────────────────────────────────────────
   {
-    title: 'Business Systems',
-    description: 'Enterprise operations, CRM & scheduling',
-    ids: [
-      'business-portfolio',
-      'crm',
-      'erp',
-      'billing-system',
-      'inventory-management',
-      'hotel-management',
-      'gym-management',
-      'appointment-booking'
+    id: 'service-01',
+    num: '01',
+    title: 'AI & Automation',
+    subDay: 'Intelligent Systems',
+    lead: 'Spend less time on repetitive manual work and respond to customers with sub-second consistency through autonomous AI agents and automated multi-app pipelines.',
+    mockup: aiAutomationMockup,
+    scope: 'Conversational bots, business automation pipelines, and custom machine learning modules.',
+    groups: [
+      {
+        name: 'Conversational & Client AI',
+        count: '05',
+        desc: 'Automate inbound customer inquiries, support auto-triaging, and booking appointments.',
+        pills: [
+          'AI Chatbots',
+          'Appointment & Reminder Automation',
+          'Customer Support Automation',
+          'Website Chatbots',
+          'WhatsApp Automation'
+        ]
+      },
+      {
+        name: 'Business & Media Workflows',
+        count: '05',
+        desc: 'Streamline repetitive tasks, automate CRM leads, and generate automated video and email channels.',
+        pills: [
+          'Business Process Automation',
+          'CRM Pipelining Automation',
+          'Custom AI Solutions',
+          'Email Automation',
+          'YouTube Automation'
+        ]
+      }
     ]
   },
+
+  // ── 02. BUSINESS SYSTEMS ───────────────────────────────────────────────
   {
-    title: 'Education & Academics',
-    description: 'Smart campus, LMS & student portals',
-    ids: ['school-erp', 'sms', 'lms']
+    id: 'service-02',
+    num: '02',
+    title: 'Business Systems',
+    subDay: 'Enterprise Operations',
+    lead: 'Unify finance, operations, stock, and personnel into one cohesive engine with enterprise role-based governance and audit trails.',
+    mockup: businessSystemsMockup,
+    scope: 'Departmental ERP workflows, CRM sales pipelines, and automated financial billing systems.',
+    groups: [
+      {
+        name: 'Enterprise Resource & Supply Chain',
+        count: '05',
+        desc: 'Connect procurement, stock, route GPS, and telemetry in one unified dashboard.',
+        pills: [
+          'Enterprise ERP',
+          'Executive Dashboards & BI',
+          'Fleet Management & GPS',
+          'Inventory & Warehouse Management',
+          'Supply Chain Management'
+        ]
+      },
+      {
+        name: 'Revenue, Billing & Sector Portals',
+        count: '06',
+        desc: 'Automate invoicing, recurring collections, and specialized institutional administration.',
+        pills: [
+          'Billing & POS Systems',
+          'Chit Fund Management',
+          'CRM Systems',
+          'Gym Management',
+          'Hotel Management',
+          'School & College ERP'
+        ]
+      }
+    ]
   },
+
+  // ── 03. APP DEVELOPMENT ────────────────────────────────────────────────
   {
-    title: 'Finance & Accounts',
-    description: 'Automated billing, expense OCR & chit pools',
-    ids: ['billing-system', 'expense-management', 'chit-fund']
+    id: 'service-03',
+    num: '03',
+    title: 'App Development',
+    subDay: 'Mobile Systems',
+    lead: 'High-performance iOS and Android applications crafted for scale, offline sync, biometric security, and fluid 120Hz native interactions.',
+    mockup: appDevelopmentMockup,
+    scope: 'Cross-platform Flutter, native Swift & Kotlin development, and zero-latency backend APIs.',
+    groups: [
+      {
+        name: 'Consumer & Commerce Mobile Apps',
+        count: '05',
+        desc: 'High-converting mobile storefronts, on-demand service bookings, and clinic platforms.',
+        pills: [
+          'Clinic & Healthcare Apps',
+          'E-Commerce & Retail Apps',
+          'Food & Restaurant Apps',
+          'On-Demand Booking Apps',
+          'Real Estate & Property Apps'
+        ]
+      },
+      {
+        name: 'Enterprise & Social Platforms',
+        count: '06',
+        desc: 'Bank-grade wallets, classroom portals, fitness trackers, and workforce telematics.',
+        pills: [
+          'EdTech & Learning Apps',
+          'Field & Attendance Apps',
+          'FinTech & Wallet Apps',
+          'Fitness & Workout Apps',
+          'Logistics & Delivery Apps',
+          'Social & Community Apps'
+        ]
+      }
+    ]
   },
+
+  // ── 04. DIGITAL MARKETING ──────────────────────────────────────────────
   {
-    title: 'Commerce & Growth',
-    description: 'Fast storefronts, supply chain & marketing',
-    ids: ['e-commerce', 'digital-marketing', 'scm', 'transport-management', 'api-management']
+    id: 'service-04',
+    num: '04',
+    title: 'Digital Marketing',
+    subDay: 'Growth Engine',
+    lead: 'Reach people who are more likely to need what you offer through precision paid ad funnels, high-converting creatives, and end-to-end attribution tracking.',
+    mockup: digitalMarketingMockup,
+    scope: 'Paid advertising engines across Meta and Google, technical SEO audits, and creative ad production.',
+    groups: [
+      {
+        name: 'Paid Acquisition & Search Media',
+        count: '05',
+        desc: 'Laser-focused media buying and funnel optimization that lowers acquisition costs.',
+        pills: [
+          'Conversion Rate Optimization (CRO)',
+          'Google Search & Display Ads',
+          'Lead Generation Funnels',
+          'Meta Ads (Facebook & Instagram)',
+          'Performance Social Media Ads'
+        ]
+      },
+      {
+        name: 'Creatives, Video & Content',
+        count: '05',
+        desc: 'High-impact copy, AI video ad variations, and long-term organic search authority.',
+        pills: [
+          'Ad Copywriting & Creatives',
+          'AI Video Ad Production',
+          'Content Marketing & Reels',
+          'SEO & Local Search Optimization',
+          'YouTube & Video Advertising'
+        ]
+      }
+    ]
+  },
+
+  // ── 05. WEBSITE DEVELOPMENT ────────────────────────────────────────────
+  {
+    id: 'service-05',
+    num: '05',
+    title: 'Website Development',
+    subDay: 'Modern Platforms',
+    lead: 'High-speed web platforms built with React, Next.js, and TypeScript, engineered to convert visitors into loyal customers with sub-second load times.',
+    mockup: webDevelopmentMockup,
+    scope: 'Modern headless web platforms, custom CMS portals, and e-commerce architectures.',
+    groups: [
+      {
+        name: 'Commercial & Platform Portals',
+        count: '05',
+        desc: 'High-speed headless commerce, corporate portfolios, SaaS frontends, and marketplace portals.',
+        pills: [
+          'Business Portfolio & Corporate Websites',
+          'E-Commerce & Online Stores',
+          'High-Converting Landing Pages',
+          'Marketplace & Directory Portals',
+          'SaaS & Web App Frontends'
+        ]
+      },
+      {
+        name: 'Industry & Sector Web Solutions',
+        count: '05',
+        desc: 'Specialized websites with integrated appointment, ordering, and student portals.',
+        pills: [
+          'Clinic & Healthcare Websites',
+          'Educational & LMS Portals',
+          'Hotel & Hospitality Websites',
+          'Real Estate Property Portals',
+          'Restaurant & Food Ordering Sites'
+        ]
+      }
+    ]
+  },
+
+  // ── 06. CUSTOM SOFTWARE ────────────────────────────────────────────────
+  {
+    id: 'service-06',
+    num: '06',
+    title: 'Custom Software',
+    subDay: 'Proprietary Architecture',
+    lead: 'Organize the work that spreadsheets and disconnected tools make difficult with bespoke platforms built around your exact business processes.',
+    mockup: customSoftwareMockup,
+    scope: 'Bespoke platforms designed around your exact workflows with specialized ERP and POS engines.',
+    groups: [
+      {
+        name: 'Operational Engines & Logistics',
+        count: '05',
+        desc: 'Automated billing, custom ERPs, fulfillment tracking, and warehouse logistics.',
+        pills: [
+          'Automated Billing & Invoicing Systems',
+          'Custom ERP & Workflow Engines',
+          'Order Processing & Fulfillment Systems',
+          'Transport & Fleet Telematics Systems',
+          'Warehouse & Inventory Control Systems'
+        ]
+      },
+      {
+        name: 'Management, BI & SaaS Portals',
+        count: '05',
+        desc: 'Self-service vendor portals, custom CRM pipelines, attendance, and executive BI dashboards.',
+        pills: [
+          'Client & Vendor Self-Service Portals',
+          'Custom CRM Platforms',
+          'Employee Attendance & Payroll Systems',
+          'Executive BI & Reporting Dashboards',
+          'Multi-Tenant SaaS Architecture'
+        ]
+      }
+    ]
+  },
+
+  // ── 07. UI & UX DESIGN ─────────────────────────────────────────────────
+  {
+    id: 'service-07',
+    num: '07',
+    title: 'UI & UX Design',
+    subDay: 'Product Experience',
+    lead: 'Make digital products easier for real people to use through thorough user research, high-fidelity Figma prototypes, and comprehensive design systems.',
+    mockup: uiuxDesigningMockup,
+    scope: 'Enterprise design systems, interactive Figma prototypes, SaaS analytics dashboards, and 3D visual assets.',
+    groups: [
+      {
+        name: 'Product & Interface Design',
+        count: '05',
+        desc: 'Modern interfaces crafted for iOS/Android native apps, SaaS web apps, and component kits.',
+        pills: [
+          'Clickable Figma Prototypes',
+          'Design Systems & Component Libraries',
+          'Enterprise Dashboard & Analytics UI',
+          'Mobile App UI/UX (iOS & Android)',
+          'SaaS Platform & Web App Interfaces'
+        ]
+      },
+      {
+        name: 'Brand & Conversion Ergonomics',
+        count: '05',
+        desc: 'Conversion landing pages, brand identity systems, and FinTech & Healthcare UX.',
+        pills: [
+          'Brand Identity & Visual Guidelines',
+          'E-Commerce Storefront UI Design',
+          'FinTech & Banking App UX',
+          'Healthcare & Clinical Portal Design',
+          'High-Converting Landing Page Design'
+        ]
+      }
+    ]
   }
 ];
 
-export default function SolutionsGrid() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeModalSolution, setActiveModalSolution] = useState<SolutionItem | null>(null);
+export default function SolutionsGrid({ isHome = false }: { isHome?: boolean }) {
+  const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const serviceRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Filter solutions based on category and search query
-  const filteredSolutions = useMemo(() => {
-    return SOLUTIONS_DATA.filter((sol) => {
-      const matchesCategory =
-        selectedCategory === 'All' || sol.categories.includes(selectedCategory);
-      const matchesSearch =
-        searchQuery.trim() === '' ||
-        sol.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sol.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        sol.categories.some((cat) => cat.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchesCategory && matchesSearch;
+  // Accordion state: open group keys per service index (all closed by default)
+  const [openAccordions, setOpenAccordions] = useState<Record<string, number | null>>({});
+
+  const toggleAccordion = (serviceIdx: number, groupIdx: number) => {
+    const key = String(serviceIdx);
+    setOpenAccordions((prev) => {
+      const current = prev[key];
+      return {
+        ...prev,
+        [key]: current === groupIdx ? null : groupIdx
+      };
     });
-  }, [selectedCategory, searchQuery]);
-
-  // Exact 5-Row Bento Layout: (4 - 3 - 4 - 3 - 4 = 18 Cards)
-  const isDefaultBento = selectedCategory === 'All' && searchQuery.trim() === '';
-  const row1 = SOLUTIONS_DATA.slice(0, 4);   // 01 Business Portfolio, 02 CRM, 03 ERP, 04 Billing & POS (4 cards)
-  const row2 = SOLUTIONS_DATA.slice(4, 7);   // 05 E-Commerce, 06 Digital Marketing, 07 School ERP (3 cards)
-  const row3 = SOLUTIONS_DATA.slice(7, 11);  // 08 Inventory, 09 SCM, 10 Transport Logistics, 11 Hotel Management (4 cards)
-  const row4 = SOLUTIONS_DATA.slice(11, 14); // 12 Student Management, 13 LMS, 14 Gym & Fitness Club (3 cards)
-  const row5 = SOLUTIONS_DATA.slice(14, 18); // 15 Expense Management, 16 Chit Fund, 17 Appointment Booking, 18 API & Cloud (4 cards)
+  };
 
   return (
     <section
+      ref={containerRef}
       id="solutions-grid"
-      className="relative w-full py-16 sm:py-24 px-3 sm:px-6 lg:px-10 bg-black text-white overflow-hidden"
+      className="relative w-full bg-[#050505] text-[#F1F5F9] pt-12 sm:pt-20 pb-28 font-sans selection:bg-[#00F0FF] selection:text-black"
     >
-      {/* Soft Ambient Radial Backlights */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[850px] h-[380px] bg-[#0052FF]/14 blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[500px] h-[300px] bg-[#00F0FF]/10 blur-[140px] pointer-events-none" />
+      {/* Ambient Radial Lighting Effects */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[950px] h-[450px] bg-gradient-to-b from-[#0052FF]/14 to-transparent blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-[550px] h-[450px] bg-[#00F0FF]/06 blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-10 left-0 w-[600px] h-[400px] bg-[#0052FF]/08 blur-[160px] pointer-events-none" />
 
-      <div className="max-w-[1440px] mx-auto relative z-10">
-        {/* ── Section Header ── */}
-        <div className="text-center mb-8 sm:mb-12">
-          {/* Top Pill Badge */}
-          <div className="inline-flex items-center px-4 py-1 rounded-full bg-blue-950/70 border border-blue-500/30 text-[#38BDF8] text-[11px] sm:text-xs font-extrabold tracking-[0.2em] uppercase mb-3.5 shadow-[0_0_15px_rgba(56,189,248,0.15)]">
-            OUR SERVICES
-          </div>
-
-          {/* Main Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-[44px] font-extrabold text-white tracking-tight font-montserrat leading-tight mb-2.5">
-            Engineered for{' '}
-            <span className="bg-gradient-to-r from-[#00F0FF] via-[#38BDF8] to-[#0052FF] bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(0,240,255,0.4)]">
-              Modern Operations
-            </span>
-          </h2>
-
-          {/* Subtitle */}
-          <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
-            End-to-end digital solutions tailored to your industry, goals, and scale.
-          </p>
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {/* ── TOP SECTION HEADER: (Image 2 Reference Design)                  ── */}
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center mb-16 sm:mb-24">
+        {/* Eyebrow: ── CORE SERVICES (Matching 2nd Reference Image, No Number) */}
+        <div className="inline-flex items-center gap-3 mb-3.5 select-none justify-center">
+          <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+          <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+            CORE SERVICES
+          </span>
         </div>
 
-        {/* ── Filter Tabs & Search Bar Row (Desktop & Tablet only) ── */}
-        <div className="hidden sm:flex flex-col lg:flex-row items-center justify-between gap-4 mb-8 sm:mb-12 w-full">
-          {/* Category Tabs */}
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 sm:gap-2.5">
-            {SOLUTION_CATEGORY_TABS.map((tab) => {
-              const isActive = selectedCategory === tab.name;
-              const TabIcon = tab.icon;
-              return (
-                <button
-                  key={tab.name}
-                  onClick={() => setSelectedCategory(tab.name)}
-                  className={`px-4 sm:px-4.5 py-2 rounded-full text-xs sm:text-[13px] font-semibold flex items-center gap-2 transition-all duration-200 cursor-pointer shadow-sm ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#0052FF] to-[#00F0FF] text-white shadow-[0_0_20px_rgba(0,82,255,0.4)] border border-blue-400/50'
-                      : 'bg-[#0c0d14] text-slate-300 hover:text-white border border-white/10 hover:border-blue-400/40'
-                  }`}
-                >
-                  <TabIcon
-                    size={14}
-                    className={isActive ? 'text-white' : 'text-slate-400'}
-                  />
-                  <span>{tab.name}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Main Title: Enterprise Services */}
+        <h2
+          className="text-[28px] sm:text-[36px] font-bold text-white tracking-tight leading-[1.2] mb-4 font-heading"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
+          Enterprise{' '}
+          <span className="text-white">
+            Services
+          </span>
+        </h2>
 
-          {/* Search Input on Right */}
-          <div className="relative w-full sm:w-80 lg:w-72 shrink-0">
-            <Search
-              size={15}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search services..."
-              className="w-full pl-10 pr-4 py-2 sm:py-2.5 rounded-full bg-[#0c0d14] border border-white/10 text-xs sm:text-sm text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0052FF] shadow-sm transition-all"
-            />
-          </div>
-        </div>
-
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {/* ── 1. DESKTOP VIEW (≥ lg): Professional 5-Row Bento Grid Layout   ── */}
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {isDefaultBento ? (
-          <div className="hidden lg:block space-y-4">
-            {/* Row 1: 4 Cards (01 Business Portfolio, 02 CRM, 03 ERP, 04 Billing & POS) */}
-            <div className="grid grid-cols-4 gap-4">
-              {row1.map((sol) => (
-                <BentoServiceCard
-                  key={sol.id}
-                  sol={sol}
-                  onOpenModal={setActiveModalSolution}
-                />
-              ))}
-            </div>
-
-            {/* Row 2: 3 Cards (Wider Showcase: 05 E-Commerce, 06 Digital Marketing, 07 School ERP) */}
-            <div className="grid grid-cols-3 gap-4">
-              {row2.map((sol) => (
-                <BentoServiceCard
-                  key={sol.id}
-                  sol={sol}
-                  onOpenModal={setActiveModalSolution}
-                  isWide
-                />
-              ))}
-            </div>
-
-            {/* Row 3: 4 Cards (08 Inventory, 09 SCM, 10 Transport Logistics, 11 Hotel Management) */}
-            <div className="grid grid-cols-4 gap-4">
-              {row3.map((sol) => (
-                <BentoServiceCard
-                  key={sol.id}
-                  sol={sol}
-                  onOpenModal={setActiveModalSolution}
-                />
-              ))}
-            </div>
-
-            {/* Row 4: 3 Cards (Wider Showcase: 12 Student Management, 13 LMS, 14 Gym & Fitness Club) */}
-            <div className="grid grid-cols-3 gap-4">
-              {row4.map((sol) => (
-                <BentoServiceCard
-                  key={sol.id}
-                  sol={sol}
-                  onOpenModal={setActiveModalSolution}
-                  isWide
-                />
-              ))}
-            </div>
-
-            {/* Row 5: 4 Cards (15 Expense Management, 16 Chit Fund, 17 Appointment Booking, 18 API & Cloud) */}
-            <div className="grid grid-cols-4 gap-4">
-              {row5.map((sol) => (
-                <BentoServiceCard
-                  key={sol.id}
-                  sol={sol}
-                  onOpenModal={setActiveModalSolution}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          /* Filtered or Searched Desktop Grid */
-          <div className="hidden lg:block">
-            <motion.div
-              layout
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-            >
-              <AnimatePresence>
-                {filteredSolutions.map((sol) => (
-                  <motion.div
-                    key={sol.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <BentoServiceCard
-                      sol={sol}
-                      onOpenModal={setActiveModalSolution}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          </div>
-        )}
-
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {/* ── 2. TABLET VIEW (sm to lg): Balanced Multi-Column Grid           ── */}
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        <div className="hidden sm:block lg:hidden">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {filteredSolutions.map((sol) => (
-              <BentoServiceCard
-                key={`tablet-${sol.id}`}
-                sol={sol}
-                onOpenModal={setActiveModalSolution}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {/* ── 3. MOBILE VIEW (< sm): Hotstar-Styled Categorized Rails          ── */}
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        <div className="block sm:hidden space-y-8">
-          {MOBILE_CATEGORIES.map((sec) => {
-            const items = SOLUTIONS_DATA.filter((s) => sec.ids.includes(s.id));
-            if (items.length === 0) return null;
-
-            return (
-              <InteractiveMobileRail
-                key={sec.title}
-                sec={sec}
-                solutions={items}
-                onOpenModal={setActiveModalSolution}
-              />
-            );
-          })}
-        </div>
-
-        {/* Empty Search Result State */}
-        {filteredSolutions.length === 0 && (
-          <div className="text-center py-16 bg-[#0A1224] rounded-3xl border border-white/10 p-8 my-6">
-            <Sparkles size={32} className="mx-auto text-blue-400 mb-3" />
-            <h3 className="text-lg font-bold text-white mb-1">
-              No services found
-            </h3>
-            <p className="text-sm text-slate-400 mb-4">
-              We couldn't find any services matching "{searchQuery}".
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('All');
-              }}
-              className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all border border-white/15 cursor-pointer"
-            >
-              Clear Search & Filters
-            </button>
-          </div>
-        )}
+        {/* Subtitle in clean Inter */}
+        <p
+          className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          High-performance digital products engineered for operational efficiency, security, and measurable growth.
+        </p>
       </div>
 
-      {/* ── Interactive Deep-Dive Details Modal ── */}
-      <SolutionDetailModal
-        solution={activeModalSolution}
-        onClose={() => setActiveModalSolution(null)}
-      />
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      {/* ── ALL 8 SERVICE BLOCKS (CATEGORIZED SHOWCASE DESIGN)              ── */}
+      {/* ═════════════════════════════════════════════════════════════════════ */}
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 space-y-0 relative z-10">
+        {CORE_SERVICES.map((service, serviceIdx) => {
+          const currentOpenGroup = openAccordions[String(serviceIdx)];
+
+          return (
+            <div
+              key={service.id}
+              id={service.id}
+              ref={(el) => (serviceRefs.current[serviceIdx] = el)}
+              className="relative scroll-mt-24 service-section-block pt-2 sm:pt-4 pb-16 sm:pb-20"
+            >
+              {/* 1. STICKY SERVICE CATEGORY HEADER (Matches Reference Image 2: exactly 20px top margin above separator line) */}
+              <div className="sticky top-0 z-30 bg-[#050505]/98 backdrop-blur-2xl -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 mb-6 sm:mb-8 shadow-[0_12px_32px_rgba(0,0,0,0.85)]">
+                {/* 20px margin above the separator line */}
+                <div className="h-5 w-full pointer-events-none" />
+
+                {/* Crisp horizontal separator line across header */}
+                <div className="w-full h-px bg-white/10" />
+
+                {/* Sticky title and action row */}
+                <div className="pt-4 pb-4 sm:pt-5 sm:pb-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3
+                      onClick={() => navigate(`/services/${service.id}`)}
+                      className="text-[24px] sm:text-[28px] font-bold text-white hover:text-[#2EA8FF] transition-colors cursor-pointer tracking-tight leading-none flex items-center gap-2.5 sm:gap-3 font-heading"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                      title={`View ${service.title} details`}
+                    >
+                      <span className="text-[#38BDF8] font-bold text-2xl sm:text-3xl italic tracking-tight font-heading">{service.num}</span>
+                      <span>{service.title}</span>
+                    </h3>
+
+                    <span className="text-white/20 text-2xl font-light select-none">/</span>
+                    <span
+                      className="text-xs sm:text-sm font-semibold text-[#94A3B8] tracking-tight font-heading"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {service.subDay}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => navigate(`/services/${service.id}`)}
+                    className="hidden sm:inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#38BDF8] hover:text-white transition-colors cursor-pointer font-heading"
+                  >
+                    <span>Explore Detail</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. HERO PRESENTATION ROW: Info Left, Direct Mockup Right (NO DIV WRAPPER) */}
+              <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] items-center gap-8 lg:gap-12 mb-8 sm:mb-10">
+                {/* Left Info Column */}
+                <div className="flex flex-col items-start">
+                  <p
+                    className="text-sm sm:text-base text-slate-300 max-w-lg mb-6 leading-relaxed font-sans font-normal"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {service.lead}
+                  </p>
+
+                  {/* Action Buttons: "Talk about this service" (opens specific service page) + Consultation button */}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => navigate(`/services/${service.id}`)}
+                      className="group relative inline-flex items-center justify-between gap-4 bg-[#0052FF] hover:bg-[#0042D0] text-white py-2 pl-5 pr-2 rounded-full font-semibold text-xs sm:text-sm tracking-wide border border-white/20 shadow-[0_4px_18px_rgba(0,82,255,0.38)] hover:shadow-[0_6px_26px_rgba(0,82,255,0.55),0_0_16px_rgba(0,240,255,0.25)] hover:border-cyan-400/50 transition-all duration-300 active:scale-95 cursor-pointer font-heading"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                      title={`Open ${service.title} service page`}
+                    >
+                      <span>Talk about this service</span>
+                      <span className="w-8 h-8 rounded-full bg-[#0036B8] group-hover:bg-[#00F0FF] group-hover:shadow-[0_0_10px_rgba(0,240,255,0.4)] flex items-center justify-center transition-all duration-300">
+                        <ArrowUpRight
+                          size={14}
+                          className="text-white group-hover:text-black group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                        />
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => navigate(`/client-connect?service=${encodeURIComponent(service.title)}`)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-[#38BDF8]/40 transition-all duration-200 cursor-pointer font-sans"
+                      style={{ fontFamily: 'Inter, sans-serif' }}
+                    >
+                      <span>Consult team</span>
+                      <ArrowRight size={12} className="text-[#38BDF8]" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right: Standalone Mockup Image (Clickable to detail page) */}
+                <img
+                  src={service.mockup}
+                  alt={`${service.title} 3D Showcase Mockup`}
+                  className="w-full max-w-[420px] h-auto max-h-[250px] object-contain justify-self-center transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 cursor-pointer select-none"
+                  loading="lazy"
+                  onClick={() => navigate(`/services/${service.id}`)}
+                  title={`View ${service.title} details`}
+                />
+              </div>
+
+              {/* 3. SPLIT FAQ LAYOUT: Left Sticky Box + Right Accordion Rows */}
+              <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 lg:gap-12 pt-7 border-t border-white/[0.08] items-start pb-4">
+                
+                {/* Left Column: Title + Scope */}
+                <div className="md:sticky md:top-24">
+                  <h4
+                    className="text-[20px] sm:text-[22px] font-semibold text-white mb-2 leading-tight tracking-tight font-heading"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
+                    Explore our capabilities
+                  </h4>
+                  <p
+                    className="text-xs sm:text-sm text-slate-400 font-normal leading-relaxed font-sans"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                  >
+                    {service.scope}
+                  </p>
+                </div>
+
+                {/* Right Column: FAQ Accordion Groups (Click to toggle) */}
+                <div className="space-y-2.5">
+                  {service.groups.map((group, groupIdx) => {
+                    const isOpen = currentOpenGroup === groupIdx;
+
+                    return (
+                      <div
+                        key={group.name}
+                        className={`rounded-xl border transition-all duration-300 overflow-hidden ${
+                          isOpen
+                            ? 'bg-[#0A0E1A] border-[#0052FF]/40 shadow-[0_4px_24px_rgba(0,82,255,0.15)]'
+                            : 'bg-[#070A14]/80 border-white/[0.08] hover:border-white/15'
+                        }`}
+                      >
+                        {/* Accordion Trigger */}
+                        <button
+                          type="button"
+                          onClick={() => toggleAccordion(serviceIdx, groupIdx)}
+                          className="w-full flex items-center justify-between p-4 sm:p-5 text-left cursor-pointer transition-colors select-none"
+                        >
+                          <span
+                            className="text-sm sm:text-base font-semibold text-white tracking-tight font-heading"
+                            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                          >
+                            {group.name}
+                          </span>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="font-mono text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/10 border border-[#00F0FF]/25 px-2.5 py-0.5 rounded-full">
+                              {group.count}
+                            </span>
+                            <ChevronDown
+                              size={18}
+                              className={`text-slate-400 group-hover:text-white transition-transform duration-300 shrink-0 ${
+                                isOpen ? 'rotate-180 text-[#00F0FF]' : ''
+                              }`}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Accordion Collapsible Content */}
+                        <AnimatePresence initial={false}>
+                          {isOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            >
+                              <div className="px-4 sm:px-5 pb-5 pt-1 border-t border-white/[0.06]">
+                                <p
+                                  className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-normal"
+                                  style={{ fontFamily: 'Inter, sans-serif' }}
+                                >
+                                  {group.desc}
+                                </p>
+
+                                {/* Subservice Pills Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {group.pills.map((pill) => (
+                                    <SolutionPillButton
+                                      key={pill}
+                                      pill={pill}
+                                      onClick={() => navigate(`/client-connect?service=${encodeURIComponent(pill)}`)}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+
     </section>
   );
 }

@@ -19,7 +19,7 @@ export default function TestimonialsSection() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="section-tag">Testimonials</div>
-          <h2 className="text-3xl lg:text-5xl font-bold text-white" >
+          <h2 className="text-[28px] sm:text-[36px] font-bold text-white leading-[1.2] tracking-tight font-heading">
             What Our Clients Say
           </h2>
         </div>

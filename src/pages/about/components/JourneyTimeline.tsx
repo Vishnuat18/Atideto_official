@@ -27,16 +27,19 @@ export default function JourneyTimeline() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-block px-4 py-1.5 rounded-full border border-[#3B82F6]/30 bg-[#3B82F6]/10 text-[#3B82F6] text-xs font-bold tracking-[0.2em] uppercase mb-6"
+            className="inline-flex items-center gap-3 mb-6 select-none"
           >
-            Our Journey
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              Our Journey
+            </span>
           </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-4xl md:text-6xl font-black text-white"
+            className="text-[28px] sm:text-[36px] font-bold text-white font-heading tracking-tight leading-[1.2]"
           >
             THE <span className="text-[#3B82F6]">TIMELINE</span>
           </motion.h2>
@@ -69,9 +72,9 @@ export default function JourneyTimeline() {
                     transition={{ duration: 0.8 }}
                     className={`w-[calc(50%-4rem)] p-8 rounded-3xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] backdrop-blur-md transition-all duration-500 hover:border-[#3B82F6]/40 hover:-translate-y-2 hover:bg-[rgba(59,130,246,0.05)] ${isEven ? 'text-right' : 'text-left'}`}
                   >
-                    <div className="text-[#00C6FF] font-black text-4xl mb-2 font-space tracking-tighter opacity-80">{item.year}</div>
-                    <h3 className="text-white font-bold text-xl mb-3">{item.title}</h3>
-                    <p className="text-[#94A3B8] leading-relaxed">{item.desc}</p>
+                    <div className="text-[#00C6FF] font-black text-4xl mb-2 font-heading tracking-tight opacity-80">{item.year}</div>
+                    <h3 className="text-white font-semibold text-[20px] sm:text-[22px] mb-2 font-heading tracking-tight">{item.title}</h3>
+                    <p className="text-[#94A3B8] leading-[1.6] text-base font-sans">{item.desc}</p>
                   </motion.div>
 
                 </div>

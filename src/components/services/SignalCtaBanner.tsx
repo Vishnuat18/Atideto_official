@@ -36,7 +36,7 @@ export default function SignalCtaBanner() {
                 START WITH THE SIGNAL
               </p>
 
-              <h2 className="text-white font-extrabold text-3xl sm:text-4xl lg:text-[48px] leading-[1.14] tracking-tight font-montserrat">
+              <h2 className="text-white font-bold text-[28px] sm:text-[36px] leading-[1.2] tracking-tight font-heading">
                 You have the ambition.<br />
                 <span className="text-[#67E8F9]">
                   Let's build the advantage.

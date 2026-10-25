@@ -1,25 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Shield, Key, LogOut } from 'lucide-react';
+import { User, Shield, Key, LogOut, Smartphone, QrCode, Copy, Check, ShieldCheck } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { signOut, updateProfile, updatePassword } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import SEO from '@/components/seo/SEO';
+import { checkPasswordRequirements } from '@/lib/utils';
+import { PasswordRequirements } from '@/components/ui/password-requirements';
+import { DEFAULT_ADMIN_TOTP_SECRET, generateTotpQrCodeDataUrl, getStoredBackupCodes } from '@/lib/totp';
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'general' | 'security'>('general');
   const [displayName, setDisplayName] = useState(user?.name || '');
   const [newPassword, setNewPassword] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [adminQrUrl, setAdminQrUrl] = useState<string>('');
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [backupCodes, setBackupCodes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      generateTotpQrCodeDataUrl(user.email || 'admin@atideto.in')
+        .then(url => setAdminQrUrl(url))
+        .catch(console.warn);
+      setBackupCodes(getStoredBackupCodes());
+    }
+  }, [user]);
 
   if (!user) return null;
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await logout();
     navigate('/login');
   };
 
@@ -39,8 +54,13 @@ export default function Profile() {
   };
 
   const handleUpdatePassword = async () => {
-    if (!auth.currentUser || newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (!auth.currentUser) {
+      toast.error('You must be logged in to update your password.');
+      return;
+    }
+    const passValidation = checkPasswordRequirements(newPassword);
+    if (!passValidation.isValid) {
+      toast.error(passValidation.errorMessage || 'Please fulfill all password criteria.');
       return;
     }
     setIsUpdating(true);
@@ -184,18 +204,88 @@ export default function Profile() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full bg-[#050505] border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#2EA8FF] transition-colors"
                   />
+                  <PasswordRequirements password={newPassword} className="mt-2.5" />
                 </div>
 
                 <div className="pt-4">
                   <button 
                     onClick={handleUpdatePassword}
                     disabled={isUpdating || !newPassword}
-                    className="px-6 py-3 bg-[#2F2FE4] hover:bg-[#3A3DFF] disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
+                    className="px-6 py-3 bg-[#0052FF] hover:bg-[#0038B8] disabled:opacity-50 text-white rounded-lg font-medium transition-colors"
                   >
                     {isUpdating ? 'Updating...' : 'Update Password'}
                   </button>
                 </div>
               </div>
+
+              {/* Google Authenticator 2FA Security Section (Admin Only) */}
+              {user.role === 'admin' && (
+                <div className="mt-10 pt-8 border-t border-white/10 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 text-[#38BDF8]">
+                        <Smartphone size={20} />
+                        <h4 className="text-lg font-bold text-white">Google Authenticator (2FA)</h4>
+                      </div>
+                      <p className="text-[#AFAFAF] text-xs mt-1">
+                        Two-step verification is enforced on your Administrator account.
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-400 border border-green-500/20 flex items-center gap-1.5">
+                      <ShieldCheck size={14} />
+                      Enforced & Active
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-black/40 border border-white/10 rounded-2xl p-5">
+                    {/* QR Code */}
+                    <div className="flex flex-col items-center justify-center p-4 bg-white rounded-xl">
+                      {adminQrUrl ? (
+                        <img src={adminQrUrl} alt="Google Authenticator QR Code" className="w-36 h-36 object-contain" />
+                      ) : (
+                        <div className="w-36 h-36 flex items-center justify-center bg-slate-100 rounded-lg">
+                          <QrCode size={36} className="text-slate-400" />
+                        </div>
+                      )}
+                      <span className="text-[10px] font-bold text-slate-800 mt-2">Scan in Google Authenticator</span>
+                    </div>
+
+                    {/* Secret & Backup Codes */}
+                    <div className="space-y-4 text-xs">
+                      <div>
+                        <span className="text-slate-400 block mb-1 font-semibold uppercase text-[10px]">Manual Setup Key:</span>
+                        <div className="flex items-center justify-between bg-white/5 border border-white/10 px-3 py-2 rounded-lg font-mono text-[#38BDF8]">
+                          <span>{DEFAULT_ADMIN_TOTP_SECRET}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(DEFAULT_ADMIN_TOTP_SECRET);
+                              setCopiedKey(true);
+                              toast.success('Key copied to clipboard');
+                              setTimeout(() => setCopiedKey(false), 2000);
+                            }}
+                            className="p-1 hover:text-white transition cursor-pointer"
+                            title="Copy Key"
+                          >
+                            {copiedKey ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block mb-1 font-semibold uppercase text-[10px]">Emergency Recovery Codes:</span>
+                        <div className="grid grid-cols-2 gap-1.5 font-mono text-[11px] text-slate-300 bg-white/5 p-2.5 rounded-lg border border-white/10">
+                          {backupCodes.map((code, i) => (
+                            <span key={i} className="bg-black/40 px-2 py-0.5 rounded text-center font-bold">
+                              {code}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

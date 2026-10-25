@@ -19,8 +19,8 @@ export default function CompanyStory() {
           
           {/* Left: Distinctive Editorial Headline with Inline Pill */}
           <div className="lg:col-span-7 text-left">
-            <h2 className="font-montserrat tracking-tight leading-[1.12]">
-              <span className="text-3xl sm:text-5xl lg:text-[54px] font-light text-slate-300 inline-flex flex-wrap items-center gap-3">
+            <h2 className="font-heading tracking-tight leading-[1.2] text-[28px] sm:text-[36px] font-bold">
+              <span className="font-light text-slate-300 inline-flex flex-wrap items-center gap-3">
                 Where Purposeful Code
                 
                 {/* Inline 3D Metallic Pill Graphic matching screenshot */}
@@ -31,7 +31,7 @@ export default function CompanyStory() {
                 </span>
               </span>
               <br />
-              <span className="text-3xl sm:text-5xl lg:text-[54px] font-black text-white block mt-1">
+              <span className="font-bold text-white block mt-1">
                 Shapes Digital Reality
               </span>
             </h2>
@@ -67,9 +67,9 @@ export default function CompanyStory() {
                       <stop offset="0%" stopColor="#2563EB" stopOpacity="0.8" />
                       <stop offset="100%" stopColor="#0052FF" stopOpacity="0.4" />
                     </linearGradient>
-                    <linearGradient id="purpleCube" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="#4338CA" stopOpacity="0.3" />
+                    <linearGradient id="blueCube" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#0052FF" stopOpacity="0.85" />
+                      <stop offset="100%" stopColor="#0035A8" stopOpacity="0.4" />
                     </linearGradient>
                     <linearGradient id="neonGlow" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.3" />
@@ -96,11 +96,11 @@ export default function CompanyStory() {
                   </g>
 
                   {/* 3D Floating Geometric Solids */}
-                  {/* Purple Cube */}
+                  {/* Blue Cube */}
                   <g transform="translate(520, 90)">
-                    <path d="M 50 10 L 110 30 L 60 70 L 0 50 Z" fill="url(#purpleCube)" />
-                    <path d="M 0 50 L 60 70 L 60 130 L 0 110 Z" fill="#1E1B4B" />
-                    <path d="M 60 70 L 110 30 L 110 90 L 60 130 Z" fill="#312E81" />
+                    <path d="M 50 10 L 110 30 L 60 70 L 0 50 Z" fill="url(#blueCube)" />
+                    <path d="M 0 50 L 60 70 L 60 130 L 0 110 Z" fill="#0A1E4A" />
+                    <path d="M 60 70 L 110 30 L 110 90 L 60 130 Z" fill="#0F2D6B" />
                   </g>
 
                   {/* Neon Cyan Cylinder */}
@@ -117,9 +117,9 @@ export default function CompanyStory() {
 
               {/* Mission Badge & Header */}
               <div className="relative z-10 flex items-center justify-between">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[#38BDF8] text-xs font-bold tracking-wider uppercase backdrop-blur-md">
-                  <Target size={14} className="text-[#38BDF8]" />
-                  <span>Our Mission</span>
+                <div className="flex items-center gap-3 select-none">
+                  <span className="w-8 h-[1.5px] bg-[#0052FF] shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">Our Mission</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-blue-600 transition-all">
                   <ArrowUpRight size={16} />
@@ -128,7 +128,7 @@ export default function CompanyStory() {
 
               {/* Mission Statement Content */}
               <div className="relative z-10 max-w-lg mt-auto pt-16 sm:pt-20 text-left">
-                <h3 className="text-2xl sm:text-3xl font-extrabold font-montserrat tracking-tight mb-3 text-white">
+                <h3 className="text-[20px] sm:text-[22px] font-semibold font-heading tracking-tight mb-3 text-white">
                   Democratizing Elite Software & Tech Intelligence
                 </h3>
                 <p className="text-slate-300/90 text-sm sm:text-base leading-relaxed">
@@ -142,7 +142,7 @@ export default function CompanyStory() {
               
               {/* Top Row: Metric */}
               <div>
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-black font-montserrat tracking-tight text-white group-hover:text-[#38BDF8] transition-colors">
+                <div className="text-4xl sm:text-5xl lg:text-6xl font-black font-heading tracking-tight text-white group-hover:text-[#38BDF8] transition-colors">
                   +2K
                 </div>
                 <div className="text-xs sm:text-[13px] font-bold tracking-[0.18em] uppercase text-slate-400 mt-2">
@@ -182,7 +182,7 @@ export default function CompanyStory() {
                   <div className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400 mb-1">
                     ENTERPRISE GRADE
                   </div>
-                  <div className="text-xl sm:text-2xl font-black font-montserrat tracking-tight text-white">
+                  <div className="text-xl sm:text-2xl font-black font-heading tracking-tight text-white">
                     PRO'S CHOICE
                   </div>
                 </div>
@@ -209,7 +209,7 @@ export default function CompanyStory() {
 
                 {/* Metric: +100 Projects */}
                 <div className="text-right">
-                  <div className="text-3xl sm:text-4xl font-black font-montserrat text-white">
+                  <div className="text-3xl sm:text-4xl font-black font-heading text-white">
                     +100
                   </div>
                   <div className="text-[10px] font-bold tracking-widest uppercase text-slate-400">
@@ -237,8 +237,8 @@ export default function CompanyStory() {
                       <stop offset="100%" stopColor="#0F172A" stopOpacity="0.4" />
                     </linearGradient>
                     <linearGradient id="neonCylinder" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366F1" stopOpacity="0.9" />
-                      <stop offset="100%" stopColor="#312E81" stopOpacity="0.3" />
+                      <stop offset="0%" stopColor="#0052FF" stopOpacity="0.9" />
+                      <stop offset="100%" stopColor="#002D80" stopOpacity="0.3" />
                     </linearGradient>
                     <linearGradient id="coralCone" x1="0" y1="0" x2="1" y2="1">
                       <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.8" />
@@ -253,10 +253,10 @@ export default function CompanyStory() {
                     <path d="M 160 150 L 320 100 L 320 160 L 160 210 Z" fill="#070A14" />
                   </g>
 
-                  {/* Vibrant Purple/Indigo Cylinder on Podium */}
+                  {/* Vibrant Blue Cylinder on Podium */}
                   <g transform="translate(300, 110)">
-                    <path d="M 0 30 L 0 90 C 0 120, 70 120, 70 90 L 70 30 Z" fill="url(#neonCylinder)" stroke="rgba(99,102,241,0.5)" />
-                    <ellipse cx="35" cy="30" rx="35" ry="18" fill="#818CF8" />
+                    <path d="M 0 30 L 0 90 C 0 120, 70 120, 70 90 L 70 30 Z" fill="url(#neonCylinder)" stroke="rgba(0,82,255,0.5)" />
+                    <ellipse cx="35" cy="30" rx="35" ry="18" fill="#38BDF8" />
                   </g>
 
                   {/* Cyan Glowing Pyramid / Triangle Prism */}
@@ -274,9 +274,9 @@ export default function CompanyStory() {
 
               {/* Vision Badge & Header */}
               <div className="relative z-10 flex items-center justify-between">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-[#38BDF8] text-xs font-bold tracking-wider uppercase backdrop-blur-md">
-                  <Shield size={14} className="text-[#38BDF8]" />
-                  <span>Our Vision</span>
+                <div className="flex items-center gap-3 select-none">
+                  <span className="w-8 h-[1.5px] bg-[#0052FF] shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">Our Vision</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-blue-600 transition-all">
                   <ArrowUpRight size={16} />
@@ -285,7 +285,7 @@ export default function CompanyStory() {
 
               {/* Vision Statement Content */}
               <div className="relative z-10 max-w-lg mt-auto pt-16 sm:pt-20 text-left">
-                <h3 className="text-2xl sm:text-3xl font-extrabold font-montserrat tracking-tight mb-3 text-white">
+                <h3 className="text-[20px] sm:text-[22px] font-semibold font-heading tracking-tight mb-3 text-white">
                   Engineering the Autonomous Digital Frontier
                 </h3>
                 <p className="text-slate-300/90 text-sm sm:text-base leading-relaxed">

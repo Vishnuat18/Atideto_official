@@ -244,7 +244,7 @@ export default function ClientConnect() {
 
   return (
     <div 
-      className="min-h-screen pb-20 relative text-white font-sans overflow-x-hidden flex flex-col justify-between selection:bg-[#5B5EFF]/30"
+      className="min-h-screen pb-20 relative text-white font-sans overflow-x-hidden flex flex-col justify-between selection:bg-[#0052FF]/30"
       style={{
         background: 'radial-gradient(circle at center, #08103E 0%, #050A30 30%, #050505 70%, #030303 100%)'
       }}
@@ -261,10 +261,10 @@ export default function ClientConnect() {
         style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')" }} 
       />
 
-      {/* Hero Section with Ribbon Background */}
+      {/* Hero Section with Ribbon Background (Full Viewport Height, Extends to End of Screen) */}
       {!submitted && (
         <section 
-          className="relative min-h-[92vh] lg:min-h-screen w-full px-6 sm:px-8 lg:px-16 pt-32 pb-16 mb-12 text-center z-10 flex flex-col items-center justify-center border-b border-[#3B82F6]/20"
+          className="hero-fullscreen relative w-full px-6 sm:px-8 lg:px-16 pt-24 sm:pt-28 pb-8 text-center z-10 flex flex-col items-center justify-between border-b border-[#3B82F6]/20 overflow-hidden"
           style={{
             backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.8) 80%, #050505 100%), url(${contactBg})`,
             backgroundSize: 'cover',
@@ -272,34 +272,54 @@ export default function ClientConnect() {
             backgroundRepeat: 'no-repeat'
           }}
         >
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-300 border border-[#2EA8FF]/30 bg-[#2EA8FF]/10 text-[#2EA8FF] shadow-[0_0_15px_rgba(46,168,255,0.2)]"
+          <div className="max-w-4xl mx-auto flex flex-col items-center my-auto">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-3 mb-4 select-none"
+            >
+              <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+              <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+                CONNECT WITH US
+              </span>
+            </motion.div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-[30px] sm:text-[36px] lg:text-[44px] font-bold mb-4 tracking-tight text-white drop-shadow-2xl font-heading leading-[1.18] max-w-2xl mx-auto"
+            >
+              Start Your <span className="italic text-[#38BDF8]">Project</span>
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-[#AFAFAF] text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-normal font-sans mb-8"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              Tell us about your vision. We'll craft a tailored proposal and set up your dashboard within 24 hours.
+            </motion.p>
+          </div>
+
+          {/* Subtle indicator hint to scroll down to form */}
+          <div
+            onClick={() => {
+              const formEl = document.getElementById('connect-form');
+              formEl?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="relative z-10 flex flex-col items-center gap-2 text-slate-500 hover:text-white transition-colors cursor-pointer select-none mb-2"
           >
-            CONNECT WITH US
-          </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-black mb-4 tracking-tight text-white drop-shadow-2xl font-montserrat"
-          >
-            Start Your <span className="text-[#3B82F6]">Project</span>
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-[#AFAFAF] text-lg md:text-xl max-w-2xl mx-auto leading-relaxed font-medium"
-          >
-            Tell us about your vision. We'll craft a tailored proposal and set up your dashboard within 24 hours.
-          </motion.p>
+            <span className="text-[11px] font-mono tracking-widest uppercase text-slate-400">Scroll to form</span>
+            <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1">
+              <div className="w-1 h-2 rounded-full bg-cyan-400 animate-bounce" />
+            </div>
+          </div>
         </section>
       )}
 
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex-1 flex flex-col justify-center">
+      <div id="connect-form" className="relative z-10 w-full max-w-5xl mx-auto px-6 flex-1 flex flex-col justify-center pt-16">
         
         {!submitted ? (
           <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col justify-center">
@@ -311,7 +331,7 @@ export default function ClientConnect() {
                 type="button"
                 onClick={prev}
                 disabled={step === 0 || isSubmitting}
-                className="w-[42px] h-[42px] flex items-center justify-center rounded-full border border-[#5B5EFF]/30 text-[#5B5EFF] hover:border-[#5B5EFF] hover:shadow-[0_0_15px_rgba(91,94,255,0.4)] disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 transform hover:scale-[1.08] cursor-pointer"
+                className="w-[42px] h-[42px] flex items-center justify-center rounded-full border border-[#0052FF]/30 text-[#38BDF8] hover:border-[#0052FF] hover:shadow-[0_0_15px_rgba(0,82,255,0.4)] disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 transform hover:scale-[1.08] cursor-pointer"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -326,7 +346,7 @@ export default function ClientConnect() {
                 type="button"
                 onClick={next}
                 disabled={step === 6 || !canStepProceed() || isSubmitting}
-                className="w-[42px] h-[42px] flex items-center justify-center rounded-full border border-[#5B5EFF]/30 text-[#5B5EFF] hover:border-[#5B5EFF] hover:shadow-[0_0_15px_rgba(91,94,255,0.4)] disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 transform hover:scale-[1.08] cursor-pointer"
+                className="w-[42px] h-[42px] flex items-center justify-center rounded-full border border-[#0052FF]/30 text-[#38BDF8] hover:border-[#0052FF] hover:shadow-[0_0_15px_rgba(0,82,255,0.4)] disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 transform hover:scale-[1.08] cursor-pointer"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
@@ -398,7 +418,7 @@ export default function ClientConnect() {
                   type="button"
                   onClick={prev}
                   disabled={isSubmitting}
-                  className="px-8 h-[58px] rounded-full border border-[#5B5EFF]/40 text-white font-semibold hover:border-[#5B5EFF] hover:shadow-[0_0_15px_rgba(91,94,255,0.2)] hover:scale-[1.03] transition-all duration-300 cursor-pointer flex items-center justify-center bg-transparent"
+                  className="px-8 h-[58px] rounded-full border border-[#0052FF]/40 text-white font-semibold hover:border-[#0052FF] hover:shadow-[0_0_15px_rgba(0,82,255,0.2)] hover:scale-[1.03] transition-all duration-300 cursor-pointer flex items-center justify-center bg-transparent"
                 >
                   &larr; Previous Step
                 </button>
@@ -411,7 +431,7 @@ export default function ClientConnect() {
                   type="button"
                   onClick={next}
                   disabled={!canStepProceed() || isSubmitting}
-                  className="px-10 h-[58px] rounded-full bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] text-white font-bold hover:shadow-[0_0_25px_rgba(91,94,255,0.4)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center"
+                  className="px-10 h-[58px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#0038B8] text-white font-bold hover:shadow-[0_0_25px_rgba(0,82,255,0.4)] transition-all duration-300 hover:scale-[1.02] disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center"
                 >
                   Next Step &rarr;
                 </button>

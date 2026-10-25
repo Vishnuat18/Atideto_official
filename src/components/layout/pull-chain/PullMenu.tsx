@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { NAV_ITEMS } from '@/constants';
+import { CATEGORIZED_SERVICES } from '@/constants/categorizedServices';
 import {
   Home,
   Briefcase,
   GraduationCap,
+  BookOpen,
   Info,
   MessageCircle,
   LogIn,
@@ -28,13 +30,19 @@ interface PullMenuProps {
 const iconMap: Record<string, LucideIcon> = {
   '/': Home,
   '/services': Briefcase,
+  '/courses': BookOpen,
+  '/upskill': GraduationCap,
   '/academy': GraduationCap,
   '/about': Info,
+  '/careers': Briefcase,
   '/client-connect': MessageCircle,
   '/login': LogIn,
   '/profile': User,
   '/dashboard': LayoutDashboard,
 };
+
+import atidetoLogo from '@/assets/atideto/logo.png';
+import atidetoWordmark from '@/assets/atideto/atideto.png';
 
 export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
   const location = useLocation();
@@ -53,8 +61,17 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
 
   return (
     <div className="w-full bg-[#0a0a0a]/97 backdrop-blur-2xl rounded-b-2xl overflow-hidden border border-white/[0.06]">
+      {/* Official Brand Logo Header */}
+      <div className="px-4 py-3 flex items-center justify-between border-b border-white/[0.08]">
+        <div className="flex items-center gap-2.5">
+          <img src={atidetoLogo} alt="Atideto" className="h-8 w-auto object-contain" />
+          <img src={atidetoWordmark} alt="Atideto Technologies" className="h-8 w-auto object-contain" />
+        </div>
+        <span className="text-[10px] font-mono text-[#38BDF8] tracking-widest uppercase font-semibold">Atideto</span>
+      </div>
+
       {/* Menu Items */}
-      <div className="py-3 px-2">
+      <div className="py-2 px-2">
         {menuItems.map((item, index) => {
           const IconComponent = iconMap[item.href] || Circle;
           const isActive = location.pathname === item.href;
@@ -100,6 +117,46 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
                   />
                 )}
               </Link>
+
+              {/* Categorized Services Sub-Menu for Mobile */}
+              {item.href === '/services' && (
+                <div className="mx-2 mb-2 p-2 rounded-xl bg-[#070D1A]/90 border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+                  <div className="flex items-center justify-between px-2 pb-1.5 mb-1 border-b border-white/[0.06]">
+                    <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#2EA8FF] uppercase">
+                      8 Core Categories
+                    </span>
+                    <Link
+                      to="/services"
+                      onClick={onClose}
+                      className="text-[10px] font-semibold text-slate-400 hover:text-white"
+                    >
+                      View All →
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    {CATEGORIZED_SERVICES.map((s) => (
+                      <Link
+                        key={s.id}
+                        to={`/services/${s.id}`}
+                        onClick={onClose}
+                        className="flex items-center justify-between py-1.5 px-2 rounded-lg text-xs text-slate-300 hover:text-white hover:bg-white/[0.06] transition-all group"
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="font-mono text-[10px] text-[#2EA8FF] font-bold shrink-0">
+                            {s.num}
+                          </span>
+                          <span className="font-semibold truncate text-[11px] group-hover:text-white">
+                            {s.shortTitle}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-[#2EA8FF] group-hover:translate-x-0.5 transition-transform shrink-0 ml-2">
+                          →
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           );
         })}

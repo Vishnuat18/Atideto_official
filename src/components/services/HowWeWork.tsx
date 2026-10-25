@@ -52,31 +52,25 @@ export default function HowWeWork() {
 
       <div className="max-w-5xl mx-auto relative z-10">
         
-        {/* ── Section Header ── */}
+        {/* ── Section Header (Image 1 Style) ── */}
         <div className="mb-10 sm:mb-14 text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-950/60 border border-blue-500/30 text-[#38BDF8] text-xs font-bold tracking-[0.2em] uppercase mb-3.5"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            HOW WE WORK
-          </motion.div>
+          {/* Eyebrow: ── DELIVERY PROCESS (Matching 2nd Reference Image, No Number) */}
+          <div className="inline-flex items-center gap-3 mb-3.5 select-none">
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              DELIVERY PROCESS
+            </span>
+          </div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight font-montserrat"
-          >
+          <h2 className="text-[28px] sm:text-[36px] font-bold text-white tracking-tight leading-[1.2] mb-3 font-heading">
             A clear path from idea to{' '}
-            <span className="text-[#38BDF8]">
+            <span className="text-[#0066FF] drop-shadow-[0_0_20px_rgba(0,102,255,0.4)]">
               scalable reality.
             </span>
-          </motion.h2>
+          </h2>
+          <p className="text-slate-300 text-base max-w-xl font-normal leading-relaxed font-sans">
+            Structured agile execution engineered for operational reliability, velocity, and clean handoffs.
+          </p>
         </div>
 
         {/* ── 6 Steps Layout (Matching Attached Reference Image 1) ── */}
@@ -100,10 +94,10 @@ export default function HowWeWork() {
 
               {/* Right Column: Title and Description */}
               <div className="col-span-9 sm:col-span-10 py-5 sm:py-6 pl-6 sm:pl-10 lg:pl-12 flex flex-col justify-center text-left">
-                <h3 className="text-lg sm:text-xl lg:text-[22px] font-bold text-white font-montserrat tracking-tight mb-1">
+                <h3 className="text-[20px] sm:text-[22px] font-semibold text-white font-heading tracking-tight mb-1">
                   {step.title}
                 </h3>
-                <p className="text-xs sm:text-sm lg:text-[15px] text-slate-400 font-normal leading-relaxed max-w-2xl">
+                <p className="text-xs sm:text-sm lg:text-[15px] text-slate-400 font-normal leading-relaxed max-w-2xl font-sans">
                   {step.desc}
                 </p>
               </div>

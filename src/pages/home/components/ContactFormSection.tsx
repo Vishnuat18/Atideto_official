@@ -122,7 +122,7 @@ export default function ContactFormSection() {
               <p className="text-[#00C6FF] font-bold tracking-[0.2em] uppercase text-sm mb-4">
                 GET IN TOUCH
               </p>
-              <h2 className="text-4xl md:text-5xl lg:text-[56px] font-black text-white leading-[1.1] mb-6">
+              <h2 className="text-[28px] sm:text-[36px] font-bold text-white leading-[1.2] mb-6 font-heading tracking-tight">
                 Ready to Start Your
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FF] to-[#3B82F6]">Next Project?</span>

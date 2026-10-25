@@ -41,7 +41,7 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-transparent to-[#050505]/90 pointer-events-none" />
           
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow-lg" >
+            <h2 className="text-[28px] sm:text-[36px] font-bold text-white leading-[1.2] drop-shadow-lg font-heading">
               {service.title}
             </h2>
             <div className="w-12 h-1 bg-[#3B82F6] mt-6 rounded-full shadow-[0_0_10px_#3B82F6]" />

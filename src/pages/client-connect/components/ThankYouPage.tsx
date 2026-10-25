@@ -79,7 +79,7 @@ We will review your inquiry and get back to you within 24 hours.
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-          className="w-24 h-24 rounded-full bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] flex items-center justify-center shadow-[0_0_30px_rgba(91,94,255,0.4)]"
+          className="w-24 h-24 rounded-full bg-gradient-to-r from-[#0052FF] to-[#0038B8] flex items-center justify-center shadow-[0_0_30px_rgba(0,82,255,0.4)]"
         >
           <motion.div
             initial={{ pathLength: 0 }}
@@ -92,7 +92,7 @@ We will review your inquiry and get back to you within 24 hours.
       </div>
 
       {/* 2. Heading & Subtitle */}
-      <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+      <h1 className="text-[32px] sm:text-[38px] lg:text-[44px] font-bold text-white mb-4 tracking-tight leading-[1.15] font-heading">
         Thank You!
       </h1>
       <p className="text-[#AFAFAF] text-lg md:text-xl max-w-lg leading-relaxed mb-10">
@@ -103,7 +103,7 @@ We will review your inquiry and get back to you within 24 hours.
       <div className="w-full bg-white/[0.02] border border-white/5 rounded-2xl p-6 mb-10 text-left space-y-4 max-w-md mx-auto shadow-2xl">
         <div className="flex justify-between items-center pb-3 border-b border-white/5">
           <span className="text-white/40 text-sm font-semibold">Project ID</span>
-          <span className="text-[#5B5EFF] font-mono font-bold text-[16px]">{requestId}</span>
+          <span className="text-[#0052FF] font-mono font-bold text-[16px]">{requestId}</span>
         </div>
         <div className="flex justify-between items-center pb-3 border-b border-white/5">
           <span className="text-white/40 text-sm font-semibold">Submitted Date</span>
@@ -119,7 +119,7 @@ We will review your inquiry and get back to you within 24 hours.
       <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
         <button
           onClick={handleDownloadSummary}
-          className="flex items-center justify-center gap-2 px-8 h-[58px] rounded-full border border-[#5B5EFF]/50 text-white font-bold hover:bg-[#5B5EFF]/10 hover:border-[#5B5EFF] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+          className="flex items-center justify-center gap-2 px-8 h-[58px] rounded-full border border-[#0052FF]/50 text-white font-bold hover:bg-[#0052FF]/10 hover:border-[#0052FF] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
         >
           <Download className="w-5 h-5" /> Download Request Summary
         </button>
@@ -133,7 +133,7 @@ We will review your inquiry and get back to you within 24 hours.
 
         <button
           onClick={onReset}
-          className="flex items-center justify-center gap-2 px-8 h-[58px] rounded-full bg-gradient-to-r from-[#5B5EFF] to-[#3A3DFF] text-white font-bold hover:shadow-[0_0_25px_rgba(91,94,255,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+          className="flex items-center justify-center gap-2 px-8 h-[58px] rounded-full bg-gradient-to-r from-[#0052FF] to-[#0038B8] text-white font-bold hover:shadow-[0_0_25px_rgba(0,82,255,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
         >
           <PlusCircle className="w-5 h-5" /> Book Another Project
         </button>

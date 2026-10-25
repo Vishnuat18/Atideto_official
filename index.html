@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <script>
       // Immediately disable browser scroll restoration on reload so it never jumps to the footer
       if ('scrollRestoration' in history) {
@@ -22,21 +22,66 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Strictly 2 Font Families (Plus Jakarta Sans for Headings, Inter for Body & UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&display=swap" rel="stylesheet" />
 
-    <!-- Schema.org JSON-LD -->
+    <!-- Schema.org JSON-LD: Organization + WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Atideto Technologies",
+      "alternateName": "Atideto",
+      "url": "https://atideto.in",
+      "logo": "https://atideto.in/assets/logo.png",
+      "description": "Premium software company delivering web development, mobile apps, AI automation, custom software & digital marketing services across India, USA, UK & UAE.",
+      "foundingDate": "2024",
+      "founders": [{ "@type": "Person", "name": "Vishnu Rajan" }],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Salem",
+        "addressLocality": "Salem",
+        "addressRegion": "Tamil Nadu",
+        "postalCode": "636001",
+        "addressCountry": "IN"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+916379000598",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Tamil", "Hindi"]
+      },
+      "sameAs": [
+        "https://www.linkedin.com/company/atideto",
+        "https://www.instagram.com/atideto",
+        "https://github.com/atideto",
+        "https://www.facebook.com/atideto",
+        "https://www.youtube.com/@atideto"
+      ],
+      "areaServed": [
+        { "@type": "Country", "name": "India" },
+        { "@type": "Country", "name": "United States" },
+        { "@type": "Country", "name": "United Kingdom" },
+        { "@type": "Country", "name": "United Arab Emirates" }
+      ]
+    }
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Atideto",
+      "name": "Atideto Technologies",
       "url": "https://atideto.in",
-      "description": "Premium software company delivering digital experiences beyond imagination"
+      "description": "Premium software company delivering digital experiences beyond imagination",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://atideto.in/verify/{search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
 

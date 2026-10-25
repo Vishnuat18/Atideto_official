@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 400);
@@ -13,7 +15,7 @@ export default function BackToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (!visible) return null;
+  if (!visible || location.pathname === '/login' || location.pathname === '/dashboard') return null;
 
   return (
     <button

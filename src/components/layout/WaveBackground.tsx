@@ -33,9 +33,9 @@ export default function WaveBackground() {
     // Ribbon layer configurations
     const layers = [
       { color: [0, 93, 255], zOffset: 0, speed: 0.001, count: 25 },     // Deep Blue
-      { color: [139, 92, 246], zOffset: 80, speed: 0.0015, count: 25 },   // Violet
+      { color: [0, 82, 255], zOffset: 80, speed: 0.0015, count: 25 },   // Electric Royal Blue
       { color: [46, 168, 255], zOffset: 160, speed: 0.0008, count: 25 },  // Electric Cyan
-      { color: [255, 46, 168], zOffset: 240, speed: 0.0012, count: 15 },  // Magenta Accent
+      { color: [56, 189, 248], zOffset: 240, speed: 0.0012, count: 15 },  // Sky Blue Accent
     ];
 
     const particlesPerStrand = 180;

@@ -1,28 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Linkedin, Instagram, Phone, Mail } from 'lucide-react';
+import { Linkedin, Instagram, Phone, Mail, MapPin } from 'lucide-react';
 import { XIcon } from '@/components/icons/XIcon';
-import footerBg from '@/assets/section/footer.png';
+import footerBg from '@/assets/footer.png';
 import atidetoLogo from '@/assets/atideto/logo.png';
-import atidetoText from '@/assets/atideto/text.png';
-import { toast } from 'sonner';
+import atidetoWordmark from '@/assets/atideto/atideto.png';
 
 export default function Footer() {
   const location = useLocation();
-  const [email, setEmail] = useState('');
 
-  if (location.pathname === '/login' || location.pathname === '/dashboard' || location.pathname === '/profile') {
+  if (location.pathname === '/login' || location.pathname === '/dashboard' || location.pathname.startsWith('/admin') || location.pathname === '/profile') {
     return null;
   }
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      toast.success('Thank you for subscribing to Atideto tech updates!');
-      setEmail('');
-    }
-  };
-
 
   const socialLinks = [
     {
@@ -30,268 +19,191 @@ export default function Footer() {
       label: 'Instagram',
       handle: '@atideto',
       href: 'https://www.instagram.com/atideto',
-      borderStyle: 'border-[#E1306C]/45 hover:border-[#E1306C]',
-      bgStyle: 'bg-gradient-to-r from-[#200B1A]/85 via-[#18091B]/75 to-[#1F0E14]/85 hover:from-[#2E0E24] hover:to-[#221018]',
-      shadowStyle: 'shadow-[0_0_15px_rgba(225,48,108,0.18)] hover:shadow-[0_0_24px_rgba(225,48,108,0.45)]',
-      iconColor: 'text-[#FF548F]',
-      textColor: 'text-[#FFE4E6] group-hover:text-white',
     },
     {
       icon: Linkedin,
       label: 'LinkedIn',
       handle: '@atideto',
       href: 'https://www.linkedin.com/company/atideto',
-      borderStyle: 'border-[#0A66C2]/45 hover:border-[#38BDF8]',
-      bgStyle: 'bg-gradient-to-r from-[#071526]/85 via-[#091A30]/75 to-[#06182B]/85 hover:from-[#0B213D] hover:to-[#0A2645]',
-      shadowStyle: 'shadow-[0_0_15px_rgba(10,102,194,0.18)] hover:shadow-[0_0_24px_rgba(56,189,248,0.45)]',
-      iconColor: 'text-[#38BDF8]',
-      textColor: 'text-[#E0F2FE] group-hover:text-white',
     },
     {
       icon: XIcon,
       label: 'X',
       handle: '@atideto',
       href: 'https://x.com/atideto',
-      borderStyle: 'border-slate-500/40 hover:border-[#38BDF8]/80',
-      bgStyle: 'bg-gradient-to-r from-slate-900/75 via-[#0A101D]/75 to-slate-900/65 hover:from-slate-800/80 hover:to-slate-700/70',
-      shadowStyle: 'shadow-[0_0_15px_rgba(255,255,255,0.08)] hover:shadow-[0_0_24px_rgba(56,189,248,0.35)]',
-      iconColor: 'text-slate-300 group-hover:text-[#38BDF8]',
-      textColor: 'text-slate-200 group-hover:text-white',
     },
   ];
 
-  const contactButtons = [
-    {
-      icon: Phone,
-      label: 'Contact us',
-      href: 'tel:+916379000598',
-      borderStyle: 'border-[#10B981]/45 hover:border-[#10B981]',
-      bgStyle: 'bg-gradient-to-r from-[#062016]/85 via-[#08281B]/75 to-[#051E14]/85 hover:from-[#093522] hover:to-[#072B1C]',
-      shadowStyle: 'shadow-[0_0_15px_rgba(16,185,129,0.18)] hover:shadow-[0_0_24px_rgba(16,185,129,0.45)]',
-      iconColor: 'text-[#10B981]',
-      textColor: 'text-[#D1FAE5] group-hover:text-white',
-    },
-    {
-      icon: Mail,
-      label: 'Mail Us',
-      href: 'mailto:atidetotechnologies@gmail.com',
-      borderStyle: 'border-[#EA4335]/45 hover:border-[#EA4335]',
-      bgStyle: 'bg-gradient-to-r from-[#220B0F]/85 via-[#2A0E13]/75 to-[#1F090C]/85 hover:from-[#361118] hover:to-[#280C11]',
-      shadowStyle: 'shadow-[0_0_15px_rgba(234,67,53,0.18)] hover:shadow-[0_0_24px_rgba(234,67,53,0.45)]',
-      iconColor: 'text-[#FF5C5C]',
-      textColor: 'text-[#FFE4E6] group-hover:text-white',
-    },
-  ];
-
-  const footerNavButtons = [
+  const navLinks = [
     { label: 'Home', href: '/' },
-    { label: 'Company', href: '/about' },
-    { label: 'Solutions', href: '/services' },
-    { label: 'Internship', href: '/academy' },
-    { label: 'Contact', href: '/client-connect' },
+    { label: 'Services', href: '/services' },
+    { label: 'Courses', href: '/courses' },
+    { label: 'Upskill', href: '/upskill' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Careers', href: '/careers' },
+    { label: 'Client Connect', href: '/client-connect' },
+  ];
+
+  const serviceLinks = [
+    { label: 'App Development', href: '/services' },
+    { label: 'Web Development', href: '/services' },
+    { label: 'UI & UX Design', href: '/services' },
+    { label: 'Digital Marketing', href: '/services' },
+    { label: 'Custom Software', href: '/services' },
+    { label: 'Business Automation', href: '/services' },
   ];
 
   return (
     <footer 
-      className="relative w-full bg-[#050505] overflow-hidden text-white pt-14 sm:pt-20 pb-28 sm:pb-12 px-4 sm:px-6 lg:px-12 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${footerBg})` }}
+      className="relative w-full bg-[#010204] text-white overflow-hidden bg-cover bg-no-repeat pt-14 sm:pt-20 pb-12 sm:pb-10 px-4 sm:px-8 lg:px-16"
+      style={{ 
+        backgroundImage: `url(${footerBg})`,
+        backgroundPosition: 'right center'
+      }}
     >
       {/* ── Top Seamless Fade into Previous Section ── */}
       <div 
-        className="absolute top-0 inset-x-0 h-24 sm:h-48 bg-gradient-to-b from-[#050505] via-[#050505]/80 to-transparent pointer-events-none z-10" 
+        className="absolute top-0 inset-x-0 h-20 sm:h-32 bg-gradient-to-b from-[#050505] via-[#050505]/70 to-transparent pointer-events-none z-10" 
         aria-hidden="true"
       />
 
-      <div className="relative z-20 max-w-5xl mx-auto flex flex-col items-center text-center">
-        {/* Logo & Brand Text Image */}
-        <Link to="/" className="inline-flex flex-col items-center group mb-4 transition-transform duration-300 hover:scale-105">
-          <img 
-            src={atidetoLogo} 
-            alt="Atideto Logo" 
-            className="w-14 h-14 sm:w-20 sm:h-20 object-contain drop-shadow-[0_0_25px_rgba(0,102,255,0.45)] mb-2"
-          />
-          <img 
-            src={atidetoText} 
-            alt="Atideto Technologies" 
-            className="h-7 sm:h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]"
-          />
-        </Link>
+      {/* Mobile/Tablet backdrop tint to maintain pristine legibility while highlighting the blue wave art */}
+      <div 
+        className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-transparent lg:hidden pointer-events-none z-10"
+        aria-hidden="true"
+      />
 
-        {/* Subtitle / Mission Statement */}
-        <p className="text-slate-300 text-xs sm:text-[14px] max-w-xl mx-auto leading-relaxed font-light mb-6 sm:mb-7 px-2">
-          Building digital experiences that empower businesses to grow, automate, and scale with cutting-edge software and AI innovations.
-        </p>
+      <div className="relative z-20 max-w-7xl mx-auto flex flex-col">
+        {/* ── TOP / MAIN CONTENT: OCCUPIES THE LEFT 50% ON DESKTOP ── */}
+        <div className="w-full lg:w-1/2 lg:max-w-2xl flex flex-col items-start text-left">
+          
+          {/* Brand Logo & Wordmark (Both the exact same size, bigger) */}
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-3 sm:gap-4 group mb-6 transition-transform duration-300 hover:scale-[1.02]"
+            aria-label="Atideto Technologies Home"
+          >
+            <img 
+              src={atidetoLogo} 
+              alt="Atideto Logo" 
+              className="h-11 sm:h-13 md:h-14 w-auto object-contain drop-shadow-[0_0_25px_rgba(0,102,255,0.6)]"
+            />
+            <img 
+              src={atidetoWordmark} 
+              alt="Atideto Technologies" 
+              className="h-11 sm:h-13 md:h-14 w-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] filter brightness-105"
+            />
+          </Link>
 
-        {/* Quick Contact Info Buttons — Above the Menu */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-6 px-2">
-          {contactButtons.map((btn) => (
+          {/* Mission / Company Overview */}
+          <p className="font-ui text-slate-300 text-xs sm:text-[13px] leading-relaxed max-w-lg mb-6 font-normal">
+            Empowering businesses with custom enterprise software, scalable web &amp; mobile platforms, intelligent automation, and career-accelerating technical programs.
+          </p>
+
+          {/* Quick Direct Touchpoint Badges */}
+          <div className="flex flex-wrap items-center gap-2.5 mb-8">
             <a
-              key={btn.label}
-              href={btn.href}
-              aria-label={btn.label}
-              className={`group relative inline-flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full border backdrop-blur-md transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] cursor-pointer ${btn.borderStyle} ${btn.bgStyle} ${btn.shadowStyle}`}
+              href="tel:+916379000598"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 hover:border-[#38BDF8]/60 bg-[#071324]/80 hover:bg-[#0A1E38] text-slate-300 hover:text-white transition-all text-xs font-medium backdrop-blur-sm shadow-[0_0_12px_rgba(0,102,255,0.15)]"
             >
-              <btn.icon size={14} className={`transition-transform duration-300 group-hover:scale-110 shrink-0 ${btn.iconColor}`} />
-              <span className={`text-[12px] sm:text-[13px] font-medium tracking-wide transition-colors duration-200 ${btn.textColor}`}>
-                {btn.label}
-              </span>
+              <Phone size={13} className="text-[#38BDF8]" />
+              <span>+91 6379000598</span>
             </a>
-          ))}
-        </div>
+            <a
+              href="mailto:atidetotechnologies@gmail.com"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 hover:border-[#38BDF8]/60 bg-[#071324]/80 hover:bg-[#0A1E38] text-slate-300 hover:text-white transition-all text-xs font-medium backdrop-blur-sm shadow-[0_0_12px_rgba(0,102,255,0.15)]"
+            >
+              <Mail size={13} className="text-[#38BDF8]" />
+              <span>atidetotechnologies@gmail.com</span>
+            </a>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/5 bg-white/[0.03] text-slate-400 text-xs font-normal">
+              <MapPin size={12} className="text-[#38BDF8]" />
+              <span>Tamil Nadu, India</span>
+            </div>
+          </div>
 
-        {/* ── MOBILE MENU (3 in Row 1, 2 in Row 2 in order of show) ── */}
-        <div className="w-full flex flex-col items-center md:hidden mb-6">
-          <div className="flex flex-col items-center gap-2 w-full max-w-sm mx-auto">
-            {/* Row 1: 3 items (Home, Company, Solutions) */}
-            <div className="flex items-center justify-center gap-2 w-full">
-              {footerNavButtons.slice(0, 3).map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className={`group relative inline-flex items-center justify-center p-[2px] rounded-full border-2 transition-all duration-300 active:scale-95 shrink-0 ${
-                      isActive
-                        ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.35)]'
-                        : 'border-[#55647a] hover:border-[#94a3b8]'
-                    } bg-[#0B1020]`}
-                  >
-                    <span className={`inline-flex items-center justify-center rounded-full border px-3.5 py-1 text-white font-bold text-xs tracking-wide transition-colors ${
-                      isActive
-                        ? 'border-[#38BDF8]/60 bg-[#071526]'
-                        : 'border-[#3b475d] bg-[#0c1222]'
-                    }`}>
+          {/* ── Categorized Footer Links (Left 50% Multi-Column) ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 w-full mb-6 pt-1">
+            {/* Column 1: Navigation */}
+            <div>
+              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-[#38BDF8] mb-3">
+                Navigation
+              </h4>
+              <ul className="space-y-2 text-xs sm:text-[13px]">
+                {navLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link 
+                      to={item.href} 
+                      className="text-slate-400 hover:text-white transition-colors duration-200 block py-0.5"
+                    >
                       {item.label}
-                    </span>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Row 2: 2 items (Internship, Contact) */}
-            <div className="flex items-center justify-center gap-2 w-full">
-              {footerNavButtons.slice(3, 5).map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className={`group relative inline-flex items-center justify-center p-[2px] rounded-full border-2 transition-all duration-300 active:scale-95 shrink-0 ${
-                      isActive
-                        ? 'border-[#38BDF8] shadow-[0_0_12px_rgba(56,189,248,0.35)]'
-                        : 'border-[#55647a] hover:border-[#94a3b8]'
-                    } bg-[#0B1020]`}
+            {/* Column 2: Solutions */}
+            <div>
+              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-[#38BDF8] mb-3">
+                Solutions
+              </h4>
+              <ul className="space-y-2 text-xs sm:text-[13px]">
+                {serviceLinks.map((service) => (
+                  <li key={service.label}>
+                    <Link 
+                      to={service.href} 
+                      className="text-slate-400 hover:text-white transition-colors duration-200 block py-0.5"
+                    >
+                      {service.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Column 3: Follow us online */}
+            <div className="col-span-2 sm:col-span-1">
+              <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-[#38BDF8] mb-3">
+                Follow us online
+              </h4>
+              <div className="flex flex-col gap-2.5">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2.5 text-xs sm:text-[13px] text-slate-400 hover:text-white transition-colors duration-200 group py-0.5"
                   >
-                    <span className={`inline-flex items-center justify-center rounded-full border px-4 py-1 text-white font-bold text-xs tracking-wide transition-colors ${
-                      isActive
-                        ? 'border-[#38BDF8]/60 bg-[#071526]'
-                        : 'border-[#3b475d] bg-[#0c1222]'
-                    }`}>
-                      {item.label}
-                    </span>
-                  </Link>
-                );
-              })}
+                    <div className="w-6 h-6 rounded-md bg-[#0A1628] border border-white/10 flex items-center justify-center group-hover:border-[#38BDF8]/60 transition-colors">
+                      <social.icon size={12} className="text-[#38BDF8] group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span>{social.label}</span>
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ── DESKTOP (WEB) SECTION: SOCIAL ABOVE MENUS + REFERENCE-STYLE BG BUTTONS ── */}
-        {/* 1. Desktop Social Banners */}
-        <div className="hidden md:flex flex-wrap items-center justify-center gap-3.5 mb-6 max-w-full px-2">
-          {socialLinks.map((social) => (
-            <a
-              key={social.label}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${social.label} ${social.handle}`}
-              className={`group relative inline-flex items-center gap-2 px-5 py-2 rounded-full border backdrop-blur-md transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] cursor-pointer ${social.borderStyle} ${social.bgStyle} ${social.shadowStyle}`}
-            >
-              <social.icon size={15} className={`transition-transform duration-300 group-hover:scale-110 shrink-0 ${social.iconColor}`} />
-              <span className={`text-[13px] font-medium tracking-wide transition-colors duration-200 ${social.textColor}`}>
-                {social.handle}
-              </span>
-            </a>
-          ))}
-        </div>
-
-        {/* 2. Desktop Navigation Menu (Matching Reference Image) */}
-        <nav className="hidden md:flex flex-wrap items-center justify-center gap-3 mb-8 px-2" aria-label="Footer Navigation">
-          {footerNavButtons.map((link) => {
-            const isActive = location.pathname === link.href;
-            return (
-              <Link
-                key={link.label}
-                to={link.href}
-                className={`group relative inline-flex items-center justify-center p-[2.5px] rounded-full border-2 transition-all duration-300 hover:scale-105 active:scale-95 ${
-                  isActive
-                    ? 'border-[#38BDF8] shadow-[0_0_18px_rgba(56,189,248,0.35)]'
-                    : 'border-[#55647a] hover:border-[#94a3b8] hover:shadow-[0_0_15px_rgba(148,163,184,0.25)]'
-                } bg-[#0B1020]`}
-              >
-                <span className={`inline-flex items-center justify-center rounded-full border px-6 py-2 text-white font-bold text-sm tracking-wide transition-colors ${
-                  isActive
-                    ? 'border-[#38BDF8]/60 bg-[#071526]'
-                    : 'border-[#3b475d] group-hover:border-[#64748b] bg-[#0c1222]'
-                }`}>
-                  {link.label}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Newsletter Subscription Form — Inline / Same Line on Mobile & Desktop */}
-        <form onSubmit={handleSubscribe} className="flex flex-row items-center justify-center gap-2 max-w-md w-full mb-6 sm:mb-8 px-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email for updates..."
-            required
-            className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#081022]/90 border border-white/15 text-white placeholder:text-slate-500 text-xs sm:text-sm focus:outline-none focus:border-blue-500 shadow-inner transition-colors"
-          />
-          <button
-            type="submit"
-            className="w-fit px-4 sm:px-6 py-2.5 rounded-xl bg-[#1A6CFF] hover:bg-[#2563EB] text-white font-medium text-xs sm:text-sm shadow-[0_0_20px_rgba(26,108,255,0.6)] hover:shadow-[0_0_25px_rgba(26,108,255,0.85)] transition-all active:scale-95 shrink-0 whitespace-nowrap"
-          >
-            Subscribe
-          </button>
-        </form>
-
-        {/* ── MOBILE SOCIAL ICONS (BELOW SUBSCRIBE) ── */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 w-fit mx-auto md:hidden">
-          {socialLinks.map((s) => (
-            <a
-              key={s.label}
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={s.label}
-              className={`w-fit inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-medium backdrop-blur-md transition-all active:scale-95 ${s.borderStyle} ${s.bgStyle} ${s.shadowStyle} ${s.textColor}`}
-            >
-              <s.icon size={13} className={s.iconColor} />
-              <span>{s.handle}</span>
-            </a>
-          ))}
-        </div>
-
-        {/* Legal & Policy Links (Mobile & Desktop) */}
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-slate-400 mb-5 px-3">
-          <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-          <span className="text-slate-600 select-none">•</span>
-          <Link to="/terms-and-conditions" className="hover:text-white transition-colors">Terms & Conditions</Link>
-          <span className="text-slate-600 select-none">•</span>
-          <Link to="/about" className="hover:text-white transition-colors">Regional Hubs</Link>
-          <span className="text-slate-600 select-none">•</span>
-          <Link to="/academy" className="hover:text-white transition-colors">Verify Certificate</Link>
-        </div>
-
-        {/* Copyright */}
-        <div className="text-center px-4">
-          <p className="text-[11px] sm:text-xs text-slate-500">
-            © 2026 Atideto Technologies. All rights reserved.
+        {/* ── FULL-WIDTH BOTTOM FOOTER BAR ── */}
+        <div className="w-full pt-8 mt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 text-xs text-slate-400">
+            <Link to="/privacy-policy" className="hover:text-white transition-colors duration-200">
+              Privacy policy
+            </Link>
+            <span className="text-slate-600 select-none">•</span>
+            <Link to="/terms-and-conditions" className="hover:text-white transition-colors duration-200">
+              Terms of Use
+            </Link>
+            <span className="text-slate-600 select-none">•</span>
+            <Link to="/privacy-policy#responsible-disclosure" className="hover:text-white transition-colors duration-200">
+              Responsible Disclosure
+            </Link>
+          </div>
+          <p className="text-xs text-slate-400 font-normal text-center md:text-right">
+            &copy; 2026 Atideto Technologies. All rights reserved.
           </p>
         </div>
       </div>

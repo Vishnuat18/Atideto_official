@@ -15,7 +15,7 @@ function EnergyLines() {
     const colorPalette = [
       new THREE.Color('#3B82F6'), // Blue
       new THREE.Color('#00C6FF'), // Cyan
-      new THREE.Color('#8B5CF6'), // Purple
+      new THREE.Color('#0052FF'), // Pure Blue
     ];
     
     for (let i = 0; i < particleCount; i++) {

@@ -113,7 +113,7 @@ function generateHtmlBody(data: Record<string, any>): string {
 
 <table cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse; margin: 0;">
   <thead>
-    <tr style="background-color: #5B5EFF;">
+    <tr style="background-color: #0052FF;">
       <th style="padding: 12px 16px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-align: left;">Field</th>
       <th style="padding: 12px 16px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700; color: #ffffff; text-align: left;">Value</th>
     </tr>
@@ -142,7 +142,7 @@ function generateHtmlEmail(data: Record<string, any>): string {
         <table cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
 
           <tr>
-            <td style="padding: 32px 32px 24px 32px; background-color: #ffffff; border-bottom: 3px solid #5B5EFF;">
+            <td style="padding: 32px 32px 24px 32px; background-color: #ffffff; border-bottom: 3px solid #0052FF;">
               <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td style="font-family: Arial, Helvetica, sans-serif;">

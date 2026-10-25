@@ -11,7 +11,7 @@ export default function Services() {
   }, []);
 
   return (
-    <div className="min-h-screen font-sans selection:bg-[#00F0FF] selection:text-black overflow-x-hidden bg-black text-white">
+    <div className="min-h-screen font-sans selection:bg-[#00F0FF] selection:text-black bg-black text-white">
       <SEO 
         title="Our Services & Solutions | Atideto"
         description="Innovative solutions to grow your business with technology and creativity. Explore Atideto's enterprise systems: CRM, ERP, Billing, SCM, LMS, and custom platforms."
@@ -53,9 +53,9 @@ export default function Services() {
       {/* ── NEW HERO SECTION (Matching Reference Design) ── */}
       <ServiceHero />
 
-      {/* ── MAIN CONTENT (The 4 updated sections in cohesive theme) ── */}
+      {/* ── MAIN CONTENT (The updated sections in cohesive theme) ── */}
       <main className="w-full relative z-10">
-        {/* Section 1: Our Solutions (Category Filters + 17 Solutions Grid + Details Modal) */}
+        {/* Section 1: Our Solutions (Category Filters + 18 Solutions Grid + Details Modal) */}
         <SolutionsGrid />
 
         {/* Section 2: How We Work (Step 01-04 Process with Blue Vertical Indicators) */}

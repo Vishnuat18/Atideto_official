@@ -19,20 +19,23 @@ export default function MeetTheTeam() {
   return (
     <section className="relative py-12 px-4 md:px-8 z-20 min-h-[700px]">
       <div className="max-w-[1400px] mx-auto text-center mb-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="inline-block px-4 py-1.5 rounded-full border border-[#00C6FF]/30 bg-[#00C6FF]/10 text-[#00C6FF] text-xs font-bold tracking-[0.2em] uppercase mb-6"
-        >
-          The People
-        </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-3 mb-6 select-none"
+          >
+            <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+            <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+              The People
+            </span>
+          </motion.div>
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-4xl md:text-6xl font-black text-white"
+          className="text-[28px] sm:text-[36px] font-bold text-white font-heading tracking-tight leading-[1.2]"
         >
           MEET THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C6FF] to-[#3B82F6]">TEAM</span>
         </motion.h2>
@@ -205,15 +208,15 @@ export default function MeetTheTeam() {
                 <div className="relative z-20 flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left gap-4 md:gap-4 mt-4 md:mt-0">
                   {/* Left: Name & Role */}
                   <div>
-                    <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-wider mb-1 drop-shadow-[0_0_15px_rgba(0,163,255,0.4)]">
+                    <h2 className="text-[24px] sm:text-[28px] font-bold text-white uppercase tracking-wider mb-1 drop-shadow-[0_0_15px_rgba(0,163,255,0.4)] font-heading">
                       {selectedMember!.name}
                     </h2>
-                    <p className="text-[#00C6FF] font-bold text-sm md:text-base tracking-widest uppercase drop-shadow-md">{selectedMember!.role}</p>
+                    <p className="text-[#00C6FF] font-bold text-sm md:text-base tracking-widest uppercase drop-shadow-md font-heading">{selectedMember!.role}</p>
                   </div>
                   
                   {/* Right: Quote / Tagline (Hidden on mobile for space) */}
                   <div className="hidden md:block text-right max-w-[250px]">
-                    <p className="text-white/70 text-sm md:text-base leading-relaxed drop-shadow-md font-serif italic tracking-wide">
+                    <p className="text-white/70 text-sm md:text-base leading-relaxed drop-shadow-md italic tracking-wide font-sans">
                       "Building solutions that scale. Visuals that convert. Driving digital excellence."
                     </p>
                   </div>
@@ -265,7 +268,7 @@ export default function MeetTheTeam() {
                   </div>
 
                   {/* Right Side: Giant Role Text (Hidden on very small screens) */}
-                  <h3 className="hidden sm:block text-3xl md:text-5xl lg:text-6xl font-black text-[#0052FF]/80 md:text-[#00A3FF] uppercase tracking-tighter md:text-right leading-none drop-shadow-[0_0_20px_rgba(0,163,255,0.3)] pb-2">
+                  <h3 className="hidden sm:block text-2xl md:text-3xl font-bold text-[#0052FF]/80 md:text-[#00A3FF] uppercase tracking-tight md:text-right leading-none drop-shadow-[0_0_20px_rgba(0,163,255,0.3)] pb-2 font-heading">
                     {selectedMember!.role.split(',')[0]}
                   </h3>
                 </div>

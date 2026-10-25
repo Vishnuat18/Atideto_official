@@ -60,9 +60,12 @@ export default function TechStack() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="inline-block px-4 py-1.5 rounded-full border border-[#60A5FA]/30 bg-[#60A5FA]/10 text-[#60A5FA] text-xs font-bold tracking-[0.2em] uppercase mb-6"
+          className="inline-flex items-center gap-3 mb-6 select-none"
         >
-          Our Arsenal
+          <span className="w-8 sm:w-10 h-[1.5px] bg-[#0052FF] shrink-0" />
+          <span className="text-xs sm:text-sm font-bold tracking-[0.2em] uppercase font-heading text-[#2EA8FF]">
+            Our Arsenal
+          </span>
         </motion.div>
         
         <motion.h2 
@@ -70,7 +73,7 @@ export default function TechStack() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-4xl md:text-5xl font-black text-white"
+          className="text-[28px] sm:text-[36px] font-bold text-white font-heading tracking-tight leading-[1.2]"
         >
           TECHNOLOGY <span className="text-[#60A5FA]">STACK</span>
         </motion.h2>

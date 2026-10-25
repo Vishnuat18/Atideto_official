@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import atidetoLogo from '@/assets/atideto-logo.png';
+import atidetoLogo from '@/assets/atideto/logo.png';
 
 export default function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
