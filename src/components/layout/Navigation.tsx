@@ -200,7 +200,7 @@ export default function Navigation() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ease-out pointer-events-none ${
-        scrolled ? 'pt-3 sm:pt-4 px-3 sm:px-6' : 'pt-0 px-0'
+        scrolled ? 'lg:pt-4 lg:px-6 pt-0 px-0' : 'pt-0 px-0'
       } ${
         !showNav
           ? '-translate-y-full opacity-0 pointer-events-none'
@@ -210,12 +210,12 @@ export default function Navigation() {
       <nav
         className={`pointer-events-auto transition-all duration-300 ease-out flex items-center justify-between w-full relative ${
           scrolled
-            ? `max-w-5xl rounded-full px-4 sm:px-6 py-2.5 sm:py-3 border ${
+            ? `lg:max-w-5xl lg:rounded-full lg:px-6 lg:py-3 lg:border ${
                 isLight
-                  ? 'bg-[#FAF8F5] border-slate-300/80 shadow-[0_12px_40px_rgba(15,23,42,0.08)] text-slate-900'
-                  : 'bg-[#0E1015] border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.7)] text-white'
-              }`
-            : 'max-w-7xl mx-auto px-6 py-5 bg-transparent border-transparent shadow-none text-white'
+                  ? 'bg-[#FAF8F5]/95 border-b border-slate-200/80 backdrop-blur-xl shadow-xs text-slate-900 lg:bg-[#FAF8F5] lg:border-slate-300/80 lg:shadow-[0_12px_40px_rgba(15,23,42,0.08)]'
+                  : 'bg-[#0A0D14]/95 border-b border-white/10 backdrop-blur-xl shadow-md text-white lg:bg-[#0E1015] lg:border-white/10 lg:shadow-[0_12px_40px_rgba(0,0,0,0.7)]'
+              } px-4 py-3 sm:px-6 rounded-none border-x-0 border-t-0`
+            : 'max-w-7xl mx-auto px-4 sm:px-6 py-3.5 sm:py-5 bg-transparent border-transparent shadow-none text-white'
         }`}
       >
         {/* Left: Logo (Natural Origami Blue Logo, No Color Changes, Wordmark only when not scrolled) */}

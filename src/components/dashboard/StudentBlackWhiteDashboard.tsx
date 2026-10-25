@@ -276,9 +276,29 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
   const [analyticsFilter, setAnalyticsFilter] = useState<'modules' | 'tasks' | 'attendance'>('modules');
   const [analyticsSemester, setAnalyticsSemester] = useState('Fall Semester (2026)');
 
-  // Dynamic ViewSwitcher Mode: 'list' (Table) vs 'grid' (Small icons / card boxes)
-  const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>({});
-  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'list'): 'list' | 'grid' => {
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+
+  // Always scroll to top on tab change and mount
+  useEffect(() => {
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeTab]);
+
+  // Dynamic ViewSwitcher Mode: all data shown in "Small icons" (grid) initially
+  const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>({
+    'overview': 'grid',
+    'courses': 'grid',
+    'internships': 'grid',
+    'attendance': 'grid',
+    'payments': 'grid',
+    'credentials': 'grid',
+    'reports': 'grid',
+  });
+  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'grid'): 'list' | 'grid' => {
     return panelViewMode[tab] || defaultMode;
   };
   const setViewMode = (tab: string, mode: 'list' | 'grid') => {
@@ -972,7 +992,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {/* MAIN WORKSPACE CONTENT: Clean Minimal Canvas                         */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
-        <main className="flex-1 h-full overflow-y-auto min-h-0 bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
+        <main ref={mainScrollRef} className="flex-1 h-full overflow-y-auto overflow-x-hidden min-h-0 w-full max-w-full bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
           
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 1: OVERVIEW & ANALYTICS (Exact Reference Image 2 Layout)       */}
@@ -1646,8 +1666,8 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                   <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">Attendance & Sprint Submissions</h1>
                   <p className="text-xs text-[#64748B]">Track daily attendance records, milestone tasks, and earn honor grade badges</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <ViewSwitcher tab="attendance" defaultMode="list" />
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <ViewSwitcher tab="attendance" defaultMode="grid" />
                 </div>
               </div>
 
@@ -1878,44 +1898,44 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => setShowFullViewModal(true)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer"
+                      className="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20 cursor-pointer w-full sm:w-auto text-center"
                       title="Open Full Screen Popup View"
                     >
-                      <Maximize2 size={14} />
+                      <Maximize2 size={14} className="shrink-0" />
                       <span>Show Full View</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={handlePrintStudentCert}
-                      className="px-3.5 py-2 bg-white hover:bg-[#F8FAFC] text-[#0F172A] border border-[#CBD5E1] text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                      className="px-3.5 py-2.5 bg-white hover:bg-[#F8FAFC] text-[#0F172A] border border-[#CBD5E1] text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer w-full sm:w-auto text-center"
                       title="Print Official Certificate"
                     >
-                      <Printer size={14} className="text-[#0066FF]" />
-                      <span>Print Certificate</span>
+                      <Printer size={14} className="text-[#0066FF] shrink-0" />
+                      <span>Print Document</span>
                     </button>
 
                     <button
                       type="button"
                       disabled={isExportingCert}
                       onClick={handleDownloadStudentCertPdf}
-                      className="px-4 py-2 bg-[#000000] hover:bg-[#0066FF] text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+                      className="px-3.5 py-2.5 bg-[#000000] hover:bg-[#0066FF] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50 w-full sm:w-auto text-center"
                     >
-                      <Download size={14} />
-                      <span>Download Vector PDF</span>
+                      <Download size={14} className="shrink-0" />
+                      <span>Vector PDF</span>
                     </button>
 
                     <button
                       type="button"
                       disabled={isExportingCert}
                       onClick={handleDownloadStudentCertPng}
-                      className="px-3.5 py-2 bg-white hover:bg-[#F8FAFC] text-[#0F172A] border border-[#CBD5E1] text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                      className="px-3.5 py-2.5 bg-white hover:bg-[#F8FAFC] text-[#0F172A] border border-[#CBD5E1] text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 w-full sm:w-auto text-center"
                     >
-                      <Download size={14} className="text-[#0066FF]" />
+                      <Download size={14} className="text-[#0066FF] shrink-0" />
                       <span>300DPI PNG</span>
                     </button>
 
@@ -2182,8 +2202,8 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">Payment Receipts & Invoices</h1>
                     <p className="text-xs text-[#64748B]">Official internship tuition receipts, payment clearance certificates, and tax invoices</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <ViewSwitcher tab="payments" defaultMode="list" />
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <ViewSwitcher tab="payments" defaultMode="grid" />
                     <button
                       type="button"
                       onClick={() => {

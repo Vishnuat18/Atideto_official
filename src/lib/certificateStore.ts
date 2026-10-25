@@ -927,11 +927,11 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         name: (existing.name && existing.name !== 'Registered Student') ? existing.name : rawName,
         email: existing.email || rawEmail,
         phone: existing.phone || rawPhone,
-        college: normCollege || existing.college,
-        degree: raw.degree || existing.degree || 'B.Tech Information Technology',
-        gradYear: raw.gradYear || existing.gradYear || '2027',
-        course: normDomain,
-        domain: normDomain,
+        college: existing.college || normCollege,
+        degree: existing.degree || raw.degree || 'B.Tech Information Technology',
+        gradYear: existing.gradYear || raw.gradYear || '2027',
+        course: existing.course || existing.domain || normDomain,
+        domain: existing.domain || existing.course || normDomain,
         startDate: existing.startDate || raw.startDate || '2026-10-25',
         endDate: existing.endDate || raw.endDate || '2027-01-25',
         duration: existing.duration || raw.duration || '3 Months',
@@ -950,7 +950,7 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         area: (existing.area && existing.area.length > 0) ? existing.area : (raw.area || ['Full Stack', 'Web Development']),
         certGenerated: existing.certGenerated !== undefined ? existing.certGenerated : Boolean(raw.certGenerated),
         sentToAdministration: existing.sentToAdministration !== undefined ? existing.sentToAdministration : Boolean(raw.sentToAdministration),
-        certHold: Boolean(existing.certHold || raw.certHold)
+        certHold: existing.certHold !== undefined ? existing.certHold : Boolean(raw.certHold)
       };
 
       mergedMap.set(existingKey, mergedRecord);
@@ -1100,7 +1100,7 @@ export function updateStudentInRegistry(id: string, updates: Partial<StudentCoho
   }
 
   const current = getStoredStudents();
-  const next = current.map(st => (st.id === id || st.studentId === id) ? { ...st, ...updates } : st);
+  const next = current.map(st => (st.id === id || st.studentId === id || (updates.email && st.email?.toLowerCase() === updates.email.toLowerCase())) ? { ...st, ...updates } : st);
   saveStoredStudents(next);
   return next;
 }

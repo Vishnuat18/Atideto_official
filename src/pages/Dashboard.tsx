@@ -87,8 +87,14 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
   // Prevent non-admin user from viewing admin mode
   const effectiveMode = (viewMode === 'admin' && user.role !== 'admin') ? 'student' : viewMode;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [location.pathname, effectiveMode]);
+
   return (
-    <div data-slot="dashboard" className="w-full h-full overflow-hidden bg-[#F8FAFC] flex flex-col antialiased">
+    <div data-slot="dashboard" className="w-full max-w-full h-full overflow-y-auto overflow-x-hidden bg-[#F8FAFC] flex flex-col antialiased">
       {effectiveMode === 'admin' ? (
         <>
           <SEO 
