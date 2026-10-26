@@ -1014,23 +1014,28 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
     }
   }
 
-  // Canonicalize IDs & sequences
+  // Preserve existing certificate IDs and sequences
   const result = Array.from(mergedMap.values());
   return result.map((s, idx) => {
     const seqStr = String(idx + 1).padStart(4, '0');
     return {
       ...s,
-      certId: s.certId && s.certId.startsWith('ATD-INT-2026-') ? s.certId : `ATD-INT-2026-${seqStr}`,
-      offerNo: s.offerNo && s.offerNo.startsWith('ATD-OFL-2026-') ? s.offerNo : `ATD-OFL-2026-${seqStr}`,
-      attendanceCertId: s.attendanceCertId && s.attendanceCertId.startsWith('ATD-ATT-2026-') ? s.attendanceCertId : `ATD-ATT-2026-${seqStr}`,
+      certId: s.certId || `ATD-INT-2026-${seqStr}`,
+      offerNo: s.offerNo || `ATD-OFL-2026-${seqStr}`,
+      attendanceCertId: s.attendanceCertId || `ATD-ATT-2026-${seqStr}`,
     };
   });
 }
 
 export function getStoredStudents(): StudentCohortRecord[] {
   let list: any[] = [];
+  let deletedIds: string[] = [];
   try {
     if (typeof window !== 'undefined') {
+      const deletedRaw = localStorage.getItem('atideto_deleted_students');
+      if (deletedRaw) {
+        deletedIds = JSON.parse(deletedRaw);
+      }
       const raw = localStorage.getItem(CACHE_KEY) || localStorage.getItem('atideto_students_cache');
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -1038,28 +1043,34 @@ export function getStoredStudents(): StudentCohortRecord[] {
           list = [...parsed];
         }
       }
-      // Also pick up any registrations in localStorage that haven't been incorporated yet
-      const rawRegs = localStorage.getItem('atideto_registrations');
-      if (rawRegs) {
-        const parsedRegs = JSON.parse(rawRegs);
-        if (Array.isArray(parsedRegs)) {
-          list = [...list, ...parsedRegs];
-        }
-      }
     }
   } catch (e) {
     console.warn('Failed to parse cached student cohort:', e);
   }
 
-  // Always merge with canonical cohort to guarantee base students (Arun Kumar, MEC, MCE) are never lost
-  const merged = deduplicateAndMergeStudents([...list, ...CANONICAL_COHORT_STUDENTS]);
+  // Filter out any student that was intentionally deleted
+  if (Array.isArray(deletedIds) && deletedIds.length > 0) {
+    const delSet = new Set(deletedIds.map(d => String(d).toLowerCase().trim()));
+    list = list.filter(s => {
+      const sId = String(s.id || '').toLowerCase().trim();
+      const sStudentId = String(s.studentId || '').toLowerCase().trim();
+      const sCertId = String(s.certId || '').toLowerCase().trim();
+      return !delSet.has(sId) && !delSet.has(sStudentId) && !delSet.has(sCertId);
+    });
+  }
+
+  // Only seed with canonical cohort as initial fallback if storage is completely empty
+  const finalStudents = list.length > 0 
+    ? deduplicateAndMergeStudents(list) 
+    : deduplicateAndMergeStudents(CANONICAL_COHORT_STUDENTS);
+
   try {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
-      localStorage.setItem('atideto_students_cache', JSON.stringify(merged));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(finalStudents));
+      localStorage.setItem('atideto_students_cache', JSON.stringify(finalStudents));
     }
   } catch {}
-  return merged;
+  return finalStudents;
 }
 
 export function saveStoredStudents(students: StudentCohortRecord[]) {
@@ -1334,6 +1345,17 @@ export function toggleStudentCertificateHold(id: string, hold?: boolean): Studen
 }
 
 export function deleteStudentFromRegistry(id: string): StudentCohortRecord[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const deletedRaw = localStorage.getItem('atideto_deleted_students');
+      const deletedList: string[] = deletedRaw ? JSON.parse(deletedRaw) : [];
+      if (!deletedList.includes(id)) {
+        deletedList.push(id);
+        localStorage.setItem('atideto_deleted_students', JSON.stringify(deletedList));
+      }
+    } catch (_) {}
+  }
+
   const current = getStoredStudents();
   const next = current.filter(st => st.id !== id && st.studentId !== id && st.certId !== id);
   saveStoredStudents(next);

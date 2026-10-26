@@ -123,6 +123,7 @@ export default function StepperRegistrationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string>('');
   const [termsAgreed, setTermsAgreed] = useState(false);
+  const [registeredUser, setRegisteredUser] = useState<any>(null);
 
   const defaultStartDate = '2026-11-02';
   const defaultDuration = '30 Days';
@@ -430,11 +431,24 @@ export default function StepperRegistrationModal({
       const existing = JSON.parse(localStorage.getItem('atideto_registrations') || '[]');
       localStorage.setItem('atideto_registrations', JSON.stringify([newRecord, ...existing]));
 
+      // 3. Automatically provision and activate student session
+      const studentSessionUser = regResult?.user || {
+        uid: regResult?.studentId || regResult?.regId || `ATD-${Date.now()}`,
+        name: formData.fullName,
+        email: formData.email,
+        role: 'student',
+        provider: 'sql'
+      };
+      setRegisteredUser(studentSessionUser);
+      localStorage.setItem('atideto_sql_user', JSON.stringify(studentSessionUser));
+      localStorage.setItem('atideto_dashboard_mode', 'student');
+      window.dispatchEvent(new Event('atideto_auth_change'));
+
       setApplicationId(regResult?.regId || '');
       setIsSubmitting(false);
       setStep(5); // Successful confirmation step
 
-      toast.success('Application Submitted & Synced with MySQL!');
+      toast.success('Registration Confirmed & Account Provisioned!');
       if (onSuccess) {
         onSuccess(newRecord as any);
       }
@@ -1299,6 +1313,10 @@ export default function StepperRegistrationModal({
                   <span className="text-[#64748B]">College Institution:</span>
                   <span className="font-bold text-[#0A0A0A] truncate max-w-[240px]">{formData.collegeName}</span>
                 </div>
+                <div className="flex justify-between items-center pt-2 border-t border-[#E2E8F0]">
+                  <span className="text-[#64748B]">Portal Login:</span>
+                  <span className="font-bold text-emerald-600 font-mono">student123 (Default Password)</span>
+                </div>
               </div>
 
               {/* Action Buttons */}
@@ -1306,6 +1324,11 @@ export default function StepperRegistrationModal({
                 <button
                   type="button"
                   onClick={() => {
+                    if (registeredUser) {
+                      localStorage.setItem('atideto_sql_user', JSON.stringify(registeredUser));
+                      localStorage.setItem('atideto_dashboard_mode', 'student');
+                      window.dispatchEvent(new Event('atideto_auth_change'));
+                    }
                     onClose();
                     navigate('/dashboard');
                   }}

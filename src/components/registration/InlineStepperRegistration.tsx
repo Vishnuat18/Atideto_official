@@ -315,10 +315,21 @@ export default function InlineStepperRegistration({ program, onBack }: InlineSte
       const existing = JSON.parse(localStorage.getItem('atideto_registrations') || '[]');
       localStorage.setItem('atideto_registrations', JSON.stringify([newRecord, ...existing]));
 
+      const studentSessionUser = regResult?.user || {
+        uid: regResult?.studentId || regResult?.regId || `ATD-${Date.now()}`,
+        name: formData.fullName,
+        email: formData.email,
+        role: 'student',
+        provider: 'sql'
+      };
+      localStorage.setItem('atideto_sql_user', JSON.stringify(studentSessionUser));
+      localStorage.setItem('atideto_dashboard_mode', 'student');
+      window.dispatchEvent(new Event('atideto_auth_change'));
+
       setApplicationId(regResult?.regId || '');
       setIsSubmitting(false);
       setStep(5);
-      toast.success('Registration Successfully Submitted & Synced with MySQL!');
+      toast.success('Registration Confirmed & Account Provisioned!');
     } catch (err: any) {
       console.error('Registration submission error:', err);
       const fallbackId = `ATD-REG-${Date.now().toString().slice(-6)}`;
@@ -1134,6 +1145,10 @@ export default function InlineStepperRegistration({ program, onBack }: InlineSte
               <div className="flex justify-between items-center">
                 <span className="text-white/50">Institution:</span>
                 <span className="font-bold text-white truncate max-w-[240px]">{formData.collegeName}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                <span className="text-white/50">Portal Login:</span>
+                <span className="font-bold text-emerald-400 font-mono">student123 (Default Password)</span>
               </div>
             </div>
 

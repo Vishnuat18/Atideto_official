@@ -88,6 +88,9 @@ import {
   createStudentInDb, 
   updateStudentInDb,
   deleteStudentFromDb,
+  getRegistrationsFromDb,
+  updateRegistrationStatusInDb,
+  deleteRegistrationInDb,
   getStaffFromDb,
   createStaffInDb,
   updateStaffInDb,
@@ -534,6 +537,16 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
   // 21 Enrolled Cohort Students with Canonical IDs (15 MEC B.Tech IT + 6 MCE B.E. CSE)
   const [students, setStudents] = useState<any[]>(() => getStoredStudents());
 
+  // Candidate Registrations from Website 4-Stepper Submissions
+  const [registrationsList, setRegistrationsList] = useState<any[]>(() => {
+    try {
+      const raw = localStorage.getItem('atideto_registrations');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Website Technical Courses Catalog (12 Core Tracks)
   const [coursesList, setCoursesList] = useState([
     { id: 'c-mern', title: 'Full Stack Web Development (MERN Stack)', instructor: 'Karthik Ramanathan (AI & Web Lead)', enrolled: 68, duration: '12 Weeks', modules: 16, category: 'Full Stack', tools: ['MongoDB', 'Express', 'React', 'Node.js'] },
@@ -606,17 +619,27 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     }
   };
 
-  // Workable Student Status Update Handler
-  const handleUpdateStudentStatus = (studentId: string, newStatus: string) => {
+  // Workable Student Status Update Handler (Persisted to Database)
+  const handleUpdateStudentStatus = async (studentId: string, newStatus: string) => {
     const updated = updateStudentInRegistry(studentId, { status: newStatus as any });
     setStudents(updated);
+    try {
+      await updateStudentInDb(studentId, { status: newStatus });
+    } catch (e) {
+      console.warn('Status DB update notice:', e);
+    }
     toast.success(`Updated status to "${newStatus}" for ${studentId}`);
   };
 
-  // Workable Student Registered Internship Details Update Handler (Start Date, End Date, Duration, Track)
-  const handleUpdateStudentInternship = (studentId: string, updates: { domain?: string; startDate?: string; endDate?: string; duration?: string; status?: string }) => {
+  // Workable Student Registered Internship Details Update Handler (Persisted to Database)
+  const handleUpdateStudentInternship = async (studentId: string, updates: { domain?: string; startDate?: string; endDate?: string; duration?: string; status?: string }) => {
     const updated = updateStudentInRegistry(studentId, updates as any);
     setStudents(updated);
+    try {
+      await updateStudentInDb(studentId, updates);
+    } catch (e) {
+      console.warn('Internship DB update notice:', e);
+    }
     toast.success(`Updated internship parameters for ${studentId}`);
   };
 
@@ -973,6 +996,68 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
     return matchesSearch && matchesCollege && matchesDomain && matchesStatus && matchesPayment && matchesAttendance;
   });
+
+  // Filtered Candidate Registrations (Live Website 4-Stepper Submissions)
+  const filteredRegistrations = registrationsList.filter(r => {
+    const q = filterSearch.toLowerCase().trim();
+    const name = (r.studentName || r.student_name || r.name || '').toLowerCase();
+    const email = (r.email || '').toLowerCase();
+    const phone = (r.phone || '').toLowerCase();
+    const id = (r.id || r.regId || r.reg_id || '').toLowerCase();
+    const col = (r.college || '').toLowerCase();
+    const dom = (r.domain || r.courseInterest || r.course_interest || '').toLowerCase();
+
+    const matchesSearch = !q ||
+      name.includes(q) || email.includes(q) || phone.includes(q) || id.includes(q) || col.includes(q) || dom.includes(q);
+
+    const matchesCollege = filterCollege === 'All Colleges' || 
+      normalizeCollege(r.college).toLowerCase() === normalizeCollege(filterCollege).toLowerCase();
+    const matchesDomain = filterDomain === 'All Domains' || 
+      normalizeDomain(r.domain || r.courseInterest || r.course_interest).toLowerCase() === normalizeDomain(filterDomain).toLowerCase();
+
+    return matchesSearch && matchesCollege && matchesDomain;
+  });
+
+  // Handle Candidate Approval
+  const handleApproveRegistration = async (reg: any) => {
+    const regId = reg.regId || reg.id;
+    try {
+      await updateRegistrationStatusInDb(regId, { stepStatus: 'Approved & Verified' });
+      setRegistrationsList(prev => prev.map(r => (r.regId === regId || r.id === regId) ? { ...r, stepStatus: 'Approved & Verified' } : r));
+      await updateStudentInDb(regId, { status: 'Active' });
+      setStudents(prev => prev.map(s => (s.id === regId || s.studentId === regId) ? { ...s, status: 'Active' } : s));
+      toast.success(`Candidate ${reg.studentName || reg.name} approved & marked active in ERP!`);
+    } catch (err: any) {
+      toast.error(`Approval failed: ${err.message}`);
+    }
+  };
+
+  // Handle Candidate Rejection
+  const handleRejectRegistration = async (reg: any) => {
+    const regId = reg.regId || reg.id;
+    try {
+      await updateRegistrationStatusInDb(regId, { stepStatus: 'Rejected' });
+      setRegistrationsList(prev => prev.map(r => (r.regId === regId || r.id === regId) ? { ...r, stepStatus: 'Rejected' } : r));
+      toast.info(`Application for ${reg.studentName || reg.name} marked as rejected`);
+    } catch (err: any) {
+      toast.error(`Failed: ${err.message}`);
+    }
+  };
+
+  // Handle Candidate Deletion
+  const handleDeleteRegistration = async (reg: any) => {
+    const regId = reg.regId || reg.id;
+    const name = reg.studentName || reg.name || regId;
+    if (window.confirm(`Delete candidate registration for ${name}?`)) {
+      try {
+        await deleteRegistrationInDb(regId);
+        setRegistrationsList(prev => prev.filter(r => r.regId !== regId && r.id !== regId));
+        toast.success(`Removed registration for ${name}`);
+      } catch (err: any) {
+        toast.error(`Failed to delete: ${err.message}`);
+      }
+    }
+  };
 
   // Filtered Courses Catalog
   const availableCourseCategories = Array.from(new Set(['All Categories', ...coursesList.map(c => c.category).filter(Boolean)]));
@@ -1358,14 +1443,19 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     );
   };
 
-  // Editable Course Start Date Function
-  const updateStudentStartDate = (studentId: string, newDate: string) => {
+  // Editable Course Start Date Function (Persisted to Database)
+  const updateStudentStartDate = async (studentId: string, newDate: string) => {
     setStudents(prev => prev.map(s => s.id === studentId ? { ...s, startDate: newDate } : s));
     if (rightPanel.data?.id === studentId) {
       setRightPanel(prev => ({
         ...prev,
         data: { ...prev.data, startDate: newDate }
       }));
+    }
+    try {
+      await updateStudentInDb(studentId, { startDate: newDate });
+    } catch (e) {
+      console.warn('Start date DB update notice:', e);
     }
     toast.success(`Course start date updated to ${newDate}!`);
   };
@@ -1577,11 +1667,14 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
     getStudentsFromDb().then(dbStudents => {
       if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
-        setStudents(prev => {
-          const combined = deduplicateAndMergeStudents([...dbStudents, ...prev]);
-          saveStoredStudents(combined);
-          return combined;
-        });
+        setStudents(dbStudents);
+        saveStoredStudents(dbStudents);
+      }
+    });
+
+    getRegistrationsFromDb().then(dbRegs => {
+      if (dbRegs && Array.isArray(dbRegs)) {
+        setRegistrationsList(dbRegs);
       }
     });
 
@@ -2568,10 +2661,10 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               {/* Filter Bar */}
               {renderFilterBar({ showPayment: false, countLabel: 'registration applications' })}
 
-              {filteredStudents.length === 0 ? (
+              {filteredRegistrations.length === 0 ? (
                 <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 space-y-2">
                   <p className="font-bold text-sm text-slate-700">No applications match your filter selection</p>
-                  <p className="text-xs text-slate-400 mt-1">Try resetting the college or specialization track filter.</p>
+                  <p className="text-xs text-slate-400 mt-1">Try resetting the search or track filter, or submit a new registration from the website.</p>
                 </div>
               ) : getViewMode('registrations') === 'list' ? (
                 /* Minimal 2-Color Table (List View) */
@@ -2584,72 +2677,106 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                           <th className="py-3 px-4 min-w-[180px]">Contact Info</th>
                           <th className="py-3 px-4 min-w-[180px]">College & Degree</th>
                           <th className="py-3 px-4 min-w-[140px]">Program Track</th>
-                          <th className="py-3 px-4 min-w-[120px]">Start Date</th>
-                          <th className="py-3 px-4 min-w-[120px]">Status</th>
-                          <th className="py-3 px-4 text-right min-w-[110px]">Action</th>
+                          <th className="py-3 px-4 min-w-[120px]">Applied Date</th>
+                          <th className="py-3 px-4 min-w-[130px]">Status</th>
+                          <th className="py-3 px-4 text-right min-w-[140px]">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#F1F5F9]">
-                        {filteredStudents.map((reg) => (
-                          <tr 
-                            key={reg.id} 
-                            onClick={() => setRightPanel({
-                              isOpen: true,
-                              type: 'student-report',
-                              title: `Registration Review: ${reg.name}`,
-                              data: reg
-                            })}
-                            className="hover:bg-[#F8FAFC] transition cursor-pointer group"
-                          >
-                            <td className="py-3.5 px-4">
-                              <span className="font-bold text-[#0F172A] text-sm block group-hover:text-black">{reg.name}</span>
-                              <span className="text-[11px] text-[#64748B] font-mono block mt-0.5">{reg.id}</span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="font-medium text-[#0F172A] block text-xs">{reg.phone}</span>
-                              <span className="text-[11px] text-[#64748B] block break-all mt-0.5">{reg.email}</span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="font-semibold text-[#0F172A] block">{reg.degree}</span>
-                              <span className="text-[11px] text-[#64748B] block mt-0.5 break-words">{reg.college}</span>
-                            </td>
-                            <td className="py-3.5 px-4">
-                              <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase inline-block">
-                                {reg.domain}
-                              </span>
-                            </td>
-                            <td className="py-3.5 px-4 font-semibold text-[#0F172A] text-xs">
-                              {reg.startDate}
-                            </td>
-                            <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
-                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-[#E2E8F0] bg-white text-xs font-semibold text-[#0F172A] shadow-2xs">
-                                <span>{reg.status}</span>
-                                <ChevronDown size={12} className="text-[#64748B]" />
-                              </div>
-                            </td>
-                            <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="inline-flex items-center justify-end gap-1.5">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    toast.success(`Candidate ${reg.name} successfully approved & verified in ERP!`);
-                                  }}
-                                  className="px-3 py-1.5 rounded-lg bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
-                                >
-                                  Approve ↗
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteStudent(reg.id, reg.name)}
-                                  className="p-1.5 rounded-lg border border-slate-200 hover:bg-red-50 text-slate-400 hover:text-red-600 transition cursor-pointer"
-                                  title="Delete Student from entire ERP"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                        {filteredRegistrations.map((reg) => {
+                          const candidateName = reg.studentName || reg.name || 'Candidate';
+                          const candidateId = reg.regId || reg.id;
+                          const candidateDomain = reg.domain || reg.courseInterest || 'Technical Track';
+                          const candidateStatus = reg.stepStatus || reg.status || 'Pending Verification';
+                          const candidateDate = reg.created_at ? new Date(reg.created_at).toLocaleDateString('en-IN') : (reg.startDate || 'Recent');
+
+                          return (
+                            <tr 
+                              key={candidateId} 
+                              onClick={() => setRightPanel({
+                                isOpen: true,
+                                type: 'student-report',
+                                title: `Registration Review: ${candidateName}`,
+                                data: {
+                                  id: candidateId,
+                                  name: candidateName,
+                                  email: reg.email,
+                                  phone: reg.phone,
+                                  college: reg.college,
+                                  degree: reg.degree,
+                                  domain: candidateDomain,
+                                  status: candidateStatus,
+                                  startDate: candidateDate
+                                }
+                              })}
+                              className="hover:bg-[#F8FAFC] transition cursor-pointer group"
+                            >
+                              <td className="py-3.5 px-4">
+                                <span className="font-bold text-[#0F172A] text-sm block group-hover:text-black">{candidateName}</span>
+                                <span className="text-[11px] text-[#64748B] font-mono block mt-0.5">{candidateId}</span>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className="font-medium text-[#0F172A] block text-xs">{reg.phone || '—'}</span>
+                                <span className="text-[11px] text-[#64748B] block break-all mt-0.5">{reg.email}</span>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className="font-semibold text-[#0F172A] block">{reg.degree || 'Degree Not Specified'}</span>
+                                <span className="text-[11px] text-[#64748B] block mt-0.5 break-words">{reg.college || 'College Not Specified'}</span>
+                              </td>
+                              <td className="py-3.5 px-4">
+                                <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2.5 py-1 rounded text-[10px] font-bold tracking-wider uppercase inline-block">
+                                  {candidateDomain}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 font-semibold text-[#0F172A] text-xs">
+                                {candidateDate}
+                              </td>
+                              <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${
+                                  candidateStatus.toLowerCase().includes('approved') 
+                                    ? 'bg-black text-white border-black' 
+                                    : candidateStatus.toLowerCase().includes('reject')
+                                    ? 'bg-red-50 text-red-700 border-red-200'
+                                    : 'bg-white text-slate-700 border-slate-200'
+                                }`}>
+                                  {candidateStatus}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                <div className="inline-flex items-center justify-end gap-1.5">
+                                  {candidateStatus !== 'Approved & Verified' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleApproveRegistration(reg)}
+                                      className="px-2.5 py-1.5 rounded-lg bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
+                                      title="Approve candidate and add to active cohort"
+                                    >
+                                      Approve ↗
+                                    </button>
+                                  )}
+                                  {candidateStatus !== 'Rejected' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRejectRegistration(reg)}
+                                      className="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium text-xs transition cursor-pointer"
+                                      title="Reject candidate application"
+                                    >
+                                      Reject
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteRegistration(reg)}
+                                    className="p-1.5 rounded-lg border border-slate-200 hover:bg-red-50 text-slate-400 hover:text-red-600 transition cursor-pointer"
+                                    title="Delete Candidate Registration"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -2657,59 +2784,90 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               ) : (
                 /* Small Icons / Card Box Grid (Grid View) */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredStudents.map((reg) => (
-                    <div
-                      key={reg.id}
-                      onClick={() => setRightPanel({
-                        isOpen: true,
-                        type: 'student-report',
-                        title: `Registration Review: ${reg.name}`,
-                        data: reg
-                      })}
-                      className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-black transition cursor-pointer flex flex-col justify-between space-y-3"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase font-mono">
-                            {reg.id}
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-800">
-                            {reg.status}
-                          </span>
+                  {filteredRegistrations.map((reg) => {
+                    const candidateName = reg.studentName || reg.name || 'Candidate';
+                    const candidateId = reg.regId || reg.id;
+                    const candidateDomain = reg.domain || reg.courseInterest || 'Technical Track';
+                    const candidateStatus = reg.stepStatus || reg.status || 'Pending Verification';
+                    const candidateDate = reg.created_at ? new Date(reg.created_at).toLocaleDateString('en-IN') : (reg.startDate || 'Recent');
+
+                    return (
+                      <div
+                        key={candidateId}
+                        onClick={() => setRightPanel({
+                          isOpen: true,
+                          type: 'student-report',
+                          title: `Registration Review: ${candidateName}`,
+                          data: {
+                            id: candidateId,
+                            name: candidateName,
+                            email: reg.email,
+                            phone: reg.phone,
+                            college: reg.college,
+                            degree: reg.degree,
+                            domain: candidateDomain,
+                            status: candidateStatus,
+                            startDate: candidateDate
+                          }
+                        })}
+                        className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-black transition cursor-pointer flex flex-col justify-between space-y-3"
+                      >
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase font-mono">
+                              {candidateId}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                              candidateStatus.toLowerCase().includes('approved')
+                                ? 'bg-black text-white border-black'
+                                : candidateStatus.toLowerCase().includes('reject')
+                                ? 'bg-red-50 text-red-700 border-red-200'
+                                : 'bg-slate-50 text-slate-800 border-slate-200'
+                            }`}>
+                              {candidateStatus}
+                            </span>
+                          </div>
+
+                          <div>
+                            <h4 className="font-bold text-base text-[#0F172A] break-words">{candidateName}</h4>
+                            <p className="text-xs text-[#64748B] mt-0.5 break-words">{reg.college || 'College Not Specified'}</p>
+                          </div>
+
+                          <div className="pt-2 border-t border-[#F1F5F9] text-xs space-y-1 text-[#475569]">
+                            <p><span className="font-semibold text-black">Program:</span> {candidateDomain}</p>
+                            <p><span className="font-semibold text-black">Applied:</span> {candidateDate}</p>
+                            <p><span className="font-semibold text-black">Phone:</span> {reg.phone || '—'}</p>
+                            <p><span className="font-semibold text-black">Email:</span> {reg.email || '—'}</p>
+                          </div>
                         </div>
 
-                        <div>
-                          <h4 className="font-bold text-base text-[#0F172A] break-words">{reg.name}</h4>
-                          <p className="text-xs text-[#64748B] mt-0.5 break-words">{reg.college}</p>
-                        </div>
-
-                        <div className="pt-2 border-t border-[#F1F5F9] text-xs space-y-1 text-[#475569]">
-                          <p><span className="font-semibold text-black">Program:</span> {reg.domain}</p>
-                          <p><span className="font-semibold text-black">Start Date:</span> {reg.startDate}</p>
-                          <p><span className="font-semibold text-black">Phone:</span> {reg.phone}</p>
+                        <div className="flex items-center gap-2 pt-2 border-t border-[#F1F5F9]" onClick={(e) => e.stopPropagation()}>
+                          {candidateStatus !== 'Approved & Verified' ? (
+                            <button
+                              type="button"
+                              onClick={() => handleApproveRegistration(reg)}
+                              className="flex-1 py-2 rounded-xl bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <span>Approve</span>
+                              <ArrowUpRight size={13} />
+                            </button>
+                          ) : (
+                            <span className="flex-1 py-2 text-center text-xs font-bold text-black bg-slate-100 rounded-xl">
+                              Approved
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRegistration(reg)}
+                            className="p-2 rounded-xl border border-slate-200 hover:bg-red-50 text-slate-400 hover:text-red-600 transition cursor-pointer"
+                            title="Delete Candidate Registration"
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2 pt-2 border-t border-[#F1F5F9]" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => toast.success(`Candidate ${reg.name} successfully approved & verified in ERP!`)}
-                          className="flex-1 py-2 rounded-xl bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <span>Approve</span>
-                          <ArrowUpRight size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteStudent(reg.id, reg.name)}
-                          className="p-2 rounded-xl border border-slate-200 hover:bg-red-50 text-slate-400 hover:text-red-600 transition cursor-pointer"
-                          title="Delete Student from entire ERP"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

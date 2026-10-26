@@ -25,6 +25,7 @@ function backendServerPlugin() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: __dirname,
   server: {
     host: "::",
     port: 8080,

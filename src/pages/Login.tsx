@@ -20,7 +20,8 @@ import {
   syncGoogleUserToSql,
   sendForgotPasswordOtp,
   verifyForgotPasswordOtp,
-  resetPasswordAndLogin
+  resetPasswordAndLogin,
+  activateStudentAccount
 } from "@/lib/api";
 import { checkPasswordRequirements } from "@/lib/utils";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
@@ -44,10 +45,11 @@ import {
   KeyRound,
   ArrowRight,
   Mail,
-  Info
+  Info,
+  Sparkles
 } from "lucide-react";
 
-type Mode = "login" | "register" | "forgot";
+type Mode = "login" | "register" | "forgot" | "activate";
 type ForgotStep = "enter_email" | "enter_code" | "change_password";
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -395,7 +397,7 @@ export default function Login() {
     }
   };
 
-  // Google OAuth Handler (Restricted to Original Registered Data Only)
+  // Google OAuth Handler (Automatic Student & Admin Provisioning)
   const handleGoogleAuth = async () => {
     setError("");
     setLoading(true);
@@ -409,21 +411,15 @@ export default function Login() {
       const matchedEmp = ORIGINAL_FOUNDERS_EMPLOYEES.find(e => e.email.toLowerCase() === googleEmail);
       const matchedStudent = ORIGINAL_STUDENTS.find(s => s.email.toLowerCase() === googleEmail);
 
-      // Enforce: Original data only, not arbitrary accounts
-      if (!isSuperAdmin && !matchedEmp && !matchedStudent) {
-        setError(`Access restricted: Google account (${googleEmail}) is not registered in the Atideto database.`);
-        setLoading(false);
-        return;
-      }
-
-      const role = (isSuperAdmin || matchedEmp) ? "admin" : "student";
+      const isEmployee = isSuperAdmin || Boolean(matchedEmp) || googleEmail.endsWith('@atideto.in');
+      const role = isEmployee ? "admin" : "student";
       let displayName = userCredential.user.displayName || googleEmail.split("@")[0] || "User";
       if (isSuperAdmin) displayName = "Administrator";
       else if (matchedEmp) displayName = matchedEmp.name;
       else if (matchedStudent) displayName = matchedStudent.name;
 
       const googleUser = {
-        uid: userCredential.user.uid,
+        uid: matchedStudent?.uid || userCredential.user.uid,
         name: displayName,
         email: googleEmail,
         role: role,
@@ -448,17 +444,63 @@ export default function Login() {
       }
 
       localStorage.setItem('atideto_sql_user', JSON.stringify(googleUser));
-      localStorage.setItem('atideto_dashboard_mode', role);
+      localStorage.setItem('atideto_dashboard_mode', 'student');
       window.dispatchEvent(new Event('atideto_auth_change'));
 
-      toast.success(`Signed in as ${googleUser.name}`);
+      toast.success(`Signed in as ${displayName}`);
       navigate("/dashboard");
     } catch (err: any) {
       if (err.code === "auth/popup-closed-by-user") {
-        setError("Google sign-in popup was closed.");
+        setError("Google sign-in was cancelled.");
       } else {
-        setError("Google authentication failed. Please sign in with email and password.");
+        setError(getAuthErrorMessage(err));
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Student Account Activation Handler (First-Time Login)
+  const handleActivateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const identifier = form.email.trim();
+    if (!identifier) {
+      setError("Please enter your registered student email address or Student ID.");
+      return;
+    }
+
+    if (!form.password || form.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match. Please verify both fields.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const isEmail = identifier.includes("@");
+      const res = await activateStudentAccount({
+        email: isEmail ? identifier : "",
+        studentId: isEmail ? undefined : identifier,
+        password: form.password
+      });
+
+      if (res && res.success && res.user) {
+        localStorage.setItem('atideto_sql_user', JSON.stringify(res.user));
+        localStorage.setItem('atideto_dashboard_mode', 'student');
+        window.dispatchEvent(new Event('atideto_auth_change'));
+        toast.success(res.message || "Student account activated successfully!");
+        navigate("/dashboard");
+      } else {
+        setError(res.message || "No registered student found with this identifier. Please register first.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to activate student account.");
     } finally {
       setLoading(false);
     }
@@ -868,6 +910,20 @@ export default function Login() {
                 type="button"
                 onClick={() => {
                   setError("");
+                  setMode("activate");
+                }}
+                className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                  mode === "activate"
+                    ? "bg-[#0066FF] text-white shadow-[0_0_12px_rgba(0,102,255,0.4)]"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Activate Student
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
                   setMode("register");
                 }}
                 className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
@@ -901,9 +957,124 @@ export default function Login() {
           )}
 
           {/* ═════════════════════════════════════════════════════════════════ */}
-          {/* MODE: FORGOT PASSWORD (STEP 1: EMAIL -> STEP 2: CODE -> STEP 3: PW) */}
+          {/* MODE: ACTIVATE STUDENT ACCOUNT (FIRST-TIME LOGIN)                 */}
           {/* ═════════════════════════════════════════════════════════════════ */}
-          {mode === "forgot" ? (
+          {mode === "activate" ? (
+            <div className="space-y-3.5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0066FF]/10 border border-[#0066FF]/20 text-[#38BDF8] text-[11px] font-semibold mb-1">
+                  <Sparkles className="size-3.5" />
+                  <span>Student First-Time Setup</span>
+                </div>
+                <h2
+                  className="text-2xl font-bold tracking-tight text-white"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  Activate Student Account
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Enter your registered student email or Student ID to establish your personal password and access your dashboard.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-left">
+                <p className="text-[11px] leading-relaxed text-blue-200">
+                  💡 <strong>Default Password Tip:</strong> All enrolled cohort students can also log in directly on the Sign In tab using default password <code className="bg-black/30 px-1 py-0.5 rounded text-white font-mono font-bold">student123</code>.
+                </p>
+              </div>
+
+              <form onSubmit={handleActivateSubmit} className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-300">Registered Student Email or Student ID</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="e.g. suresh@gmail.com or AT-MEC-2027-01"
+                      value={form.email}
+                      onChange={(e) => update("email", e.target.value)}
+                      required
+                      className="w-full pl-9 pr-3 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
+                    />
+                    <User className="absolute left-3 top-2.5 size-4 text-slate-500" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-slate-300">Create New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={(e) => update("password", e.target.value)}
+                      required
+                      className="w-full pl-9 pr-9 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
+                    />
+                    <Lock className="absolute left-3 top-2.5 size-4 text-slate-500" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                  <PasswordRequirements password={form.password} compact={true} className="pt-1" />
+                </div>
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300">Confirm Password</label>
+                    {form.confirm && (
+                      <span className={`text-[10px] font-medium flex items-center gap-1 ${
+                        form.password === form.confirm ? "text-emerald-400" : "text-rose-400"
+                      }`}>
+                        {form.password === form.confirm ? "✓ Passwords match" : "✕ Passwords do not match"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={form.confirm}
+                      onChange={(e) => update("confirm", e.target.value)}
+                      required
+                      className="w-full pl-9 pr-9 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
+                    />
+                    <Lock className="absolute left-3 top-2.5 size-4 text-slate-500" />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition cursor-pointer"
+                    >
+                      {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-10 mt-1 text-xs font-semibold bg-[#0066FF] hover:bg-[#2EA8FF] text-white rounded-xl shadow-[0_0_16px_rgba(0,102,255,0.4)] cursor-pointer transition flex items-center justify-center gap-1.5"
+                >
+                  {loading && <Loader2 className="size-3.5 animate-spin mr-2" />}
+                  Activate & Open Dashboard
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setMode("login");
+                  }}
+                  className="w-full text-center text-xs text-slate-400 hover:text-white transition cursor-pointer pt-1"
+                >
+                  ← Back to Sign In
+                </button>
+              </form>
+            </div>
+          ) : mode === "forgot" ? (
             <div className="space-y-3.5">
 
               {/* STEP 1: Enter Email */}
@@ -1312,6 +1483,21 @@ export default function Login() {
                       {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
+                  {mode === "login" && (
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+                      <span>Default student password: <strong className="text-white font-mono">student123</strong></span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setError("");
+                          setMode("activate");
+                        }}
+                        className="text-[#38BDF8] hover:underline cursor-pointer font-medium"
+                      >
+                        Activate Account
+                      </button>
+                    </div>
+                  )}
                   {mode === "register" && (
                     <PasswordRequirements password={form.password} compact={true} className="pt-1" />
                   )}

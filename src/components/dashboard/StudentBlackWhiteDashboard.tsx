@@ -55,6 +55,7 @@ import atidetoWordmark from '@/assets/atideto/atideto.png';
 import atidetoLogo from '@/assets/atideto/logo.png';
 import { toast } from 'sonner';
 import StepperRegistrationModal from '@/components/registration/StepperRegistrationModal';
+import { getStudentsFromDb } from '@/lib/api';
 import { 
   getStoredStudents, 
   getVerificationUrl, 
@@ -402,16 +403,44 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
   });
 
   useEffect(() => {
-    const fetchAndSyncStudent = () => {
-      const stored = getStoredStudents();
+    let isMounted = true;
+    const fetchAndSyncStudent = async () => {
+      let stored = getStoredStudents();
+      try {
+        const dbStudents = await getStudentsFromDb();
+        if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
+          stored = dbStudents;
+        }
+      } catch (e) {
+        console.warn('Student sync notice:', e);
+      }
+
+      if (!isMounted) return;
       setCohortStudents(stored);
+
+      const userEmail = (user?.email || '').toLowerCase().trim();
+      const userName = (user?.name || '').toLowerCase().trim();
+
       const found = stored.find((s: any) => 
-        (user?.email && s.email.toLowerCase() === user.email.toLowerCase()) ||
-        (user?.name && s.name.toLowerCase() === user.name.toLowerCase()) ||
-        (studentProfile && s.id === studentProfile.id)
+        (userEmail && s.email && s.email.toLowerCase() === userEmail) ||
+        (userName && s.name && s.name.toLowerCase() === userName) ||
+        (studentProfile && (s.id === studentProfile.id || s.studentId === studentProfile.studentId))
       );
+
       if (found) {
         setStudentProfile(found);
+      } else if (userEmail) {
+        setStudentProfile((prev: any) => ({
+          ...prev,
+          id: user?.uid || `STD-${Date.now()}`,
+          name: user?.name || userEmail.split('@')[0],
+          email: userEmail,
+          status: 'Active',
+          attendance: prev?.attendance || 95,
+          score: prev?.score || 92
+        }));
+      } else if (stored.length > 0) {
+        setStudentProfile(stored[0]);
       }
     };
 
@@ -419,6 +448,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
     window.addEventListener('atideto-students-updated', fetchAndSyncStudent);
     window.addEventListener('atideto_payment_update', fetchAndSyncStudent);
     return () => {
+      isMounted = false;
       window.removeEventListener('atideto-students-updated', fetchAndSyncStudent);
       window.removeEventListener('atideto_payment_update', fetchAndSyncStudent);
     };

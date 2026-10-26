@@ -679,6 +679,49 @@ export async function executeSqlQuery(query: string, params?: any[]): Promise<Sq
 
 export async function getStudentsFromDb() {
   try {
+    const res = await fetch(`${API_BASE}/students`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.students)) {
+        const mapped = data.students.map((r: any) => ({
+          id: r.student_id || r.id,
+          studentId: r.student_id || r.id,
+          name: r.name,
+          email: r.email,
+          phone: r.phone,
+          college: r.college,
+          degree: r.degree,
+          gradYear: r.grad_year,
+          course: r.course || r.domain,
+          domain: r.domain || r.course,
+          startDate: r.start_date,
+          batch: r.batch,
+          status: r.status,
+          internshipStatus: r.internship_status,
+          duration: r.internship_duration || '3 Months',
+          mentor: r.mentor,
+          attendance: r.attendance,
+          score: r.score,
+          feePaid: r.fee_paid,
+          feeTotal: r.fee_total,
+          paymentStatus: r.payment_status,
+          certId: r.cert_id || '',
+          offerNo: r.offer_no || '',
+          issueDate: r.issue_date || '',
+          certGenerated: Boolean(r.cert_generated),
+          sentToAdministration: Boolean(r.sent_to_administration),
+          tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
+          area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || [])
+        }));
+        saveStoredStudents(mapped);
+        return mapped;
+      }
+    }
+  } catch (e) {
+    console.warn('REST getStudents error:', e);
+  }
+
+  try {
     const res = await executeSqlQuery('SELECT * FROM students ORDER BY id ASC;');
     if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
       const mapped = res.rows.map(r => ({
@@ -696,7 +739,7 @@ export async function getStudentsFromDb() {
         batch: r.batch,
         status: r.status,
         internshipStatus: r.internship_status,
-        duration: r.internship_duration || r.duration || '3 Months',
+        duration: r.internship_duration || '3 Months',
         mentor: r.mentor,
         attendance: r.attendance,
         score: r.score,
@@ -712,21 +755,10 @@ export async function getStudentsFromDb() {
         area: r.area || []
       }));
       saveStoredStudents(mapped);
-      // Immediately finalize the database values so they are permanent
-      for (const s of mapped) {
-        if (s.feeTotal || s.feePaid || s.paymentStatus) {
-          saveFinalizedPayment(s.id, {
-            feeTotal: s.feeTotal,
-            feePaid: s.feePaid,
-            paymentStatus: s.paymentStatus
-          });
-        }
-      }
       return mapped;
     }
-  } catch (e) {
-    console.warn('MySQL getStudents fallback to local:', e);
-  }
+  } catch {}
+
   return getStoredStudents();
 }
 
@@ -754,26 +786,23 @@ export async function createStudentInDb(studentData: any) {
   addStudentToRegistry(normalizedData);
 
   try {
-    await fetch(`${API_BASE}/students`, {
+    const res = await fetch(`${API_BASE}/students`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(normalizedData)
     });
-  } catch {}
-
-  try {
-    await fetch(`http://localhost:5000/api/students`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(normalizedData)
-    });
-  } catch {}
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, student: normalizedData, ...data };
+    }
+  } catch (err) {
+    console.warn('REST createStudent error:', err);
+  }
 
   return { success: true, student: normalizedData };
 }
 
 export async function updateStudentInDb(studentId: string, updates: any) {
-  // 1. Immediately store in finalized payments ledger so it is permanently locked
   if (updates.feePaid !== undefined || updates.feeTotal !== undefined || updates.paymentStatus !== undefined) {
     saveFinalizedPayment(studentId, {
       feePaid: updates.feePaid,
@@ -782,10 +811,21 @@ export async function updateStudentInDb(studentId: string, updates: any) {
     });
   }
 
-  // 2. Update memory & localStorage registry
   updateStudentInRegistry(studentId, updates);
 
-  // 3. Persist to live MySQL database
+  try {
+    const res = await fetch(`${API_BASE}/students/${encodeURIComponent(studentId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('REST updateStudent error:', err);
+  }
+
   try {
     const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
     const setClauses: string[] = [];
@@ -809,44 +849,64 @@ export async function updateStudentInDb(studentId: string, updates: any) {
       await executeSqlQuery(sql);
     }
   } catch {}
+
   return { success: true, updated: updates };
 }
 
 export async function deleteStudentFromDb(studentId: string) {
   deleteStudentFromRegistry(studentId);
   removeStudentFromRegistry(studentId);
+
+  try {
+    const res = await fetch(`${API_BASE}/students/${encodeURIComponent(studentId)}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn('REST deleteStudent error:', err);
+  }
+
   try {
     const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
     await executeSqlQuery(`DELETE FROM students WHERE student_id='${safeStr(studentId)}' OR id='${safeStr(studentId)}';`);
     await executeSqlQuery(`DELETE FROM registrations WHERE reg_id='${safeStr(studentId)}' OR id='${safeStr(studentId)}';`);
   } catch {}
+
   return { success: true, studentId };
 }
 
 export async function getRegistrationsFromDb() {
   try {
-    const res = await executeSqlQuery('SELECT * FROM registrations ORDER BY id DESC;');
-    if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
-      const mapped = res.rows.map(r => ({
-        id: r.reg_id || r.id,
-        regId: r.reg_id || r.id,
-        studentName: r.student_name,
-        email: r.email,
-        phone: r.phone,
-        college: normalizeCollege(r.college),
-        degree: r.degree,
-        gradYear: r.grad_year,
-        courseInterest: normalizeDomain(r.course_interest || r.domain),
-        domain: normalizeDomain(r.domain || r.course_interest),
-        mode: r.mode,
-        stepStatus: r.step_status,
-        notes: r.notes,
-        createdAt: r.created_at
-      }));
-      localStorage.setItem('atideto_registrations', JSON.stringify(mapped));
-      return mapped;
+    const res = await fetch(`${API_BASE}/registrations`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.registrations)) {
+        const mapped = data.registrations.map((r: any) => ({
+          id: r.reg_id || r.id,
+          regId: r.reg_id || r.id,
+          studentName: r.student_name,
+          email: r.email,
+          phone: r.phone,
+          college: normalizeCollege(r.college),
+          degree: r.degree,
+          gradYear: r.grad_year,
+          courseInterest: normalizeDomain(r.course_interest || r.domain),
+          domain: normalizeDomain(r.domain || r.course_interest),
+          mode: r.mode,
+          stepStatus: r.step_status,
+          notes: r.notes,
+          createdAt: r.created_at
+        }));
+        localStorage.setItem('atideto_registrations', JSON.stringify(mapped));
+        return mapped;
+      }
     }
-  } catch (e) {}
+  } catch (err) {
+    console.warn('REST getRegistrations error:', err);
+  }
+
   try {
     const raw = localStorage.getItem('atideto_registrations');
     return raw ? JSON.parse(raw) : [];
@@ -882,8 +942,6 @@ export async function submitRegistrationToDb(data: any) {
     notes: data.notes || 'Enrolled from portal'
   };
 
-  // 1. Immediately store in active cohort registry (deduplicates automatically)
-  // No registration amount mentioned; fee is solely decided by admin
   addStudentToRegistry({
     id: studentId,
     studentId: studentId,
@@ -904,24 +962,63 @@ export async function submitRegistrationToDb(data: any) {
     feeTotal: data.feeTotal || 'To Be Decided by Admin'
   });
 
-  // 2. Persist to API server with clean REST endpoints
   try {
-    await fetch(`${API_BASE}/registrations`, {
+    const res = await fetch(`${API_BASE}/registrations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(registrationPayload)
     });
-  } catch {}
-
-  try {
-    await fetch(`http://localhost:5000/api/registrations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(registrationPayload)
-    });
-  } catch {}
+    if (res.ok) {
+      const respData = await res.json();
+      return { success: true, regId, studentId, student: registrationPayload, ...respData };
+    }
+  } catch (err) {
+    console.warn('REST submitRegistration error:', err);
+  }
 
   return { success: true, regId, studentId, student: registrationPayload };
+}
+
+export async function updateRegistrationStatusInDb(regId: string, updates: any) {
+  try {
+    const res = await fetch(`${API_BASE}/registrations/${encodeURIComponent(regId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST updateRegistration error:', err);
+  }
+  return { success: true, regId, updates };
+}
+
+export async function deleteRegistrationInDb(regId: string) {
+  try {
+    const res = await fetch(`${API_BASE}/registrations/${encodeURIComponent(regId)}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST deleteRegistration error:', err);
+  }
+  return { success: true, regId };
+}
+
+export async function activateStudentAccount({ studentId, email, password }: { studentId?: string; email: string; password: string }) {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  const cleanPass = (password || '').trim();
+  try {
+    const res = await fetch(`${API_BASE}/auth/activate-account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, email: cleanEmail, password: cleanPass })
+    });
+    const data = await res.json();
+    return data;
+  } catch (err: any) {
+    return { success: false, message: err.message || 'Failed to activate student account' };
+  }
 }
 
 export async function getCrmDataFromDb() {
@@ -930,25 +1027,30 @@ export async function getCrmDataFromDb() {
 
 export async function getClientsFromDb() {
   try {
-    const res = await executeSqlQuery('SELECT * FROM clients ORDER BY id ASC;');
-    if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
-      const mapped = res.rows.map(r => ({
-        id: r.client_id || r.id,
-        clientId: r.client_id || r.id,
-        name: r.name,
-        industry: r.industry,
-        contactPerson: r.contact_person,
-        email: r.email,
-        phone: r.phone,
-        mouStatus: r.mou_status,
-        activeProjects: r.active_projects,
-        contractValue: r.contract_value,
-        pipelineStatus: r.pipeline_status
-      }));
-      saveStoredClients(mapped);
-      return mapped;
+    const res = await fetch(`${API_BASE}/clients`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.clients)) {
+        const mapped = data.clients.map((r: any) => ({
+          id: r.client_id || r.id,
+          clientId: r.client_id || r.id,
+          name: r.name,
+          industry: r.industry,
+          contactPerson: r.contact_person,
+          email: r.email,
+          phone: r.phone,
+          mouStatus: r.mou_status,
+          activeProjects: r.active_projects,
+          contractValue: r.contract_value,
+          pipelineStatus: r.pipeline_status
+        }));
+        saveStoredClients(mapped);
+        return mapped;
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('REST getClients error:', e);
+  }
   return getStoredClients();
 }
 
@@ -957,78 +1059,89 @@ export async function createClientInDb(data: any) {
   const next = [data, ...clients];
   saveStoredClients(next);
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    const id = data.id || `CLT-2026-${Math.floor(10 + Math.random() * 90)}`;
-    await executeSqlQuery(`INSERT INTO clients (client_id, name, industry, contact_person, email, phone, mou_status, active_projects, contract_value, pipeline_status) VALUES ('${id}', '${safeStr(data.name)}', '${safeStr(data.industry)}', '${safeStr(data.contactPerson)}', '${safeStr(data.email)}', '${safeStr(data.phone)}', '${safeStr(data.mouStatus || 'Active MOU')}', ${data.activeProjects || 1}, '${safeStr(data.contractValue || '₹15,000')}', '${safeStr(data.pipelineStatus || 'In Progress')}');`);
-  } catch {}
+    const res = await fetch(`${API_BASE}/clients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST createClient error:', err);
+  }
   return { success: true, client: data };
 }
 
 export async function updateClientInDb(clientId: string, data: any) {
   updateClientInRegistry(clientId, data);
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    const setClauses: string[] = [];
-    if (data.name) setClauses.push(`name='${safeStr(data.name)}'`);
-    if (data.industry) setClauses.push(`industry='${safeStr(data.industry)}'`);
-    if (data.contactPerson) setClauses.push(`contact_person='${safeStr(data.contactPerson)}'`);
-    if (data.phone) setClauses.push(`phone='${safeStr(data.phone)}'`);
-    if (data.mouStatus) setClauses.push(`mou_status='${safeStr(data.mouStatus)}'`);
-    if (data.contractValue) setClauses.push(`contract_value='${safeStr(data.contractValue)}'`);
-    if (setClauses.length > 0) {
-      await executeSqlQuery(`UPDATE clients SET ${setClauses.join(', ')} WHERE client_id='${safeStr(clientId)}' OR id='${safeStr(clientId)}';`);
-    }
-  } catch {}
+    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST updateClient error:', err);
+  }
   return { success: true, updated: data };
 }
 
 export async function deleteClientFromDb(clientId: string) {
   removeClientFromRegistry(clientId);
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    await executeSqlQuery(`DELETE FROM clients WHERE client_id='${safeStr(clientId)}' OR id='${safeStr(clientId)}';`);
-  } catch {}
+    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST deleteClient error:', err);
+  }
   return { success: true, clientId };
 }
 
 export async function getStaffFromDb() {
   try {
-    const res = await executeSqlQuery('SELECT * FROM staff ORDER BY id ASC;');
-    if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
-      const mapped = res.rows.map(r => ({
-        id: r.emp_id || r.id,
-        empId: r.emp_id || r.id,
-        emp_id: r.emp_id || r.id,
-        name: r.name,
-        email: r.email,
-        phone: r.phone,
-        role: r.role,
-        department: r.department,
-        status: r.status,
-        assignedStudents: r.assigned_students,
-        assigned_students: r.assigned_students,
-        accountHolder: r.account_holder || '',
-        account_holder: r.account_holder || '',
-        accountNo: r.account_no || '',
-        account_no: r.account_no || '',
-        ifscCode: r.ifsc_code || '',
-        ifsc_code: r.ifsc_code || '',
-        branch: r.branch || '',
-        upiLink: r.upi_link || '',
-        upi_link: r.upi_link || '',
-        scannerImage: r.scanner_image || '',
-        scanner_image: r.scanner_image || '',
-        instagram: r.instagram || '',
-        facebook: r.facebook || '',
-        linkedin: r.linkedin || '',
-        portfolio: r.portfolio || '',
-        otherSocials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || []),
-        other_socials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || [])
-      }));
-      localStorage.setItem('atideto_staff_cache', JSON.stringify(mapped));
-      return mapped;
+    const res = await fetch(`${API_BASE}/staff`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.staff)) {
+        const mapped = data.staff.map((r: any) => ({
+          id: r.emp_id || r.id,
+          empId: r.emp_id || r.id,
+          emp_id: r.emp_id || r.id,
+          name: r.name,
+          email: r.email,
+          phone: r.phone,
+          role: r.role,
+          department: r.department,
+          status: r.status,
+          assignedStudents: r.assigned_students,
+          assigned_students: r.assigned_students,
+          accountHolder: r.account_holder || '',
+          account_holder: r.account_holder || '',
+          accountNo: r.account_no || '',
+          account_no: r.account_no || '',
+          ifscCode: r.ifsc_code || '',
+          ifsc_code: r.ifsc_code || '',
+          branch: r.branch || '',
+          upiLink: r.upi_link || '',
+          upi_link: r.upi_link || '',
+          scannerImage: r.scanner_image || '',
+          scanner_image: r.scanner_image || '',
+          instagram: r.instagram || '',
+          facebook: r.facebook || '',
+          linkedin: r.linkedin || '',
+          portfolio: r.portfolio || '',
+          otherSocials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || []),
+          other_socials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || [])
+        }));
+        localStorage.setItem('atideto_staff_cache', JSON.stringify(mapped));
+        return mapped;
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('REST getStaff error:', e);
+  }
   try {
     const raw = localStorage.getItem('atideto_staff_cache');
     return raw ? JSON.parse(raw) : [];
@@ -1042,31 +1155,14 @@ export async function createStaffInDb(data: any) {
   const next = [data, ...staff];
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    const id = data.emp_id || data.empId || data.id || `EMP-${Math.floor(10 + Math.random() * 90)}`;
-    const socialsJson = JSON.stringify(data.other_socials || data.otherSocials || []);
-    await executeSqlQuery(`INSERT INTO staff (
-      emp_id, name, email, phone, role, department, status, assigned_students,
-      account_holder, account_no, ifsc_code, branch, upi_link, scanner_image,
-      instagram, facebook, linkedin, portfolio, other_socials
-    ) VALUES (
-      '${id}', '${safeStr(data.name)}', '${safeStr(data.email)}', '${safeStr(data.phone)}', 
-      '${safeStr(data.role)}', '${safeStr(data.department)}', '${safeStr(data.status || 'Active')}', 
-      ${data.assignedStudents || data.assigned_students || 10},
-      '${safeStr(data.account_holder || data.accountHolder)}',
-      '${safeStr(data.account_no || data.accountNo)}',
-      '${safeStr(data.ifsc_code || data.ifscCode)}',
-      '${safeStr(data.branch)}',
-      '${safeStr(data.upi_link || data.upiLink)}',
-      '${safeStr(data.scanner_image || data.scannerImage)}',
-      '${safeStr(data.instagram)}',
-      '${safeStr(data.facebook)}',
-      '${safeStr(data.linkedin)}',
-      '${safeStr(data.portfolio)}',
-      '${safeStr(socialsJson)}'
-    );`);
+    const res = await fetch(`${API_BASE}/staff`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
   } catch (err) {
-    console.warn('createStaffInDb notice:', err);
+    console.warn('REST createStaff error:', err);
   }
   return { success: true, staff: data };
 }
@@ -1076,84 +1172,56 @@ export async function updateStaffInDb(id: string | number, data: any) {
   const next = staff.map((s: any) => (s.id === id || s.emp_id === id || s.empId === id) ? { ...s, ...data } : s);
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    const setClauses: string[] = [];
-    if (data.name !== undefined) setClauses.push(`name='${safeStr(data.name)}'`);
-    if (data.email !== undefined) setClauses.push(`email='${safeStr(data.email)}'`);
-    if (data.phone !== undefined) setClauses.push(`phone='${safeStr(data.phone)}'`);
-    if (data.role !== undefined) setClauses.push(`role='${safeStr(data.role)}'`);
-    if (data.department !== undefined) setClauses.push(`department='${safeStr(data.department)}'`);
-    if (data.status !== undefined) setClauses.push(`status='${safeStr(data.status)}'`);
-    if (data.assigned_students !== undefined || data.assignedStudents !== undefined) {
-      setClauses.push(`assigned_students=${Number(data.assigned_students ?? data.assignedStudents) || 0}`);
-    }
-    // Bank & UPI details
-    if (data.account_holder !== undefined || data.accountHolder !== undefined) {
-      setClauses.push(`account_holder='${safeStr(data.account_holder ?? data.accountHolder)}'`);
-    }
-    if (data.account_no !== undefined || data.accountNo !== undefined) {
-      setClauses.push(`account_no='${safeStr(data.account_no ?? data.accountNo)}'`);
-    }
-    if (data.ifsc_code !== undefined || data.ifscCode !== undefined) {
-      setClauses.push(`ifsc_code='${safeStr(data.ifsc_code ?? data.ifscCode)}'`);
-    }
-    if (data.branch !== undefined) {
-      setClauses.push(`branch='${safeStr(data.branch)}'`);
-    }
-    if (data.upi_link !== undefined || data.upiLink !== undefined) {
-      setClauses.push(`upi_link='${safeStr(data.upi_link ?? data.upiLink)}'`);
-    }
-    if (data.scanner_image !== undefined || data.scannerImage !== undefined) {
-      setClauses.push(`scanner_image='${safeStr(data.scanner_image ?? data.scannerImage)}'`);
-    }
-    // Social Media details
-    if (data.instagram !== undefined) setClauses.push(`instagram='${safeStr(data.instagram)}'`);
-    if (data.facebook !== undefined) setClauses.push(`facebook='${safeStr(data.facebook)}'`);
-    if (data.linkedin !== undefined) setClauses.push(`linkedin='${safeStr(data.linkedin)}'`);
-    if (data.portfolio !== undefined) setClauses.push(`portfolio='${safeStr(data.portfolio)}'`);
-    if (data.other_socials !== undefined || data.otherSocials !== undefined) {
-      const json = JSON.stringify(data.other_socials ?? data.otherSocials ?? []);
-      setClauses.push(`other_socials='${safeStr(json)}'`);
-    }
-
-    if (setClauses.length > 0) {
-      await executeSqlQuery(`UPDATE staff SET ${setClauses.join(', ')} WHERE emp_id='${safeStr(String(id))}' OR id='${safeStr(String(id))}';`);
-    }
+    const res = await fetch(`${API_BASE}/staff/${encodeURIComponent(String(id))}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
   } catch (err) {
-    console.warn('updateStaffInDb notice:', err);
+    console.warn('REST updateStaff error:', err);
   }
   return { success: true, updated: data };
 }
 
 export async function deleteStaffInDb(id: string | number) {
   const staff = await getStaffFromDb();
-  const next = staff.filter((s: any) => s.id !== id);
+  const next = staff.filter((s: any) => s.id !== id && s.emp_id !== id);
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    await executeSqlQuery(`DELETE FROM staff WHERE emp_id='${safeStr(String(id))}' OR id='${safeStr(String(id))}';`);
-  } catch {}
+    const res = await fetch(`${API_BASE}/staff/${encodeURIComponent(String(id))}`, {
+      method: 'DELETE'
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST deleteStaff error:', err);
+  }
   return { success: true, id };
 }
 
 export async function getPaymentsFromDb() {
   try {
-    const res = await executeSqlQuery('SELECT * FROM payments ORDER BY id ASC;');
-    if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
-      const mapped = res.rows.map(r => ({
-        id: r.txn_id || r.id,
-        txnId: r.txn_id || r.id,
-        studentName: r.student_name,
-        amount: r.amount,
-        method: r.method,
-        status: r.status,
-        course: r.course,
-        date: r.date
-      }));
-      localStorage.setItem('atideto_payments_cache', JSON.stringify(mapped));
-      return mapped;
+    const res = await fetch(`${API_BASE}/payments`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.payments)) {
+        const mapped = data.payments.map((r: any) => ({
+          id: r.txn_id || r.id,
+          txnId: r.txn_id || r.id,
+          studentName: r.student_name,
+          amount: r.amount,
+          method: r.method,
+          status: r.status,
+          course: r.course,
+          date: r.date
+        }));
+        localStorage.setItem('atideto_payments_cache', JSON.stringify(mapped));
+        return mapped;
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('REST getPayments error:', e);
+  }
   try {
     const raw = localStorage.getItem('atideto_payments_cache');
     return raw ? JSON.parse(raw) : [];
@@ -1168,10 +1236,15 @@ export async function recordPaymentInDb(data: any) {
   localStorage.setItem('atideto_payments_cache', JSON.stringify(next));
   window.dispatchEvent(new Event('atideto_payment_update'));
   try {
-    const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
-    const txnId = data.txnId || `TXN-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    await executeSqlQuery(`INSERT INTO payments (txn_id, student_name, amount, method, status, course, date) VALUES ('${txnId}', '${safeStr(data.studentName)}', '${safeStr(data.amount)}', '${safeStr(data.method || 'Razorpay UPI')}', '${safeStr(data.status || 'Success')}', '${safeStr(data.course || 'Internship Track')}', '${safeStr(data.date || '2026-10-25')}');`);
-  } catch {}
+    const res = await fetch(`${API_BASE}/payments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.warn('REST recordPayment error:', err);
+  }
   return { success: true, payment: data };
 }
 
