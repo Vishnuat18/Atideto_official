@@ -53,7 +53,7 @@ export {
   subscribeToCloudSync
 };
 
-const API_BASE = '/api';
+const API_BASE = ((import.meta.env?.VITE_API_BASE_URL as string) || (import.meta.env?.VITE_API_URL as string) || '/api').replace(/\/+$/, '');
 
 export interface DbStatus {
   connected: boolean;

@@ -4,7 +4,7 @@
 
 import { StudentCohortRecord, saveStoredStudents, getStoredStudents } from './certificateStore';
 
-const RTDB_BASE = 'https://nitha-8f9f4-default-rtdb.firebaseio.com/erp_live';
+const RTDB_BASE = ((import.meta.env?.VITE_FIREBASE_DATABASE_URL as string) || 'https://nitha-8f9f4-default-rtdb.firebaseio.com').replace(/\/+$/, '') + '/erp_live';
 
 interface CloudMeta {
   lastSync: number;
