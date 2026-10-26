@@ -1381,7 +1381,10 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     gradYear: '2027',
     domain: 'Full stack Web Development',
     startDate: '25 Oct 2026',
-    mentor: 'Karthik Ramanathan (AI & Web Lead)'
+    mentor: 'Karthik Ramanathan (AI & Web Lead)',
+    feePaid: '₹0',
+    feeTotal: 'To Be Decided by Admin',
+    paymentStatus: 'Pending Admin Decision'
   });
 
   const handleEnrollStudent = (e: React.FormEvent) => {
@@ -1442,7 +1445,10 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
       gradYear: '2027',
       domain: 'Full stack Web Development',
       startDate: '25 Oct 2026',
-      mentor: 'Karthik Ramanathan (AI & Web Lead)'
+      mentor: 'Karthik Ramanathan (AI & Web Lead)',
+      feePaid: '₹0',
+      feeTotal: 'To Be Decided by Admin',
+      paymentStatus: 'Pending Admin Decision'
     });
   };
 
