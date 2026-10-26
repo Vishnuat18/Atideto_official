@@ -894,7 +894,7 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
     const normCollege = normalizeCollege(raw.college);
 
     if (existingKey && mergedMap.has(existingKey)) {
-      // Merge with existing record - latest incoming data (from DB or user update) takes priority
+      // Merge with existing record
       const existing = mergedMap.get(existingKey)!;
 
       const isExistingCanonical = /^AT-(MEC|MCE|STU)-\d+/i.test(existing.id) || /^\d{10,}/.test(existing.id);
@@ -903,33 +903,36 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
 
       const fin = getFinPayment(chosenId, rawEmail) || getFinPayment(existing.id, existing.email);
 
-      let feeTotal = '';
-      if (raw.feeTotal && !raw.feeTotal.includes('34,000')) feeTotal = raw.feeTotal;
-      else if (fin && fin.feeTotal) feeTotal = fin.feeTotal;
-      else if (existing.feeTotal && !existing.feeTotal.includes('34,000')) feeTotal = existing.feeTotal;
-      else feeTotal = 'To Be Decided by Admin';
+      // Payment details are FINAL once decided/updated
+      let feeTotal = fin ? fin.feeTotal : '';
+      if (!feeTotal) {
+        if (existing.feeTotal && !existing.feeTotal.includes('34,000')) feeTotal = existing.feeTotal;
+        else if (raw.feeTotal && !raw.feeTotal.includes('34,000')) feeTotal = raw.feeTotal;
+        else feeTotal = 'To Be Decided by Admin';
+      }
 
-      let feePaid = '';
-      if (raw.feePaid && !raw.feePaid.includes('34,000')) feePaid = raw.feePaid;
-      else if (fin && fin.feePaid) feePaid = fin.feePaid;
-      else if (existing.feePaid && !existing.feePaid.includes('34,000')) feePaid = existing.feePaid;
-      else feePaid = '₹0';
+      let feePaid = fin ? fin.feePaid : '';
+      if (!feePaid) {
+        if (existing.feePaid && !existing.feePaid.includes('34,000')) feePaid = existing.feePaid;
+        else if (raw.feePaid && !raw.feePaid.includes('34,000')) feePaid = raw.feePaid;
+        else feePaid = '₹0';
+      }
 
-      let paymentStatus = raw.paymentStatus || (fin ? fin.paymentStatus : (existing.paymentStatus || 'Pending Admin Decision'));
+      let paymentStatus = fin ? fin.paymentStatus : (existing.paymentStatus || raw.paymentStatus || 'Pending Admin Decision');
 
+      // Existing record in storage always takes priority over default/canonical values
       const mergedRecord: StudentCohortRecord = {
         ...existing,
-        ...raw,
         id: chosenId,
         studentId: chosenId,
-        name: (raw.name && raw.name !== 'Registered Student') ? raw.name : (existing.name || rawName),
-        email: raw.email || existing.email || rawEmail,
-        phone: raw.phone || existing.phone || rawPhone,
-        college: normCollege || raw.college || existing.college || 'Mahendra Engineering College',
-        degree: raw.degree || existing.degree || 'B.Tech Information Technology',
-        gradYear: raw.gradYear || existing.gradYear || '2027',
-        course: normDomain || raw.course || existing.course,
-        domain: normDomain || raw.domain || existing.domain,
+        name: (existing.name && existing.name !== 'Registered Student') ? existing.name : (rawName || existing.name),
+        email: existing.email || rawEmail,
+        phone: existing.phone || rawPhone,
+        college: existing.college || normCollege || 'Mahendra Engineering College',
+        degree: existing.degree || raw.degree || 'B.Tech Information Technology',
+        gradYear: existing.gradYear || raw.gradYear || '2027',
+        course: existing.course || existing.domain || normDomain,
+        domain: existing.domain || existing.course || normDomain,
         startDate: raw.startDate || existing.startDate || '2026-10-25',
         endDate: raw.endDate || existing.endDate || '2027-01-25',
         duration: raw.duration || existing.duration || '3 Months',
@@ -939,16 +942,16 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         feePaid,
         feeTotal,
         paymentStatus,
-        certId: raw.certId || existing.certId || '',
-        offerNo: raw.offerNo || existing.offerNo || '',
-        attendanceCertId: raw.attendanceCertId || existing.attendanceCertId || '',
-        issueDate: raw.issueDate || existing.issueDate || '2026-10-25',
-        status: (raw.status as any) || existing.status || 'active',
-        tools: (raw.tools && raw.tools.length > 0) ? raw.tools : (existing.tools || ['React', 'Node.js', 'Express', 'MongoDB']),
-        area: (raw.area && raw.area.length > 0) ? raw.area : (existing.area || ['Full Stack', 'Web Development']),
-        certGenerated: raw.certGenerated !== undefined ? Boolean(raw.certGenerated) : Boolean(existing.certGenerated),
-        sentToAdministration: raw.sentToAdministration !== undefined ? Boolean(raw.sentToAdministration) : Boolean(existing.sentToAdministration),
-        certHold: Boolean(raw.certHold !== undefined ? raw.certHold : existing.certHold)
+        certId: existing.certId || raw.certId || '',
+        offerNo: existing.offerNo || raw.offerNo || '',
+        attendanceCertId: existing.attendanceCertId || raw.attendanceCertId || '',
+        issueDate: existing.issueDate || raw.issueDate || '2026-10-25',
+        status: existing.status || (raw.status as any) || 'active',
+        tools: (existing.tools && existing.tools.length > 0) ? existing.tools : (raw.tools || ['React', 'Node.js', 'Express', 'MongoDB']),
+        area: (existing.area && existing.area.length > 0) ? existing.area : (raw.area || ['Full Stack', 'Web Development']),
+        certGenerated: existing.certGenerated !== undefined ? existing.certGenerated : Boolean(raw.certGenerated),
+        sentToAdministration: existing.sentToAdministration !== undefined ? existing.sentToAdministration : Boolean(raw.sentToAdministration),
+        certHold: Boolean(existing.certHold !== undefined ? existing.certHold : raw.certHold)
       };
 
       mergedMap.set(existingKey, mergedRecord);
@@ -959,17 +962,19 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
 
       const fin = getFinPayment(assignedId, rawEmail);
 
-      let feeTotal = '';
-      if (raw.feeTotal && !raw.feeTotal.includes('34,000')) feeTotal = raw.feeTotal;
-      else if (fin && fin.feeTotal) feeTotal = fin.feeTotal;
-      else feeTotal = 'To Be Decided by Admin';
+      let feeTotal = fin ? fin.feeTotal : '';
+      if (!feeTotal) {
+        if (raw.feeTotal && !raw.feeTotal.includes('34,000')) feeTotal = raw.feeTotal;
+        else feeTotal = 'To Be Decided by Admin';
+      }
 
-      let feePaid = '';
-      if (raw.feePaid && !raw.feePaid.includes('34,000')) feePaid = raw.feePaid;
-      else if (fin && fin.feePaid) feePaid = fin.feePaid;
-      else feePaid = '₹0';
+      let feePaid = fin ? fin.feePaid : '';
+      if (!feePaid) {
+        if (raw.feePaid && !raw.feePaid.includes('34,000')) feePaid = raw.feePaid;
+        else feePaid = '₹0';
+      }
 
-      let paymentStatus = raw.paymentStatus || (fin ? fin.paymentStatus : 'Pending Admin Decision');
+      let paymentStatus = fin ? fin.paymentStatus : (raw.paymentStatus || 'Pending Admin Decision');
 
       const newRecord: StudentCohortRecord = {
         id: assignedId,

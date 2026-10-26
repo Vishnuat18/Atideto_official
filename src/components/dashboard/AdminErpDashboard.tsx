@@ -101,6 +101,8 @@ import {
   deleteClientFromDb,
   getPaymentsFromDb,
   recordPaymentInDb,
+  syncAllCloudData,
+  subscribeToCloudSync,
   DbStatus, 
   SqlQueryResult 
 } from '@/lib/api';
@@ -226,6 +228,13 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
   const [searchQuery, setSearchQuery] = useState('');
   const [analyticsFilter, setAnalyticsFilter] = useState<'enrollments' | 'revenue' | 'distribution'>('enrollments');
   const [analyticsYear, setAnalyticsYear] = useState('Full Year (2026)');
+
+  const formattedCurrentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
 
   // Right-Side Slide-Over Panel State (Reference Image 2)
   const [rightPanel, setRightPanel] = useState<RightPanelState>({
@@ -1454,7 +1463,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     );
   };
 
-  // Editable Course Tenure (Start Date, End Date, Duration) Function (Persisted to Database)
+  // Editable Course Tenure (Start Date, End Date, Duration) Function (Persisted to Cloud RTDB & Database)
   const updateStudentTenure = async (studentId: string, updates: { startDate?: string; endDate?: string; duration?: string }) => {
     const existing = students.find(s => s.id === studentId || s.studentId === studentId);
     const finalStart = updates.startDate ?? existing?.startDate ?? '';
@@ -1486,7 +1495,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     toast.success(`Course tenure & duration updated for ${existing?.name || studentId}!`);
   };
 
-  // Editable Course Start Date Function (Persisted to Database)
+  // Editable Course Start Date Function (Calls updateStudentTenure)
   const updateStudentStartDate = async (studentId: string, newDate: string) => {
     return updateStudentTenure(studentId, { startDate: newDate });
   };
@@ -1692,43 +1701,53 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
   const [isSyncingDb, setIsSyncingDb] = useState(false);
 
-  // Comprehensive multi-device database sync function
+  // Authoritative Multi-Device Cloud & Database Sync Function
   const syncAllDataFromDb = async (showToast = false) => {
     try {
       if (showToast) setIsSyncingDb(true);
-      const [status, dbStudents, dbRegs, dbClients, dbStaff, dbPayments] = await Promise.all([
-        getDatabaseStatus().catch(() => null),
-        getStudentsFromDb().catch(() => null),
-        getRegistrationsFromDb().catch(() => null),
-        getClientsFromDb().catch(() => null),
-        getStaffFromDb().catch(() => null),
-        getPaymentsFromDb().catch(() => null)
+      const [cloudData, status] = await Promise.all([
+        syncAllCloudData().catch(() => null),
+        getDatabaseStatus().catch(() => null)
       ]);
 
       if (status) setDbStatus(status);
-      if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
-        setStudents(dbStudents);
-        saveStoredStudents(dbStudents);
+
+      if (cloudData) {
+        if (cloudData.students && Array.isArray(cloudData.students) && cloudData.students.length > 0) {
+          setStudents(cloudData.students);
+          saveStoredStudents(cloudData.students);
+        }
+        if (cloudData.clients && Array.isArray(cloudData.clients)) {
+          setCrmClients(cloudData.clients);
+          saveStoredClients(cloudData.clients);
+        }
+        if (cloudData.staff && Array.isArray(cloudData.staff) && cloudData.staff.length > 0) {
+          setStaffMembers(cloudData.staff);
+        }
+        if (cloudData.registrations && Array.isArray(cloudData.registrations)) {
+          setRegistrationsList(cloudData.registrations);
+        }
+        if (cloudData.payments && Array.isArray(cloudData.payments)) {
+          setPaymentsList(cloudData.payments);
+        }
+      } else {
+        const dbStudents = await getStudentsFromDb();
+        if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
+          setStudents(dbStudents);
+        }
       }
-      if (dbRegs && Array.isArray(dbRegs)) setRegistrationsList(dbRegs);
-      if (dbClients && Array.isArray(dbClients)) {
-        setCrmClients(dbClients);
-        saveStoredClients(dbClients);
-      }
-      if (dbStaff && Array.isArray(dbStaff)) setStaffMembers(dbStaff);
-      if (dbPayments && Array.isArray(dbPayments)) setPaymentsList(dbPayments);
 
       if (showToast) {
-        toast.success('Synchronized live data with MySQL database!');
+        toast.success('Live Cloud ERP synchronized across devices!');
       }
     } catch (err) {
-      if (showToast) toast.error('Failed to sync data with database');
+      if (showToast) toast.error('Failed to sync live cloud data');
     } finally {
       if (showToast) setIsSyncingDb(false);
     }
   };
 
-  // Synchronize on mount, background polling (every 10s), and window/visibility events for multi-phone consistency
+  // Synchronize on mount, subscribe to cross-mobile cloud changes, and handle visibility/focus
   useEffect(() => {
     syncAllDataFromDb(false);
 
@@ -1736,25 +1755,52 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
       if (res && res.success) setSqlResult(res);
     });
 
-    // 10-second automatic background sync for cross-device updates (phone 1 <-> phone 2)
-    const syncInterval = setInterval(() => {
-      syncAllDataFromDb(false);
-    }, 10000);
+    // Real-time Cloud Subscription across mobile devices
+    const unsubscribeCloud = subscribeToCloudSync((fresh) => {
+      if (fresh.students && Array.isArray(fresh.students) && fresh.students.length > 0) {
+        setStudents(fresh.students);
+        saveStoredStudents(fresh.students);
 
-    // Sync on focus / visibility change (e.g. when user switches back to browser or unlocks phone)
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible') {
-        syncAllDataFromDb(false);
+        // If the right drawer is currently open showing a student dossier, live-update its fields
+        setRightPanel(prev => {
+          if (prev.isOpen && prev.data?.id) {
+            const updatedSt = fresh.students.find((s: any) => s.id === prev.data.id || s.studentId === prev.data.id);
+            if (updatedSt) {
+              return { ...prev, data: { ...prev.data, ...updatedSt } };
+            }
+          }
+          return prev;
+        });
+      }
+      if (fresh.clients && Array.isArray(fresh.clients)) {
+        setCrmClients(fresh.clients);
+        saveStoredClients(fresh.clients);
+      }
+      if (fresh.staff && Array.isArray(fresh.staff)) {
+        setStaffMembers(fresh.staff);
+      }
+      if (fresh.registrations && Array.isArray(fresh.registrations)) {
+        setRegistrationsList(fresh.registrations);
+      }
+      if (fresh.payments && Array.isArray(fresh.payments)) {
+        setPaymentsList(fresh.payments);
+      }
+    });
+
+    // Local custom event listener for immediate same-tab/cross-tab state updates
+    const handleLocalStudentUpdate = (e: any) => {
+      const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
+      if (list && Array.isArray(list)) {
+        setStudents(list);
       }
     };
-
-    window.addEventListener('focus', handleVisibilityOrFocus);
-    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('atideto_students_updated', handleLocalStudentUpdate);
+    window.addEventListener('atideto-students-updated', handleLocalStudentUpdate);
 
     return () => {
-      clearInterval(syncInterval);
-      window.removeEventListener('focus', handleVisibilityOrFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      unsubscribeCloud();
+      window.removeEventListener('atideto_students_updated', handleLocalStudentUpdate);
+      window.removeEventListener('atideto-students-updated', handleLocalStudentUpdate);
     };
   }, []);
 
@@ -1831,22 +1877,23 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
             <span className="hidden xs:inline sm:inline">Main Website</span>
           </button>
 
-          <div className="hidden xl:flex items-center gap-1.5 text-xs text-[#64748B] font-medium pr-1">
-            <Calendar size={13} className="text-[#0066FF]" />
-            <span>Wednesday, 21 Oct 2026</span>
-          </div>
-
-          {/* Live Cloud DB Sync Button */}
+          {/* Live Cloud DB Sync Button & Status Badge */}
           <button
             type="button"
             onClick={() => syncAllDataFromDb(true)}
             disabled={isSyncingDb}
-            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
-            title="Refresh and sync data with MySQL database"
+            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            title="Refresh and sync data with live Cloud Realtime Database"
           >
-            <RefreshCw size={12} className={isSyncingDb ? "animate-spin text-blue-600" : "text-blue-600"} />
-            <span className="hidden xs:inline sm:inline">Sync DB</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <RefreshCw size={12} className={isSyncingDb ? "animate-spin text-emerald-600" : "text-emerald-600"} />
+            <span className="hidden xs:inline sm:inline">Cloud Synced</span>
           </button>
+
+          <div className="hidden xl:flex items-center gap-1.5 text-xs text-[#64748B] font-medium pr-1">
+            <Calendar size={13} className="text-[#0066FF]" />
+            <span>{formattedCurrentDate}</span>
+          </div>
 
           <button 
             title="Notifications" 
@@ -2141,7 +2188,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-[#64748B] font-medium">
                     <Calendar size={13} className="text-[#0066FF]" />
-                    <span>Wednesday, 21 Oct 2026</span>
+                    <span>{formattedCurrentDate}</span>
                   </div>
                 </div>
 
@@ -2306,32 +2353,32 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B]">
                       Corporate Clients
                     </span>
-                    <div className="text-xl font-black text-[#0F172A]">6 Accounts</div>
-                    <p className="text-[11px] text-[#64748B]">2 MOUs Active</p>
+                    <div className="text-xl font-black text-[#0F172A]">{crmClients.length} Account{crmClients.length === 1 ? '' : 's'}</div>
+                    <p className="text-[11px] text-[#64748B]">{crmClients.filter(c => (c.mouStatus && c.mouStatus.toLowerCase().includes('active')) || (c.status && c.status.toLowerCase().includes('active'))).length} Active MOUs</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B]">
                       Active Leads Pipeline
                     </span>
-                    <div className="text-xl font-black text-[#0F172A]">₹6,80,000</div>
-                    <p className="text-[11px] text-[#64748B]">5 Deals Open</p>
+                    <div className="text-xl font-black text-[#0F172A]">₹{corporateTotal.toLocaleString('en-IN')}</div>
+                    <p className="text-[11px] text-[#64748B]">{crmClients.filter(c => c.pipelineStatus !== 'Closed Won').length} Active Accounts</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B]">
-                      Team Follow-ups
+                      Candidate Enrollments
                     </span>
-                    <div className="text-xl font-black text-[#0F172A]">0 Scheduled Today</div>
-                    <p className="text-[11px] text-[#64748B]">2 Completed Logs</p>
+                    <div className="text-xl font-black text-[#0F172A]">{registrationsList.filter(r => (r.stepStatus || '').toLowerCase().includes('pending') || (r.stepStatus || '').toLowerCase().includes('review')).length} In Review</div>
+                    <p className="text-[11px] text-[#64748B]">{registrationsList.filter(r => (r.stepStatus || '').toLowerCase().includes('approv')).length} Approved Cohort</p>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#64748B]">
-                      Team Tasks
+                      Team Operations
                     </span>
-                    <div className="text-xl font-black text-[#0F172A]">3 In Progress</div>
-                    <p className="text-[11px] text-[#64748B]">2 Completed</p>
+                    <div className="text-xl font-black text-[#0F172A]">{staffMembers.length} Active Staff</div>
+                    <p className="text-[11px] text-[#64748B]">{students.length} Registered Students</p>
                   </div>
 
                 </div>
@@ -6928,17 +6975,17 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               {/* Fast Table Switcher Chips */}
               <div className="space-y-2">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-[#64748B] block">
-                  Quick Table Explorer (Click to View Live Records)
+                  Database Table Explorer (Live Multi-Device Records)
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { name: 'students', label: 'students', count: students.length },
                     { name: 'staff', label: 'staff (Founders & Employees)', count: staffMembers.length },
                     { name: 'clients', label: 'clients', count: crmClients.length },
-                    { name: 'registrations', label: 'registrations', count: 3 },
-                    { name: 'courses', label: 'courses', count: 12 },
-                    { name: 'payments', label: 'payments', count: 4 },
-                    { name: 'users', label: 'users', count: 6 }
+                    { name: 'registrations', label: 'registrations', count: registrationsList.length },
+                    { name: 'courses', label: 'courses', count: coursesList.length },
+                    { name: 'payments', label: 'payments', count: paymentsList.length },
+                    { name: 'users', label: 'users', count: students.length + staffMembers.length + 1 }
                   ].map(tab => (
                     <button
                       key={tab.name}
@@ -6972,7 +7019,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     SQL Query Runner
                   </span>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] text-[#94A3B8] font-medium mr-1">Quick Queries:</span>
+                    <span className="text-[11px] text-[#94A3B8] font-medium mr-1">Standard Queries:</span>
                     {[
                       { label: 'All Students', q: 'SELECT student_id, name, email, phone, college, course, status FROM students;' },
                       { label: 'Founders & Staff', q: 'SELECT emp_id, name, role, department, email, phone FROM staff;' },
@@ -7302,11 +7349,11 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#0F172A] flex items-center gap-1.5">
                         <Calendar size={13} className="text-[#0066FF]" />
-                        <span>Course Tenure & Duration (Live Database)</span>
+                        <span>Course Tenure & Duration (Live Cloud Sync)</span>
                       </span>
                       <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span>Live Sync</span>
+                        <span>Cloud Active</span>
                       </span>
                     </div>
 

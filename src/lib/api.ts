@@ -19,6 +19,39 @@ import {
   getFinalizedPayments,
   StudentCohortRecord 
 } from './certificateStore';
+import {
+  fetchCloudStudents,
+  saveCloudStudent,
+  saveCloudStudents,
+  deleteCloudStudent,
+  fetchCloudClients,
+  saveCloudClients,
+  fetchCloudStaff,
+  saveCloudStaff,
+  fetchCloudRegistrations,
+  saveCloudRegistrations,
+  fetchCloudPayments,
+  saveCloudPayments,
+  syncAllCloudData,
+  subscribeToCloudSync
+} from './cloudSync';
+
+export {
+  fetchCloudStudents,
+  saveCloudStudent,
+  saveCloudStudents,
+  deleteCloudStudent,
+  fetchCloudClients,
+  saveCloudClients,
+  fetchCloudStaff,
+  saveCloudStaff,
+  fetchCloudRegistrations,
+  saveCloudRegistrations,
+  fetchCloudPayments,
+  saveCloudPayments,
+  syncAllCloudData,
+  subscribeToCloudSync
+};
 
 const API_BASE = '/api';
 
@@ -677,12 +710,24 @@ export async function executeSqlQuery(query: string, params?: any[]): Promise<Sq
 // 4. ENTITY CRUD OPERATIONS (Live MySQL Synchronized + LocalStorage Fallback)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function getStudentsFromDb() {
+export async function getStudentsFromDb(): Promise<StudentCohortRecord[]> {
+  // 1. Primary for cross-device & Vercel hosting: Authoritative Cloud Database
+  try {
+    const cloudStudents = await fetchCloudStudents();
+    if (cloudStudents && cloudStudents.length > 0) {
+      saveStoredStudents(cloudStudents);
+      return cloudStudents;
+    }
+  } catch (err) {
+    console.warn('[API] Cloud students fetch notice:', err);
+  }
+
+  // 2. Secondary: Local/server REST endpoint
   try {
     const res = await fetch(`${API_BASE}/students`);
     if (res.ok) {
       const data = await res.json();
-      if (data.success && Array.isArray(data.students)) {
+      if (data.success && Array.isArray(data.students) && data.students.length > 0) {
         const mapped = data.students.map((r: any) => ({
           id: r.student_id || r.id,
           studentId: r.student_id || r.id,
@@ -695,14 +740,14 @@ export async function getStudentsFromDb() {
           course: r.course || r.domain,
           domain: r.domain || r.course,
           startDate: r.start_date || '2026-10-25',
-          endDate: r.end_date || '',
+          endDate: r.end_date || '2027-01-25',
+          duration: r.internship_duration || '3 Months',
           batch: r.batch,
           status: r.status,
           internshipStatus: r.internship_status,
-          duration: r.internship_duration || '3 Months',
           mentor: r.mentor,
-          attendance: r.attendance,
-          score: r.score,
+          attendance: Number(r.attendance) || 95,
+          score: Number(r.score) || 95,
           feePaid: r.fee_paid,
           feeTotal: r.fee_total,
           paymentStatus: r.payment_status,
@@ -712,10 +757,10 @@ export async function getStudentsFromDb() {
           certGenerated: Boolean(r.cert_generated),
           sentToAdministration: Boolean(r.sent_to_administration),
           tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
-          area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || []),
-          certHold: Boolean(r.cert_hold)
+          area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || [])
         }));
         saveStoredStudents(mapped);
+        saveCloudStudents(mapped);
         return mapped;
       }
     }
@@ -723,46 +768,7 @@ export async function getStudentsFromDb() {
     console.warn('REST getStudents error:', e);
   }
 
-  try {
-    const res = await executeSqlQuery('SELECT * FROM students ORDER BY id ASC;');
-    if (res && res.success && Array.isArray(res.rows) && res.rows.length > 0) {
-      const mapped = res.rows.map(r => ({
-        id: r.student_id || r.id,
-        studentId: r.student_id || r.id,
-        name: r.name,
-        email: r.email,
-        phone: r.phone,
-        college: r.college,
-        degree: r.degree,
-        gradYear: r.grad_year,
-        course: r.course || r.domain,
-        domain: r.domain || r.course,
-        startDate: r.start_date || '2026-10-25',
-        endDate: r.end_date || '',
-        batch: r.batch,
-        status: r.status,
-        internshipStatus: r.internship_status,
-        duration: r.internship_duration || '3 Months',
-        mentor: r.mentor,
-        attendance: r.attendance,
-        score: r.score,
-        feePaid: r.fee_paid,
-        feeTotal: r.fee_total,
-        paymentStatus: r.payment_status,
-        certId: r.cert_id || '',
-        offerNo: r.offer_no || '',
-        issueDate: r.issue_date || '',
-        certGenerated: Boolean(r.cert_generated),
-        sentToAdministration: Boolean(r.sent_to_administration),
-        tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
-        area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || []),
-        certHold: Boolean(r.cert_hold)
-      }));
-      saveStoredStudents(mapped);
-      return mapped;
-    }
-  } catch {}
-
+  // 3. Fallback to local storage
   return getStoredStudents();
 }
 
@@ -784,10 +790,14 @@ export async function createStudentInDb(studentData: any) {
     phone: cleanPhone,
     college: cleanCollege,
     course: cleanDomain,
-    domain: cleanDomain
+    domain: cleanDomain,
+    startDate: studentData.startDate || '2026-10-25',
+    endDate: studentData.endDate || '2027-01-25',
+    duration: studentData.duration || '3 Months'
   };
 
   addStudentToRegistry(normalizedData);
+  saveCloudStudent(id, normalizedData);
 
   try {
     const res = await fetch(`${API_BASE}/students`, {
@@ -815,8 +825,13 @@ export async function updateStudentInDb(studentId: string, updates: any) {
     });
   }
 
+  // 1. Immediately persist to Cloud Realtime Database (Multi-mobile instant sync)
+  saveCloudStudent(studentId, updates);
+
+  // 2. Update local browser registry cache
   updateStudentInRegistry(studentId, updates);
 
+  // 3. Update MySQL if local/hosted API endpoint is active
   try {
     const res = await fetch(`${API_BASE}/students/${encodeURIComponent(studentId)}`, {
       method: 'PUT',
@@ -833,28 +848,18 @@ export async function updateStudentInDb(studentId: string, updates: any) {
   try {
     const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
     const setClauses: string[] = [];
-    if (updates.name !== undefined) setClauses.push(`name='${safeStr(updates.name)}'`);
-    if (updates.email !== undefined) setClauses.push(`email='${safeStr(updates.email)}'`);
-    if (updates.phone !== undefined) setClauses.push(`phone='${safeStr(updates.phone)}'`);
-    if (updates.college !== undefined) setClauses.push(`college='${safeStr(updates.college)}'`);
-    if (updates.degree !== undefined) setClauses.push(`degree='${safeStr(updates.degree)}'`);
-    if (updates.gradYear !== undefined) setClauses.push(`grad_year='${safeStr(updates.gradYear)}'`);
-    if (updates.course !== undefined) setClauses.push(`course='${safeStr(updates.course)}'`);
-    if (updates.domain !== undefined) setClauses.push(`domain='${safeStr(updates.domain)}'`);
-    if (updates.startDate !== undefined) setClauses.push(`start_date='${safeStr(updates.startDate)}'`);
-    if (updates.endDate !== undefined) setClauses.push(`end_date='${safeStr(updates.endDate)}'`);
-    if (updates.duration !== undefined || updates.internshipDuration !== undefined) {
-      setClauses.push(`internship_duration='${safeStr(updates.duration || updates.internshipDuration)}'`);
-    }
-    if (updates.mentor !== undefined) setClauses.push(`mentor='${safeStr(updates.mentor)}'`);
-    if (updates.status !== undefined) setClauses.push(`status='${safeStr(updates.status)}'`);
-    if (updates.internshipStatus !== undefined) setClauses.push(`internship_status='${safeStr(updates.internshipStatus)}'`);
-    if (updates.certId !== undefined) setClauses.push(`cert_id='${safeStr(updates.certId)}'`);
-    if (updates.offerNo !== undefined) setClauses.push(`offer_no='${safeStr(updates.offerNo)}'`);
-    if (updates.issueDate !== undefined) setClauses.push(`issue_date='${safeStr(updates.issueDate)}'`);
+    if (updates.name) setClauses.push(`name='${safeStr(updates.name)}'`);
+    if (updates.email) setClauses.push(`email='${safeStr(updates.email)}'`);
+    if (updates.phone) setClauses.push(`phone='${safeStr(updates.phone)}'`);
+    if (updates.status) setClauses.push(`status='${safeStr(updates.status)}'`);
+    if (updates.startDate) setClauses.push(`start_date='${safeStr(updates.startDate)}'`);
+    if (updates.endDate) setClauses.push(`end_date='${safeStr(updates.endDate)}'`);
+    if (updates.duration) setClauses.push(`internship_duration='${safeStr(updates.duration)}'`);
+    if (updates.certId) setClauses.push(`cert_id='${safeStr(updates.certId)}'`);
+    if (updates.offerNo) setClauses.push(`offer_no='${safeStr(updates.offerNo)}'`);
+    if (updates.issueDate) setClauses.push(`issue_date='${safeStr(updates.issueDate)}'`);
     if (updates.certGenerated !== undefined) setClauses.push(`cert_generated=${updates.certGenerated ? 1 : 0}`);
     if (updates.sentToAdministration !== undefined) setClauses.push(`sent_to_administration=${updates.sentToAdministration ? 1 : 0}`);
-    if (updates.certHold !== undefined) setClauses.push(`cert_hold=${updates.certHold ? 1 : 0}`);
     if (updates.attendance !== undefined) setClauses.push(`attendance=${Number(updates.attendance) || 95}`);
     if (updates.score !== undefined) setClauses.push(`score=${Number(updates.score) || 95}`);
     if (updates.feePaid !== undefined) setClauses.push(`fee_paid='${safeStr(updates.feePaid)}'`);
@@ -862,7 +867,7 @@ export async function updateStudentInDb(studentId: string, updates: any) {
     if (updates.paymentStatus !== undefined) setClauses.push(`payment_status='${safeStr(updates.paymentStatus)}'`);
 
     if (setClauses.length > 0) {
-      const sql = `UPDATE students SET ${setClauses.join(', ')} WHERE LOWER(student_id)='${safeStr(studentId).toLowerCase()}' OR id='${safeStr(studentId)}';`;
+      const sql = `UPDATE students SET ${setClauses.join(', ')} WHERE student_id='${safeStr(studentId)}' OR id='${safeStr(studentId)}';`;
       await executeSqlQuery(sql);
     }
   } catch {}
@@ -871,6 +876,7 @@ export async function updateStudentInDb(studentId: string, updates: any) {
 }
 
 export async function deleteStudentFromDb(studentId: string) {
+  deleteCloudStudent(studentId);
   deleteStudentFromRegistry(studentId);
   removeStudentFromRegistry(studentId);
 
@@ -895,6 +901,18 @@ export async function deleteStudentFromDb(studentId: string) {
 }
 
 export async function getRegistrationsFromDb() {
+  // 1. Cloud Realtime Database primary for Vercel & cross-device
+  try {
+    const cloudRegs = await fetchCloudRegistrations();
+    if (cloudRegs && Array.isArray(cloudRegs) && cloudRegs.length > 0) {
+      localStorage.setItem('atideto_registrations', JSON.stringify(cloudRegs));
+      return cloudRegs;
+    }
+  } catch (err) {
+    console.warn('[API] Cloud registrations fetch notice:', err);
+  }
+
+  // 2. REST API secondary
   try {
     const res = await fetch(`${API_BASE}/registrations`);
     if (res.ok) {
@@ -917,6 +935,7 @@ export async function getRegistrationsFromDb() {
           createdAt: r.created_at
         }));
         localStorage.setItem('atideto_registrations', JSON.stringify(mapped));
+        saveCloudRegistrations(mapped);
         return mapped;
       }
     }
@@ -979,6 +998,13 @@ export async function submitRegistrationToDb(data: any) {
     feeTotal: data.feeTotal || 'To Be Decided by Admin'
   });
 
+  // Cloud RTDB instant sync
+  try {
+    const existingRegs = await getRegistrationsFromDb();
+    const nextRegs = [registrationPayload, ...existingRegs.filter((r: any) => r.regId !== regId && r.id !== regId)];
+    saveCloudRegistrations(nextRegs);
+  } catch {}
+
   try {
     const res = await fetch(`${API_BASE}/registrations`, {
       method: 'POST',
@@ -998,6 +1024,13 @@ export async function submitRegistrationToDb(data: any) {
 
 export async function updateRegistrationStatusInDb(regId: string, updates: any) {
   try {
+    const regs = await getRegistrationsFromDb();
+    const next = regs.map((r: any) => (r.regId === regId || r.id === regId) ? { ...r, ...updates } : r);
+    localStorage.setItem('atideto_registrations', JSON.stringify(next));
+    saveCloudRegistrations(next);
+  } catch {}
+
+  try {
     const res = await fetch(`${API_BASE}/registrations/${encodeURIComponent(regId)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -1011,6 +1044,13 @@ export async function updateRegistrationStatusInDb(regId: string, updates: any) 
 }
 
 export async function deleteRegistrationInDb(regId: string) {
+  try {
+    const regs = await getRegistrationsFromDb();
+    const next = regs.filter((r: any) => r.regId !== regId && r.id !== regId);
+    localStorage.setItem('atideto_registrations', JSON.stringify(next));
+    saveCloudRegistrations(next);
+  } catch {}
+
   try {
     const res = await fetch(`${API_BASE}/registrations/${encodeURIComponent(regId)}`, {
       method: 'DELETE'
@@ -1043,6 +1083,18 @@ export async function getCrmDataFromDb() {
 }
 
 export async function getClientsFromDb() {
+  // 1. Cloud Realtime Database primary
+  try {
+    const cloudClients = await fetchCloudClients();
+    if (cloudClients && Array.isArray(cloudClients) && cloudClients.length > 0) {
+      saveStoredClients(cloudClients);
+      return cloudClients;
+    }
+  } catch (err) {
+    console.warn('[API] Cloud clients fetch notice:', err);
+  }
+
+  // 2. REST API secondary
   try {
     const res = await fetch(`${API_BASE}/clients`);
     if (res.ok) {
@@ -1062,6 +1114,7 @@ export async function getClientsFromDb() {
           pipelineStatus: r.pipeline_status
         }));
         saveStoredClients(mapped);
+        saveCloudClients(mapped);
         return mapped;
       }
     }
@@ -1075,6 +1128,7 @@ export async function createClientInDb(data: any) {
   const clients = getStoredClients();
   const next = [data, ...clients];
   saveStoredClients(next);
+  saveCloudClients(next);
   try {
     const res = await fetch(`${API_BASE}/clients`, {
       method: 'POST',
@@ -1089,7 +1143,8 @@ export async function createClientInDb(data: any) {
 }
 
 export async function updateClientInDb(clientId: string, data: any) {
-  updateClientInRegistry(clientId, data);
+  const updated = updateClientInRegistry(clientId, data);
+  saveCloudClients(updated);
   try {
     const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`, {
       method: 'PUT',
@@ -1104,7 +1159,8 @@ export async function updateClientInDb(clientId: string, data: any) {
 }
 
 export async function deleteClientFromDb(clientId: string) {
-  removeClientFromRegistry(clientId);
+  const updated = removeClientFromRegistry(clientId);
+  saveCloudClients(updated);
   try {
     const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`, {
       method: 'DELETE'
@@ -1117,6 +1173,18 @@ export async function deleteClientFromDb(clientId: string) {
 }
 
 export async function getStaffFromDb() {
+  // 1. Cloud Realtime Database primary
+  try {
+    const cloudStaff = await fetchCloudStaff();
+    if (cloudStaff && Array.isArray(cloudStaff) && cloudStaff.length > 0) {
+      localStorage.setItem('atideto_staff_cache', JSON.stringify(cloudStaff));
+      return cloudStaff;
+    }
+  } catch (err) {
+    console.warn('[API] Cloud staff fetch notice:', err);
+  }
+
+  // 2. REST API secondary
   try {
     const res = await fetch(`${API_BASE}/staff`);
     if (res.ok) {
@@ -1153,6 +1221,7 @@ export async function getStaffFromDb() {
           other_socials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || [])
         }));
         localStorage.setItem('atideto_staff_cache', JSON.stringify(mapped));
+        saveCloudStaff(mapped);
         return mapped;
       }
     }
@@ -1171,6 +1240,7 @@ export async function createStaffInDb(data: any) {
   const staff = await getStaffFromDb();
   const next = [data, ...staff];
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
+  saveCloudStaff(next);
   try {
     const res = await fetch(`${API_BASE}/staff`, {
       method: 'POST',
@@ -1188,6 +1258,7 @@ export async function updateStaffInDb(id: string | number, data: any) {
   const staff = await getStaffFromDb();
   const next = staff.map((s: any) => (s.id === id || s.emp_id === id || s.empId === id) ? { ...s, ...data } : s);
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
+  saveCloudStaff(next);
   try {
     const res = await fetch(`${API_BASE}/staff/${encodeURIComponent(String(id))}`, {
       method: 'PUT',
@@ -1205,6 +1276,7 @@ export async function deleteStaffInDb(id: string | number) {
   const staff = await getStaffFromDb();
   const next = staff.filter((s: any) => s.id !== id && s.emp_id !== id);
   localStorage.setItem('atideto_staff_cache', JSON.stringify(next));
+  saveCloudStaff(next);
   try {
     const res = await fetch(`${API_BASE}/staff/${encodeURIComponent(String(id))}`, {
       method: 'DELETE'
@@ -1217,6 +1289,18 @@ export async function deleteStaffInDb(id: string | number) {
 }
 
 export async function getPaymentsFromDb() {
+  // 1. Cloud Realtime Database primary
+  try {
+    const cloudPayments = await fetchCloudPayments();
+    if (cloudPayments && Array.isArray(cloudPayments) && cloudPayments.length > 0) {
+      localStorage.setItem('atideto_payments_cache', JSON.stringify(cloudPayments));
+      return cloudPayments;
+    }
+  } catch (err) {
+    console.warn('[API] Cloud payments fetch notice:', err);
+  }
+
+  // 2. REST API secondary
   try {
     const res = await fetch(`${API_BASE}/payments`);
     if (res.ok) {
@@ -1233,6 +1317,7 @@ export async function getPaymentsFromDb() {
           date: r.date
         }));
         localStorage.setItem('atideto_payments_cache', JSON.stringify(mapped));
+        saveCloudPayments(mapped);
         return mapped;
       }
     }
@@ -1251,6 +1336,7 @@ export async function recordPaymentInDb(data: any) {
   const payments = await getPaymentsFromDb();
   const next = [data, ...payments];
   localStorage.setItem('atideto_payments_cache', JSON.stringify(next));
+  saveCloudPayments(next);
   window.dispatchEvent(new Event('atideto_payment_update'));
   try {
     const res = await fetch(`${API_BASE}/payments`, {
@@ -1267,14 +1353,61 @@ export async function recordPaymentInDb(data: any) {
 
 export async function verifyCertificateFromDb(query: string): Promise<{ success: boolean; verified: boolean; source?: string; student?: any; certificate?: any; message?: string } | null> {
   if (!query || !query.trim()) return null;
-  const target = `/api/verify/${encodeURIComponent(query.trim())}`;
+  const clean = query.trim().toUpperCase();
+  const target = `/api/verify/${encodeURIComponent(clean)}`;
+
+  // 1. Try server endpoint
   try {
-    const res = await fetch(`${API_BASE}/verify/${encodeURIComponent(query.trim())}`);
-    if (res.ok) return await res.json();
+    const res = await fetch(`${API_BASE}/verify/${encodeURIComponent(clean)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success) return data;
+    }
   } catch {}
+
   try {
     const res = await fetch(`http://localhost:5000${target}`);
-    if (res.ok) return await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success) return data;
+    }
   } catch {}
+
+  // 2. Cloud RTDB lookup (Guaranteed on Vercel across mobile devices)
+  try {
+    const cloudStudents = await fetchCloudStudents();
+    if (cloudStudents && cloudStudents.length > 0) {
+      const match = cloudStudents.find(s =>
+        (s.certId && s.certId.toUpperCase() === clean) ||
+        (s.id && s.id.toUpperCase() === clean) ||
+        (s.studentId && s.studentId.toUpperCase() === clean) ||
+        (s.offerNo && s.offerNo.toUpperCase() === clean) ||
+        (s.email && s.email.toUpperCase() === clean) ||
+        (s.name && s.name.toUpperCase() === clean)
+      );
+
+      if (match) {
+        return {
+          success: true,
+          verified: true,
+          source: 'cloud_rtdb',
+          student: match,
+          certificate: {
+            certId: match.certId,
+            studentName: match.name,
+            courseName: match.domain || match.course,
+            issueDate: match.issueDate,
+            startDate: match.startDate,
+            endDate: match.endDate,
+            duration: match.duration,
+            status: match.status
+          }
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[API] verifyCertificateFromDb Cloud RTDB notice:', err);
+  }
+
   return null;
 }

@@ -54,8 +54,7 @@ import { useNavigate } from 'react-router-dom';
 import atidetoWordmark from '@/assets/atideto/atideto.png';
 import atidetoLogo from '@/assets/atideto/logo.png';
 import { toast } from 'sonner';
-import StepperRegistrationModal from '@/components/registration/StepperRegistrationModal';
-import { getStudentsFromDb } from '@/lib/api';
+import { getStudentsFromDb, subscribeToCloudSync } from '@/lib/api';
 import { 
   getStoredStudents, 
   getVerificationUrl, 
@@ -445,22 +444,18 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
     };
 
     fetchAndSyncStudent();
-    const interval = setInterval(fetchAndSyncStudent, 10000);
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') fetchAndSyncStudent();
-    };
-
+    const unsubscribeCloud = subscribeToCloudSync(() => {
+      fetchAndSyncStudent();
+    });
     window.addEventListener('atideto-students-updated', fetchAndSyncStudent);
+    window.addEventListener('atideto_students_updated', fetchAndSyncStudent);
     window.addEventListener('atideto_payment_update', fetchAndSyncStudent);
-    window.addEventListener('focus', fetchAndSyncStudent);
-    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      unsubscribeCloud();
       window.removeEventListener('atideto-students-updated', fetchAndSyncStudent);
+      window.removeEventListener('atideto_students_updated', fetchAndSyncStudent);
       window.removeEventListener('atideto_payment_update', fetchAndSyncStudent);
-      window.removeEventListener('focus', fetchAndSyncStudent);
-      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [user]);
 
