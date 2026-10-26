@@ -124,6 +124,7 @@ import {
   deduplicateAndMergeStudents,
   StudentCohortRecord 
 } from '@/lib/certificateStore';
+import { calculateDurationFromDates } from '@/constants/registrationOptions';
 
 interface AdminErpProps {
   user: {
@@ -633,10 +634,20 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
   // Workable Student Registered Internship Details Update Handler (Persisted to Database)
   const handleUpdateStudentInternship = async (studentId: string, updates: { domain?: string; startDate?: string; endDate?: string; duration?: string; status?: string }) => {
-    const updated = updateStudentInRegistry(studentId, updates as any);
+    const existing = students.find(s => s.id === studentId);
+    const finalStart = updates.startDate ?? existing?.startDate ?? '';
+    const finalEnd = updates.endDate ?? existing?.endDate ?? '';
+    let duration = updates.duration;
+    if (!duration && finalStart && finalEnd) {
+      const calculated = calculateDurationFromDates(finalStart, finalEnd);
+      if (calculated) duration = calculated;
+    }
+    const finalUpdates = { ...updates, ...(duration ? { duration } : {}) };
+
+    const updated = updateStudentInRegistry(studentId, finalUpdates as any);
     setStudents(updated);
     try {
-      await updateStudentInDb(studentId, updates);
+      await updateStudentInDb(studentId, finalUpdates);
     } catch (e) {
       console.warn('Internship DB update notice:', e);
     }
@@ -3257,8 +3268,15 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                             <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
                               <input
                                 type="date"
-                                value={s.startDate || '2026-06-01'}
-                                onChange={(e) => handleUpdateStudentInternship(s.id, { startDate: e.target.value })}
+                                value={s.startDate || '2026-10-25'}
+                                onChange={(e) => {
+                                  const newStart = e.target.value;
+                                  const calcDur = calculateDurationFromDates(newStart, s.endDate || '');
+                                  handleUpdateStudentInternship(s.id, {
+                                    startDate: newStart,
+                                    ...(calcDur ? { duration: calcDur } : {})
+                                  });
+                                }}
                                 className="w-full px-2 py-1 text-xs font-mono font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A] focus:outline-none focus:border-black"
                               />
                             </td>
@@ -3266,16 +3284,23 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                               <input
                                 type="date"
                                 value={s.endDate || '2027-01-25'}
-                                onChange={(e) => handleUpdateStudentInternship(s.id, { endDate: e.target.value })}
+                                onChange={(e) => {
+                                  const newEnd = e.target.value;
+                                  const calcDur = calculateDurationFromDates(s.startDate || '', newEnd);
+                                  handleUpdateStudentInternship(s.id, {
+                                    endDate: newEnd,
+                                    ...(calcDur ? { duration: calcDur } : {})
+                                  });
+                                }}
                                 className="w-full px-2 py-1 text-xs font-mono font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A] focus:outline-none focus:border-black"
                               />
                             </td>
                             <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
                               <input
                                 type="text"
-                                value={s.duration || '30 days'}
+                                value={s.duration || '3 Months'}
                                 onChange={(e) => handleUpdateStudentInternship(s.id, { duration: e.target.value })}
-                                placeholder="e.g. 30 days"
+                                placeholder="e.g. 3 Months"
                                 className="w-full px-2 py-1 text-xs font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A] focus:outline-none focus:border-black"
                               />
                             </td>
@@ -3393,23 +3418,37 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                           <div className="grid grid-cols-2 gap-2">
                             <div>
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                                Start Date
+                                Start Date (Manual)
                               </label>
                               <input
                                 type="date"
-                                value={s.startDate || '2026-06-01'}
-                                onChange={(e) => handleUpdateStudentInternship(s.id, { startDate: e.target.value })}
+                                value={s.startDate || '2026-10-25'}
+                                onChange={(e) => {
+                                  const newStart = e.target.value;
+                                  const calcDur = calculateDurationFromDates(newStart, s.endDate || '');
+                                  handleUpdateStudentInternship(s.id, {
+                                    startDate: newStart,
+                                    ...(calcDur ? { duration: calcDur } : {})
+                                  });
+                                }}
                                 className="w-full px-2 py-1 text-xs font-mono font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A]"
                               />
                             </div>
                             <div>
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                                End Date
+                                End Date (Manual)
                               </label>
                               <input
                                 type="date"
                                 value={s.endDate || '2027-01-25'}
-                                onChange={(e) => handleUpdateStudentInternship(s.id, { endDate: e.target.value })}
+                                onChange={(e) => {
+                                  const newEnd = e.target.value;
+                                  const calcDur = calculateDurationFromDates(s.startDate || '', newEnd);
+                                  handleUpdateStudentInternship(s.id, {
+                                    endDate: newEnd,
+                                    ...(calcDur ? { duration: calcDur } : {})
+                                  });
+                                }}
                                 className="w-full px-2 py-1 text-xs font-mono font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A]"
                               />
                             </div>
@@ -3418,14 +3457,14 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                           <div className="grid grid-cols-2 gap-2">
                             <div>
                               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                                Duration
+                                Duration (Calculated)
                               </label>
                               <input
                                 type="text"
-                                value={s.duration || '30 days'}
+                                value={s.duration || '3 Months'}
                                 onChange={(e) => handleUpdateStudentInternship(s.id, { duration: e.target.value })}
                                 className="w-full px-2 py-1 text-xs font-medium rounded-lg border border-[#CBD5E1] bg-white text-[#0F172A]"
-                                placeholder="e.g. 30 days"
+                                placeholder="e.g. 3 Months"
                               />
                             </div>
                             <div>
@@ -8268,29 +8307,88 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                     })()}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase text-[#64748B]">Course Start Date</label>
-                      <input
-                        type="text"
-                        value={editStudentForm.startDate}
-                        onChange={(e) => setEditStudentForm({ ...editStudentForm, startDate: e.target.value })}
-                        placeholder="e.g. 25 Oct 2026"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-blue-600 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-xs"
-                      />
+                  {/* INTERNSHIP COURSE DATES & CALCULATED DURATION */}
+                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                        <Calendar size={13} className="text-blue-600" />
+                        <span>Internship Course Tenure & Duration</span>
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                        Auto-Calculated
+                      </span>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[11px] font-extrabold uppercase text-[#64748B]">Enrollment Status</label>
-                      <select
-                        value={editStudentForm.status}
-                        onChange={(e) => setEditStudentForm({ ...editStudentForm, status: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 shadow-xs"
-                      >
-                        <option value="Verified Enrolled">Verified Enrolled</option>
-                        <option value="Active">Active</option>
-                        <option value="Completed">Completed</option>
-                        <option value="On Hold">On Hold</option>
-                      </select>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-slate-500">Course Start Date (Manual)</label>
+                        <input
+                          type="date"
+                          value={editStudentForm.startDate || ''}
+                          onChange={(e) => {
+                            const newStart = e.target.value;
+                            const calc = calculateDurationFromDates(newStart, editStudentForm.endDate || '');
+                            setEditStudentForm({
+                              ...editStudentForm,
+                              startDate: newStart,
+                              ...(calc ? { duration: calc } : {})
+                            });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-slate-500">Course End Date (Manual)</label>
+                        <input
+                          type="date"
+                          value={editStudentForm.endDate || ''}
+                          onChange={(e) => {
+                            const newEnd = e.target.value;
+                            const calc = calculateDurationFromDates(editStudentForm.startDate || '', newEnd);
+                            setEditStudentForm({
+                              ...editStudentForm,
+                              endDate: newEnd,
+                              ...(calc ? { duration: calc } : {})
+                            });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-bold uppercase text-slate-500">Duration (Calculated)</label>
+                          {editStudentForm.startDate && editStudentForm.endDate && (
+                            <span className="text-[9px] font-bold text-emerald-600">
+                              {calculateDurationFromDates(editStudentForm.startDate, editStudentForm.endDate)}
+                            </span>
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={editStudentForm.duration || '3 Months'}
+                          onChange={(e) => setEditStudentForm({ ...editStudentForm, duration: e.target.value })}
+                          placeholder="e.g. 3 Months, 30 Days"
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-blue-600 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-slate-500">Enrollment Status</label>
+                        <select
+                          value={editStudentForm.status}
+                          onChange={(e) => setEditStudentForm({ ...editStudentForm, status: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-blue-600 shadow-2xs"
+                        >
+                          <option value="Verified Enrolled">Verified Enrolled</option>
+                          <option value="Active">Active</option>
+                          <option value="Completed">Completed</option>
+                          <option value="On Hold">On Hold</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 

@@ -1287,11 +1287,14 @@ export function findStudentOrCertificate(query: string): StudentCohortRecord | n
   if (!query) return null;
   const q = query.trim().toLowerCase();
   const qClean = q.replace(/[^a-z0-9]/g, '');
+  if (!qClean || qClean === '-' || q === '---' || q.length < 2) return null;
+
   const list = getStoredStudents();
 
-  // 1. Exact match
+  // 1. Exact match by certId, studentId, email, offerNo, or full name
   const exact = list.find(s => 
     s.id.toLowerCase() === q ||
+    (s.studentId && s.studentId.toLowerCase() === q) ||
     s.certId.toLowerCase() === q ||
     s.email.toLowerCase() === q ||
     s.name.toLowerCase() === q ||
@@ -1299,27 +1302,37 @@ export function findStudentOrCertificate(query: string): StudentCohortRecord | n
   );
   if (exact) return exact;
 
-  // 2. Alphanumeric stripped match
-  const stripped = list.find(s => 
-    s.certId.toLowerCase().replace(/[^a-z0-9]/g, '') === qClean ||
-    s.id.toLowerCase().replace(/[^a-z0-9]/g, '') === qClean
-  );
-  if (stripped) return stripped;
-
-  // 3. Suffix match (e.g. matching 0001 or 2026-0001 across ATD-INT-2026-0001 and AT-IC-MER-2026-0001)
-  const qDigits = q.replace(/[^0-9]/g, '');
-  if (qDigits.length >= 2) {
-    const suffixNum = qDigits.slice(-4);
-    const suffixMatch = list.find(s => {
-      const sDigits = (s.certId + s.id).replace(/[^0-9]/g, '');
-      return sDigits.endsWith(suffixNum) || s.certId.toLowerCase().includes(suffixNum);
-    });
-    if (suffixMatch) return suffixMatch;
+  // 2. Alphanumeric stripped match (e.g. ATDINT20260001, ATICMER20260001, ATMEC202701)
+  if (qClean.length >= 6) {
+    const stripped = list.find(s => 
+      s.certId.toLowerCase().replace(/[^a-z0-9]/g, '') === qClean ||
+      s.id.toLowerCase().replace(/[^a-z0-9]/g, '') === qClean ||
+      (s.studentId && s.studentId.toLowerCase().replace(/[^a-z0-9]/g, '') === qClean)
+    );
+    if (stripped) return stripped;
   }
 
-  // 4. Name fuzzy/includes match
-  if (q.length >= 3) {
-    const nameMatch = list.find(s => s.name.toLowerCase().includes(q));
+  // 3. Qualified 4-box / cohort sequence match (e.g. 2026-0004 or MER-2026-0004)
+  if (q.includes('-') || q.includes(' ')) {
+    const parts = q.split(/[-/\s]+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const lastPart = parts[parts.length - 1];
+      const secondLast = parts[parts.length - 2];
+      if (/^\d{4}$/.test(secondLast) && /^\d{1,4}$/.test(lastPart)) {
+        const rollFormatted = lastPart.padStart(4, '0');
+        const match = list.find(s => {
+          const sCert = s.certId.toLowerCase();
+          const sId = s.id.toLowerCase();
+          return (sCert.includes(`${secondLast}-${rollFormatted}`) || sCert.endsWith(rollFormatted) || sId.endsWith(lastPart));
+        });
+        if (match) return match;
+      }
+    }
+  }
+
+  // 4. Full Name match (at least 4 characters)
+  if (q.length >= 4 && !/^\d+$/.test(q)) {
+    const nameMatch = list.find(s => s.name.toLowerCase() === q || s.name.toLowerCase().startsWith(q));
     if (nameMatch) return nameMatch;
   }
 

@@ -72,7 +72,7 @@ function fmtDate(iso: string) {
 }
 
 function splitIdInto4Boxes(raw: string): [string, string, string, string] {
-  if (!raw) return ['ATD', 'INT', '2026', '0001'];
+  if (!raw || !raw.trim()) return ['', '', '', ''];
   const cleaned = raw.trim();
   const parts = cleaned.split(/[-/\s]+/).filter(Boolean);
   if (parts.length >= 4) {
@@ -82,15 +82,15 @@ function splitIdInto4Boxes(raw: string): [string, string, string, string] {
     return [parts[0].toUpperCase(), parts[1].toUpperCase(), parts[2].toUpperCase(), parts[3].toUpperCase()];
   }
   if (parts.length === 3) {
-    return [parts[0].toUpperCase(), parts[1].toUpperCase(), '2026', parts[2].toUpperCase()];
+    return [parts[0].toUpperCase(), parts[1].toUpperCase(), parts[2].toUpperCase(), ''];
   }
   if (parts.length === 2) {
-    return [parts[0].toUpperCase(), 'INT', '2026', parts[1].toUpperCase()];
+    return [parts[0].toUpperCase(), parts[1].toUpperCase(), '', ''];
   }
   if (parts.length === 1) {
-    return [parts[0].toUpperCase(), 'INT', '2026', '0001'];
+    return [parts[0].toUpperCase(), '', '', ''];
   }
-  return ['ATD', 'INT', '2026', '0001'];
+  return ['', '', '', ''];
 }
 
 export default function StudentVerify() {
@@ -112,9 +112,12 @@ export default function StudentVerify() {
 
   // Camera scanner states
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const scanCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
   const [searchInput, setSearchInput] = useState(paramId);
   const [searchedId, setSearchedId] = useState(paramId);
@@ -157,37 +160,78 @@ export default function StudentVerify() {
   const fitScale = Math.min(1, Math.max(0.15, availWidth / baseWidth));
   const effectiveScale = fitScale;
 
-  // Auto-verify if ID provided in URL, OR fetch fresh data from MySQL on mount
+  // Auto-verify if ID provided in URL on mount
   useEffect(() => {
     if (paramId) {
       performVerification(paramId);
-    } else {
-      // Fetch fresh student data from MySQL on mount (no ID = show all / search)
-      const fetchInitialData = async () => {
-        try {
-          const result = await verifyCertificateFromDb('');
-          // result may be null if no query, that's OK - just ensures API is contacted
-        } catch (e: any) {
-          console.warn('[StudentVerify] Initial API fetch failed, falling back to local:', e?.message || e);
-        }
-      };
-      fetchInitialData();
     }
   }, []);
 
-  const performVerification = (idToVerify: string) => {
+  const handleClear = () => {
+    setBoxValues(['', '', '', '']);
+    setSearchInput('');
+    setSearchedId('');
+    setCertificateData(null);
+    setHasSearched(false);
+    setQrCodeUrl('');
+    box0Ref.current?.focus();
+  };
+
+  const performVerification = async (idToVerify: string) => {
     const cleanId = idToVerify.trim();
-    if (!cleanId) return;
+    if (!cleanId) {
+      handleClear();
+      return;
+    }
 
     setIsLoading(true);
     setHasSearched(true);
     setSearchedId(cleanId);
     setBoxValues(splitIdInto4Boxes(cleanId));
 
-    setTimeout(() => {
-      const match = findStudentOrCertificate(cleanId);
+    try {
+      // 1. Authoritative verification from MySQL database first
+      const dbRes = await verifyCertificateFromDb(cleanId);
+      let match: StudentCohortRecord | null = null;
+
+      if (dbRes && dbRes.verified && dbRes.student) {
+        const s = dbRes.student;
+        match = {
+          id: s.id || s.studentId,
+          studentId: s.studentId || s.id,
+          name: s.name,
+          email: s.email || '',
+          phone: s.phone || '',
+          college: s.college || 'Mahendra Engineering College',
+          degree: s.degree || 'B.Tech Information Technology',
+          gradYear: s.gradYear || '2027',
+          course: s.course || s.domain || 'Full Stack Web Development',
+          domain: s.domain || s.course || 'Full Stack Web Development',
+          startDate: s.startDate || s.joiningDate || '2026-10-25',
+          endDate: s.endDate || s.completionDate || '2027-01-25',
+          duration: s.duration || '3 Months',
+          mentor: s.mentor || 'Karthik Ramanathan (AI & Web Lead)',
+          attendance: Number(s.attendance) || 98,
+          score: Number(s.score) || 95,
+          feePaid: s.feePaid || '₹0',
+          feeTotal: s.feeTotal || '₹700',
+          paymentStatus: s.paymentStatus || 'Paid',
+          certId: s.certId || cleanId,
+          offerNo: s.offerNo || '',
+          issueDate: s.completionDate || s.issueDate || '2026-10-25',
+          status: (s.status as any) || 'active',
+          tools: s.tools || ['React', 'Node.js', 'Express', 'MongoDB'],
+          area: s.area || ['Full Stack', 'Web Development'],
+          certHold: !!s.certHold
+        };
+      }
+
+      // 2. If not found in live database (or server offline), fallback to client registry
+      if (!match) {
+        match = findStudentOrCertificate(cleanId);
+      }
+
       setCertificateData(match);
-      setIsLoading(false);
 
       if (match) {
         toast.success(`Authentic Certificate verified for ${match.name}`);
@@ -203,7 +247,18 @@ export default function StudentVerify() {
       } else {
         toast.error(`No official certificate found matching "${cleanId}"`);
       }
-    }, 350);
+    } catch (err: any) {
+      console.warn('[StudentVerify] Verification error, checking local store:', err);
+      const fallback = findStudentOrCertificate(cleanId);
+      setCertificateData(fallback);
+      if (fallback) {
+        toast.success(`Authentic Certificate verified for ${fallback.name}`);
+      } else {
+        toast.error(`No official certificate found matching "${cleanId}"`);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleBoxChange = (index: number, val: string) => {
@@ -215,6 +270,15 @@ export default function StudentVerify() {
       const next = [...boxValues] as [string, string, string, string];
       next[index] = cleanPiece;
       setBoxValues(next);
+
+      // If all boxes are cleared, immediately hide any old certificate data
+      if (!next.some(Boolean)) {
+        setCertificateData(null);
+        setHasSearched(false);
+        setSearchedId('');
+        setQrCodeUrl('');
+      }
+
       if (index < 3) {
         boxRefs[index + 1].current?.focus();
       }
@@ -224,6 +288,14 @@ export default function StudentVerify() {
     const next = [...boxValues] as [string, string, string, string];
     next[index] = upper;
     setBoxValues(next);
+
+    // If all boxes are cleared, immediately hide any old certificate data
+    if (!next.some(Boolean)) {
+      setCertificateData(null);
+      setHasSearched(false);
+      setSearchedId('');
+      setQrCodeUrl('');
+    }
 
     const maxLens = [5, 4, 4, 4];
     if (upper.length >= maxLens[index] && index < 3) {
@@ -267,16 +339,31 @@ export default function StudentVerify() {
     performVerification(combined);
   };
 
-  // Camera Scanner Handlers
-  const startCamera = async () => {
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CAMERA SCANNER HANDLERS (With Hardware BarcodeDetector + jsQR Fallback)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsScanning(false);
+    setCameraActive(false);
+  };
+
+  const startCamera = async (facing: 'environment' | 'user' = facingMode) => {
+    stopCamera();
     setCameraError(null);
     setIsScanning(true);
     try {
       let stream: MediaStream;
       try {
-        // Prefer rear/environment camera on mobile
+        // First try requested facing mode (ideal for mobile back camera)
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          video: { facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 720 } }
         });
       } catch {
         // Fallback to any available video source (e.g. laptop webcam)
@@ -285,25 +372,26 @@ export default function StudentVerify() {
         });
       }
 
+      streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.muted = true;
         await videoRef.current.play().catch(e => console.warn('[StudentVerify] Video play prevented:', e));
+        setCameraActive(true);
       }
     } catch (err: any) {
       console.warn('[StudentVerify] Camera stream error:', err);
       setCameraError('Camera access was not permitted or is unavailable on this device. You can upload a photo of the QR code below.');
       setIsScanning(false);
+      setCameraActive(false);
     }
   };
 
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    setIsScanning(false);
+  const toggleCameraFacing = () => {
+    const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextFacing);
+    startCamera(nextFacing);
   };
 
   // Auto clean-up camera when unmounting
@@ -313,13 +401,16 @@ export default function StudentVerify() {
     };
   }, []);
 
-  // Auto-start camera when switching to scan mode
+  // Handle mode change
   useEffect(() => {
     if (verifyMode === 'scan') {
-      startCamera();
+      startCamera(facingMode);
     } else {
       stopCamera();
     }
+    return () => {
+      stopCamera();
+    };
   }, [verifyMode]);
 
   const handleScannedText = (scannedRaw: string) => {
@@ -351,12 +442,12 @@ export default function StudentVerify() {
     performVerification(extractedId);
   };
 
-  // Universal jsQR Frame Decoding Loop
+  // Continuous Camera QR Frame Decoding Loop
   useEffect(() => {
     if (!isScanning) return;
     let animId: number;
 
-    const checkFrame = () => {
+    const checkFrame = async () => {
       const video = videoRef.current;
       if (
         video &&
@@ -365,9 +456,25 @@ export default function StudentVerify() {
         video.videoHeight > 0
       ) {
         try {
+          // 1. Try Hardware-accelerated BarcodeDetector API if available
+          if ('BarcodeDetector' in window) {
+            try {
+              const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+              const barcodes = await detector.detect(video);
+              if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                toast.success('QR Code detected & verified!');
+                stopCamera();
+                handleScannedText(barcodes[0].rawValue);
+                return;
+              }
+            } catch {}
+          }
+
+          // 2. Fallback to universal jsQR Canvas Analysis
           let canvas = scanCanvasRef.current;
           if (!canvas) {
             canvas = document.createElement('canvas');
+            scanCanvasRef.current = canvas;
           }
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
@@ -380,8 +487,8 @@ export default function StudentVerify() {
             });
             if (code && code.data && code.data.trim()) {
               toast.success('QR Code detected & verified!');
-              handleScannedText(code.data);
               stopCamera();
+              handleScannedText(code.data);
               return;
             }
           }
@@ -446,6 +553,8 @@ export default function StudentVerify() {
     e.preventDefault();
     if (searchInput.trim()) {
       performVerification(searchInput.trim());
+    } else {
+      handleClear();
     }
   };
 
@@ -635,10 +744,7 @@ export default function StudentVerify() {
 
                 <button
                   type="button"
-                  onClick={() => {
-                    setBoxValues(['', '', '', '']);
-                    box0Ref.current?.focus();
-                  }}
+                  onClick={handleClear}
                   className="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-800"
                 >
                   <RotateCcw size={14} />
@@ -695,7 +801,7 @@ export default function StudentVerify() {
                     <p className="text-xs text-slate-300 font-medium">Camera is paused</p>
                     <button
                       type="button"
-                      onClick={startCamera}
+                      onClick={() => startCamera(facingMode)}
                       className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
                     >
                       <Camera size={14} />
@@ -724,6 +830,16 @@ export default function StudentVerify() {
                   />
                 </label>
 
+                <button
+                  type="button"
+                  onClick={toggleCameraFacing}
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer border border-slate-800 flex items-center gap-1.5"
+                  title="Switch between front and rear cameras"
+                >
+                  <RefreshCw size={14} className="text-blue-400" />
+                  <span>Flip Camera</span>
+                </button>
+
                 {isScanning ? (
                   <button
                     type="button"
@@ -735,7 +851,7 @@ export default function StudentVerify() {
                 ) : (
                   <button
                     type="button"
-                    onClick={startCamera}
+                    onClick={() => startCamera(facingMode)}
                     className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
                   >
                     Resume Camera

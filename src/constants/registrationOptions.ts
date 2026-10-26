@@ -410,7 +410,71 @@ export function calculateAutomaticEndDate(startDateStr: string, durationStr: str
  */
 export function formatFriendlyDate(dateStr: string): string {
   if (!dateStr) return '';
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
+  const date = parseDateFlexible(dateStr);
+  if (!date || isNaN(date.getTime())) return dateStr;
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+/**
+ * Flexible date parser for YYYY-MM-DD, DD-MM-YYYY, or human-readable formats (e.g. "25 Oct 2026")
+ */
+export function parseDateFlexible(dateStr: string): Date | null {
+  if (!dateStr || !dateStr.trim()) return null;
+  const s = dateStr.trim();
+
+  // Try standard ISO date constructor
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+
+  // Try parsing DD-MM-YYYY or DD/MM/YYYY
+  const parts = s.split(/[-/.\s]+/);
+  if (parts.length === 3) {
+    if (parts[2].length === 4) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      const test = new Date(year, month, day);
+      if (!isNaN(test.getTime())) return test;
+    }
+  }
+  return null;
+}
+
+/**
+ * Automatically calculates human-readable duration from manual course start date and end date.
+ * e.g., difference between 2026-10-25 and 2027-01-25 -> "3 Months"
+ */
+export function calculateDurationFromDates(startDateStr: string, endDateStr: string): string {
+  if (!startDateStr || !endDateStr) return '';
+  const start = parseDateFlexible(startDateStr);
+  const end = parseDateFlexible(endDateStr);
+  if (!start || !end) return '';
+
+  const diffMs = end.getTime() - start.getTime();
+  if (diffMs <= 0) return '0 Days';
+
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 7) return '7 Days';
+  if (diffDays === 14 || diffDays === 15) return '15 Days';
+  if (diffDays >= 28 && diffDays <= 32) return '1 Month';
+  if (diffDays >= 58 && diffDays <= 62) return '2 Months';
+  if (diffDays >= 88 && diffDays <= 93) return '3 Months';
+  if (diffDays >= 118 && diffDays <= 123) return '4 Months';
+  if (diffDays >= 148 && diffDays <= 153) return '5 Months';
+  if (diffDays >= 178 && diffDays <= 185) return '6 Months';
+
+  // Check if roughly multiples of 30 days
+  const approxMonths = Math.round(diffDays / 30);
+  if (approxMonths > 0 && Math.abs(diffDays - approxMonths * 30) <= 2) {
+    return `${approxMonths} Months`;
+  }
+
+  // Weeks check
+  if (diffDays % 7 === 0 && diffDays < 60) {
+    const weeks = diffDays / 7;
+    return `${weeks} Week${weeks > 1 ? 's' : ''}`;
+  }
+
+  return `${diffDays} Days`;
 }

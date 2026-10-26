@@ -23,6 +23,7 @@ import {
   WEBSITE_UPSKILL_PROGRAMS,
   DURATION_OPTIONS,
   calculateAutomaticEndDate,
+  calculateDurationFromDates,
   formatFriendlyDate
 } from '@/constants/registrationOptions';
 
@@ -1019,84 +1020,111 @@ export default function StepperRegistrationModal({
                   {/* Start Date */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0A0A0A] flex items-center gap-1">
-                      Expected Batch Start Date <span className="text-[#0066FF]">*</span>
+                      Course Start Date (Manual) <span className="text-[#0066FF]">*</span>
                     </label>
                     <input
                       type="date"
                       value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        const calcDur = calculateDurationFromDates(newStart, formData.endDate || calculatedEndDate);
+                        setFormData({
+                          ...formData,
+                          startDate: newStart,
+                          ...(calcDur ? { duration: calcDur } : {})
+                        });
+                      }}
                       className="w-full px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] text-sm text-[#0A0A0A] focus:outline-none focus:border-[#0066FF] cursor-pointer"
                     />
                     <p className="text-[11px] text-[#64748B]">Select batch start from calendar</p>
                   </div>
 
-                  {/* Duration */}
+                  {/* End Date (Manual) */}
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-[#0A0A0A] flex items-center gap-1">
-                      Duration <span className="text-[#0066FF]">*</span>
+                      Course End Date (Manual) <span className="text-[#0066FF]">*</span>
                     </label>
-                    <select
-                      value={formData.duration}
-                      onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] text-xs font-bold text-[#0A0A0A] focus:outline-none focus:border-[#0066FF] cursor-pointer"
-                    >
-                      {DURATION_OPTIONS.map((d) => (
-                        <option key={d.value} value={d.value}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                    {(formData.duration === 'Other' || formData.duration === 'Other Duration (Type Below)') && (
-                      <input
-                        type="text"
-                        value={formData.customDuration || ''}
-                        onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
-                        placeholder="Type custom duration (e.g. 45 Days, 120 Days, 4 Months)..."
-                        className="w-full mt-1.5 px-3 py-2 rounded-lg border border-[#0066FF] bg-[#F0F7FF] text-xs text-[#0A0A0A] focus:outline-none"
-                      />
-                    )}
-                    {/* Quick duration buttons */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {['7 Days', '15 Days', '30 Days', '60 Days'].map((pill) => (
-                        <button
-                          key={pill}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, duration: pill })}
-                          className={`px-2 py-0.5 text-[11px] font-bold rounded border transition cursor-pointer ${
-                            formData.duration === pill
-                              ? 'bg-[#0066FF] text-white border-[#0066FF]'
-                              : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:bg-[#F1F5F9]'
-                          }`}
-                        >
-                          {pill}
-                        </button>
-                      ))}
-                    </div>
+                    <input
+                      type="date"
+                      value={formData.endDate || calculatedEndDate}
+                      onChange={(e) => {
+                        const newEnd = e.target.value;
+                        const calcDur = calculateDurationFromDates(formData.startDate, newEnd);
+                        setFormData({
+                          ...formData,
+                          endDate: newEnd,
+                          ...(calcDur ? { duration: calcDur } : {})
+                        });
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] text-sm text-[#0A0A0A] focus:outline-none focus:border-[#0066FF] cursor-pointer"
+                    />
+                    <p className="text-[11px] text-[#64748B]">Select completion date or let duration compute</p>
                   </div>
                 </div>
 
-                {/* Automatic End Date Display Card */}
-                <div className="p-3.5 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800 flex items-center justify-center">
-                      <Calendar size={18} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] uppercase tracking-wider font-bold text-slate-500">Calculated End Date:</span>
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          Automatic
-                        </span>
-                      </div>
-                      <p className="text-sm font-black text-[#0A0A0A] mt-0.5">
-                        {formatFriendlyDate(formData.endDate || calculatedEndDate)}
-                        <span className="text-xs text-[#64748B] font-normal ml-2">({formData.endDate || calculatedEndDate})</span>
-                      </p>
-                    </div>
+                {/* Duration (Auto-Calculated) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-[#0A0A0A] flex items-center gap-1">
+                      Internship Duration <span className="text-[#0066FF]">*</span>
+                    </label>
+                    {formData.startDate && (formData.endDate || calculatedEndDate) && (
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                        Calculated: {calculateDurationFromDates(formData.startDate, formData.endDate || calculatedEndDate) || effectiveDuration}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-right hidden sm:block">
-                    <span className="text-[10px] text-[#64748B] block">Based on Start Date +</span>
-                    <span className="text-xs font-bold text-emerald-700">{effectiveDuration}</span>
+                  <select
+                    value={formData.duration}
+                    onChange={(e) => {
+                      const newDur = e.target.value;
+                      const newEnd = calculateAutomaticEndDate(formData.startDate, newDur);
+                      setFormData({
+                        ...formData,
+                        duration: newDur,
+                        endDate: newEnd || formData.endDate
+                      });
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-[#FFFFFF] text-xs font-bold text-[#0A0A0A] focus:outline-none focus:border-[#0066FF] cursor-pointer"
+                  >
+                    {DURATION_OPTIONS.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                  {(formData.duration === 'Other' || formData.duration === 'Other Duration (Type Below)') && (
+                    <input
+                      type="text"
+                      value={formData.customDuration || ''}
+                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
+                      placeholder="Type custom duration (e.g. 45 Days, 120 Days, 4 Months)..."
+                      className="w-full mt-1.5 px-3 py-2 rounded-lg border border-[#0066FF] bg-[#F0F7FF] text-xs text-[#0A0A0A] focus:outline-none"
+                    />
+                  )}
+                  {/* Quick duration buttons */}
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {['7 Days', '15 Days', '30 Days', '60 Days', '90 Days'].map((pill) => (
+                      <button
+                        key={pill}
+                        type="button"
+                        onClick={() => {
+                          const newEnd = calculateAutomaticEndDate(formData.startDate, pill);
+                          setFormData({
+                            ...formData,
+                            duration: pill,
+                            endDate: newEnd || formData.endDate
+                          });
+                        }}
+                        className={`px-2 py-0.5 text-[11px] font-bold rounded border transition cursor-pointer ${
+                          formData.duration === pill
+                            ? 'bg-[#0066FF] text-white border-[#0066FF]'
+                            : 'bg-[#F8FAFC] text-[#64748B] border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                        }`}
+                      >
+                        {pill}
+                      </button>
+                    ))}
                   </div>
                 </div>
 

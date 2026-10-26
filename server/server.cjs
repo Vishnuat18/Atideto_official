@@ -861,6 +861,15 @@ async function handleVerify(req, res, customPath) {
 
       if (Array.isArray(rows) && rows.length > 0) {
         const r = rows[0];
+        let parsedTools = ['React', 'Node.js', 'Express', 'MongoDB'];
+        let parsedArea = ['Full Stack', 'Web Development'];
+        try {
+          if (r.tools) parsedTools = typeof r.tools === 'string' ? JSON.parse(r.tools) : r.tools;
+        } catch {}
+        try {
+          if (r.area) parsedArea = typeof r.area === 'string' ? JSON.parse(r.area) : r.area;
+        } catch {}
+
         return sendJson(res, 200, {
           success: true,
           verified: true,
@@ -874,25 +883,42 @@ async function handleVerify(req, res, customPath) {
             college: r.college,
             degree: r.degree,
             gradYear: r.grad_year,
+            course: r.course || r.domain,
             domain: r.domain || r.course,
+            startDate: r.start_date || '2026-10-25',
+            endDate: r.end_date || r.issue_date || '2027-01-25',
             duration: r.internship_duration || '3 Months',
             status: r.status,
+            internshipStatus: r.internship_status || 'Active Industrial Track',
             paymentStatus: r.payment_status,
-            mentor: r.mentor,
+            mentor: r.mentor || 'Karthik Ramanathan (AI & Web Lead)',
+            attendance: Number(r.attendance) || 98,
+            score: Number(r.score) || 95,
+            feePaid: r.fee_paid || '₹0',
+            feeTotal: r.fee_total || '₹700',
             certId: r.cert_id,
             offerNo: r.offer_no,
             joiningDate: r.start_date,
-            completionDate: r.issue_date,
-            registeredAt: r.created_at
+            completionDate: r.end_date || r.issue_date,
+            issueDate: r.issue_date || '2026-10-25',
+            registeredAt: r.created_at,
+            certHold: !!r.cert_hold,
+            tools: parsedTools,
+            area: parsedArea
           },
           certificate: {
             certId: r.cert_id,
             studentName: r.name,
+            college: r.college,
+            degree: r.degree,
             domain: r.domain || r.course,
+            startDate: r.start_date || '2026-10-25',
+            endDate: r.end_date || r.issue_date || '2027-01-25',
             issueDate: r.issue_date || '2026-10-25',
             duration: r.internship_duration || '3 Months',
             grade: 'A+',
-            verifyUrl: `https://atideto.in/verify/${r.cert_id || r.student_id}`
+            certHold: !!r.cert_hold,
+            verifyUrl: `https://atideto.in/verify?id=${encodeURIComponent(r.cert_id || r.student_id)}`
           }
         });
       }
@@ -1136,22 +1162,22 @@ async function handleStudentsPost(req, res) {
     await p.query(
       `INSERT INTO students (
         student_id, name, email, phone, college, degree, grad_year,
-        course, domain, start_date, batch, status, internship_status,
+        course, domain, start_date, end_date, batch, status, internship_status,
         internship_duration, mentor, attendance, score, fee_paid,
         fee_total, payment_status, cert_id, offer_no, issue_date,
-        cert_generated, sent_to_administration, tools, area
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        cert_generated, sent_to_administration, tools, area, cert_hold
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         name=VALUES(name), email=VALUES(email), phone=VALUES(phone),
         college=VALUES(college), degree=VALUES(degree), grad_year=VALUES(grad_year),
         course=VALUES(course), domain=VALUES(domain), start_date=VALUES(start_date),
-        status=VALUES(status), internship_status=VALUES(internship_status),
+        end_date=VALUES(end_date), status=VALUES(status), internship_status=VALUES(internship_status),
         internship_duration=VALUES(internship_duration), mentor=VALUES(mentor),
         attendance=VALUES(attendance), score=VALUES(score), fee_paid=VALUES(fee_paid),
         fee_total=VALUES(fee_total), payment_status=VALUES(payment_status),
         cert_id=VALUES(cert_id), offer_no=VALUES(offer_no), issue_date=VALUES(issue_date),
         cert_generated=VALUES(cert_generated), sent_to_administration=VALUES(sent_to_administration),
-        tools=VALUES(tools), area=VALUES(area)`,
+        tools=VALUES(tools), area=VALUES(area), cert_hold=VALUES(cert_hold)`,
       [
         studentId,
         d.name || '',
@@ -1163,6 +1189,7 @@ async function handleStudentsPost(req, res) {
         normDomain,
         normDomain,
         d.startDate || '2026-10-25',
+        d.endDate || '2027-01-25',
         d.batch || '2026-MEC',
         d.status || 'Active',
         d.internshipStatus || 'Active Industrial Track',
@@ -1179,7 +1206,8 @@ async function handleStudentsPost(req, res) {
         d.certGenerated ? 1 : 0,
         d.sentToAdministration !== undefined ? (d.sentToAdministration ? 1 : 0) : 1,
         JSON.stringify(d.tools || ['React', 'Node.js', 'Express', 'MongoDB']),
-        JSON.stringify(d.area || ['Full Stack', 'Web Development'])
+        JSON.stringify(d.area || ['Full Stack', 'Web Development']),
+        d.certHold ? 1 : 0
       ]
     );
 
@@ -1221,6 +1249,8 @@ async function handleStudentsPut(req, res, studentId) {
       params.push(dom, dom);
     }
     if (d.startDate !== undefined) { setClauses.push('start_date = ?'); params.push(d.startDate); }
+    if (d.endDate !== undefined) { setClauses.push('end_date = ?'); params.push(d.endDate); }
+    if (d.certHold !== undefined) { setClauses.push('cert_hold = ?'); params.push(d.certHold ? 1 : 0); }
     if (d.status !== undefined) { setClauses.push('status = ?'); params.push(d.status); }
     if (d.internshipStatus !== undefined) { setClauses.push('internship_status = ?'); params.push(d.internshipStatus); }
     if (d.duration !== undefined || d.internshipDuration !== undefined) {
