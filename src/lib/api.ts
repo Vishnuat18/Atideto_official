@@ -694,7 +694,8 @@ export async function getStudentsFromDb() {
           gradYear: r.grad_year,
           course: r.course || r.domain,
           domain: r.domain || r.course,
-          startDate: r.start_date,
+          startDate: r.start_date || '2026-10-25',
+          endDate: r.end_date || '',
           batch: r.batch,
           status: r.status,
           internshipStatus: r.internship_status,
@@ -711,7 +712,8 @@ export async function getStudentsFromDb() {
           certGenerated: Boolean(r.cert_generated),
           sentToAdministration: Boolean(r.sent_to_administration),
           tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
-          area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || [])
+          area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || []),
+          certHold: Boolean(r.cert_hold)
         }));
         saveStoredStudents(mapped);
         return mapped;
@@ -733,9 +735,10 @@ export async function getStudentsFromDb() {
         college: r.college,
         degree: r.degree,
         gradYear: r.grad_year,
-        course: r.course,
-        domain: r.domain,
-        startDate: r.start_date,
+        course: r.course || r.domain,
+        domain: r.domain || r.course,
+        startDate: r.start_date || '2026-10-25',
+        endDate: r.end_date || '',
         batch: r.batch,
         status: r.status,
         internshipStatus: r.internship_status,
@@ -751,8 +754,9 @@ export async function getStudentsFromDb() {
         issueDate: r.issue_date || '',
         certGenerated: Boolean(r.cert_generated),
         sentToAdministration: Boolean(r.sent_to_administration),
-        tools: r.tools || [],
-        area: r.area || []
+        tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
+        area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || []),
+        certHold: Boolean(r.cert_hold)
       }));
       saveStoredStudents(mapped);
       return mapped;
@@ -829,15 +833,28 @@ export async function updateStudentInDb(studentId: string, updates: any) {
   try {
     const safeStr = (s?: string) => (s || '').replace(/'/g, "''");
     const setClauses: string[] = [];
-    if (updates.name) setClauses.push(`name='${safeStr(updates.name)}'`);
-    if (updates.email) setClauses.push(`email='${safeStr(updates.email)}'`);
-    if (updates.phone) setClauses.push(`phone='${safeStr(updates.phone)}'`);
-    if (updates.status) setClauses.push(`status='${safeStr(updates.status)}'`);
-    if (updates.certId) setClauses.push(`cert_id='${safeStr(updates.certId)}'`);
-    if (updates.offerNo) setClauses.push(`offer_no='${safeStr(updates.offerNo)}'`);
-    if (updates.issueDate) setClauses.push(`issue_date='${safeStr(updates.issueDate)}'`);
+    if (updates.name !== undefined) setClauses.push(`name='${safeStr(updates.name)}'`);
+    if (updates.email !== undefined) setClauses.push(`email='${safeStr(updates.email)}'`);
+    if (updates.phone !== undefined) setClauses.push(`phone='${safeStr(updates.phone)}'`);
+    if (updates.college !== undefined) setClauses.push(`college='${safeStr(updates.college)}'`);
+    if (updates.degree !== undefined) setClauses.push(`degree='${safeStr(updates.degree)}'`);
+    if (updates.gradYear !== undefined) setClauses.push(`grad_year='${safeStr(updates.gradYear)}'`);
+    if (updates.course !== undefined) setClauses.push(`course='${safeStr(updates.course)}'`);
+    if (updates.domain !== undefined) setClauses.push(`domain='${safeStr(updates.domain)}'`);
+    if (updates.startDate !== undefined) setClauses.push(`start_date='${safeStr(updates.startDate)}'`);
+    if (updates.endDate !== undefined) setClauses.push(`end_date='${safeStr(updates.endDate)}'`);
+    if (updates.duration !== undefined || updates.internshipDuration !== undefined) {
+      setClauses.push(`internship_duration='${safeStr(updates.duration || updates.internshipDuration)}'`);
+    }
+    if (updates.mentor !== undefined) setClauses.push(`mentor='${safeStr(updates.mentor)}'`);
+    if (updates.status !== undefined) setClauses.push(`status='${safeStr(updates.status)}'`);
+    if (updates.internshipStatus !== undefined) setClauses.push(`internship_status='${safeStr(updates.internshipStatus)}'`);
+    if (updates.certId !== undefined) setClauses.push(`cert_id='${safeStr(updates.certId)}'`);
+    if (updates.offerNo !== undefined) setClauses.push(`offer_no='${safeStr(updates.offerNo)}'`);
+    if (updates.issueDate !== undefined) setClauses.push(`issue_date='${safeStr(updates.issueDate)}'`);
     if (updates.certGenerated !== undefined) setClauses.push(`cert_generated=${updates.certGenerated ? 1 : 0}`);
     if (updates.sentToAdministration !== undefined) setClauses.push(`sent_to_administration=${updates.sentToAdministration ? 1 : 0}`);
+    if (updates.certHold !== undefined) setClauses.push(`cert_hold=${updates.certHold ? 1 : 0}`);
     if (updates.attendance !== undefined) setClauses.push(`attendance=${Number(updates.attendance) || 95}`);
     if (updates.score !== undefined) setClauses.push(`score=${Number(updates.score) || 95}`);
     if (updates.feePaid !== undefined) setClauses.push(`fee_paid='${safeStr(updates.feePaid)}'`);
@@ -845,7 +862,7 @@ export async function updateStudentInDb(studentId: string, updates: any) {
     if (updates.paymentStatus !== undefined) setClauses.push(`payment_status='${safeStr(updates.paymentStatus)}'`);
 
     if (setClauses.length > 0) {
-      const sql = `UPDATE students SET ${setClauses.join(', ')} WHERE student_id='${safeStr(studentId)}' OR id='${safeStr(studentId)}';`;
+      const sql = `UPDATE students SET ${setClauses.join(', ')} WHERE LOWER(student_id)='${safeStr(studentId).toLowerCase()}' OR id='${safeStr(studentId)}';`;
       await executeSqlQuery(sql);
     }
   } catch {}

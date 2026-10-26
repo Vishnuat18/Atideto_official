@@ -1277,9 +1277,24 @@ async function handleStudentsPut(req, res, studentId) {
 
     params.push(studentId, studentId);
     await p.query(
-      `UPDATE students SET ${setClauses.join(', ')} WHERE student_id = ? OR CAST(id AS CHAR) = ?`,
+      `UPDATE students SET ${setClauses.join(', ')} WHERE LOWER(student_id) = LOWER(?) OR CAST(id AS CHAR) = ?`,
       params
     );
+
+    // Also update corresponding registration row if present
+    try {
+      const regClauses = [];
+      const regParams = [];
+      if (d.startDate !== undefined) { regClauses.push('start_date = ?'); regParams.push(d.startDate); }
+      if (d.status !== undefined) { regClauses.push('status = ?'); regParams.push(d.status); }
+      if (regClauses.length > 0) {
+        regParams.push(studentId, studentId);
+        await p.query(
+          `UPDATE registrations SET ${regClauses.join(', ')} WHERE LOWER(reg_id) = LOWER(?) OR CAST(id AS CHAR) = ?`,
+          regParams
+        );
+      }
+    } catch {}
 
     return sendJson(res, 200, { success: true, studentId, message: 'Student updated successfully' });
   } catch (err) {

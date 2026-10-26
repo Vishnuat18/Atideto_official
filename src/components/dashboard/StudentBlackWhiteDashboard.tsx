@@ -445,12 +445,22 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
     };
 
     fetchAndSyncStudent();
+    const interval = setInterval(fetchAndSyncStudent, 10000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchAndSyncStudent();
+    };
+
     window.addEventListener('atideto-students-updated', fetchAndSyncStudent);
     window.addEventListener('atideto_payment_update', fetchAndSyncStudent);
+    window.addEventListener('focus', fetchAndSyncStudent);
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       isMounted = false;
+      clearInterval(interval);
       window.removeEventListener('atideto-students-updated', fetchAndSyncStudent);
       window.removeEventListener('atideto_payment_update', fetchAndSyncStudent);
+      window.removeEventListener('focus', fetchAndSyncStudent);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [user]);
 

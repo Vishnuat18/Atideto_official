@@ -1454,21 +1454,41 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     );
   };
 
-  // Editable Course Start Date Function (Persisted to Database)
-  const updateStudentStartDate = async (studentId: string, newDate: string) => {
-    setStudents(prev => prev.map(s => s.id === studentId ? { ...s, startDate: newDate } : s));
-    if (rightPanel.data?.id === studentId) {
+  // Editable Course Tenure (Start Date, End Date, Duration) Function (Persisted to Database)
+  const updateStudentTenure = async (studentId: string, updates: { startDate?: string; endDate?: string; duration?: string }) => {
+    const existing = students.find(s => s.id === studentId || s.studentId === studentId);
+    const finalStart = updates.startDate ?? existing?.startDate ?? '';
+    const finalEnd = updates.endDate ?? existing?.endDate ?? '';
+    let duration = updates.duration;
+    if (!duration && finalStart && finalEnd) {
+      const calculated = calculateDurationFromDates(finalStart, finalEnd);
+      if (calculated) duration = calculated;
+    }
+    const finalUpdates = {
+      ...(updates.startDate ? { startDate: updates.startDate } : {}),
+      ...(updates.endDate ? { endDate: updates.endDate } : {}),
+      ...(duration ? { duration } : {})
+    };
+
+    setStudents(prev => prev.map(s => (s.id === studentId || s.studentId === studentId) ? { ...s, ...finalUpdates } : s));
+    if (rightPanel.data?.id === studentId || rightPanel.data?.studentId === studentId) {
       setRightPanel(prev => ({
         ...prev,
-        data: { ...prev.data, startDate: newDate }
+        data: { ...prev.data, ...finalUpdates }
       }));
     }
+    updateStudentInRegistry(studentId, finalUpdates as any);
     try {
-      await updateStudentInDb(studentId, { startDate: newDate });
+      await updateStudentInDb(studentId, finalUpdates);
     } catch (e) {
-      console.warn('Start date DB update notice:', e);
+      console.warn('Tenure DB update notice:', e);
     }
-    toast.success(`Course start date updated to ${newDate}!`);
+    toast.success(`Course tenure & duration updated for ${existing?.name || studentId}!`);
+  };
+
+  // Editable Course Start Date Function (Persisted to Database)
+  const updateStudentStartDate = async (studentId: string, newDate: string) => {
+    return updateStudentTenure(studentId, { startDate: newDate });
   };
 
   // Employee Tasks
@@ -1670,47 +1690,72 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     }
   };
 
-  // Synchronize on mount: fetch live MySQL status, students, clients, staff, and run default query
-  useEffect(() => {
-    getDatabaseStatus().then(status => {
-      if (status) setDbStatus(status);
-    });
+  const [isSyncingDb, setIsSyncingDb] = useState(false);
 
-    getStudentsFromDb().then(dbStudents => {
+  // Comprehensive multi-device database sync function
+  const syncAllDataFromDb = async (showToast = false) => {
+    try {
+      if (showToast) setIsSyncingDb(true);
+      const [status, dbStudents, dbRegs, dbClients, dbStaff, dbPayments] = await Promise.all([
+        getDatabaseStatus().catch(() => null),
+        getStudentsFromDb().catch(() => null),
+        getRegistrationsFromDb().catch(() => null),
+        getClientsFromDb().catch(() => null),
+        getStaffFromDb().catch(() => null),
+        getPaymentsFromDb().catch(() => null)
+      ]);
+
+      if (status) setDbStatus(status);
       if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
         setStudents(dbStudents);
         saveStoredStudents(dbStudents);
       }
-    });
-
-    getRegistrationsFromDb().then(dbRegs => {
-      if (dbRegs && Array.isArray(dbRegs)) {
-        setRegistrationsList(dbRegs);
-      }
-    });
-
-    getClientsFromDb().then(dbClients => {
+      if (dbRegs && Array.isArray(dbRegs)) setRegistrationsList(dbRegs);
       if (dbClients && Array.isArray(dbClients)) {
         setCrmClients(dbClients);
         saveStoredClients(dbClients);
       }
-    });
+      if (dbStaff && Array.isArray(dbStaff)) setStaffMembers(dbStaff);
+      if (dbPayments && Array.isArray(dbPayments)) setPaymentsList(dbPayments);
 
-    getStaffFromDb().then(dbStaff => {
-      if (dbStaff && dbStaff.length > 0) {
-        setStaffMembers(dbStaff);
+      if (showToast) {
+        toast.success('Synchronized live data with MySQL database!');
       }
-    });
+    } catch (err) {
+      if (showToast) toast.error('Failed to sync data with database');
+    } finally {
+      if (showToast) setIsSyncingDb(false);
+    }
+  };
 
-    getPaymentsFromDb().then(dbPayments => {
-      if (dbPayments && dbPayments.length > 0) {
-        setPaymentsList(dbPayments);
-      }
-    });
+  // Synchronize on mount, background polling (every 10s), and window/visibility events for multi-phone consistency
+  useEffect(() => {
+    syncAllDataFromDb(false);
 
     executeSqlQuery('SELECT student_id, name, email, phone, college, course, status FROM students;').then(res => {
       if (res && res.success) setSqlResult(res);
     });
+
+    // 10-second automatic background sync for cross-device updates (phone 1 <-> phone 2)
+    const syncInterval = setInterval(() => {
+      syncAllDataFromDb(false);
+    }, 10000);
+
+    // Sync on focus / visibility change (e.g. when user switches back to browser or unlocks phone)
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        syncAllDataFromDb(false);
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    return () => {
+      clearInterval(syncInterval);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -1790,6 +1835,18 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
             <Calendar size={13} className="text-[#0066FF]" />
             <span>Wednesday, 21 Oct 2026</span>
           </div>
+
+          {/* Live Cloud DB Sync Button */}
+          <button
+            type="button"
+            onClick={() => syncAllDataFromDb(true)}
+            disabled={isSyncingDb}
+            className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            title="Refresh and sync data with MySQL database"
+          >
+            <RefreshCw size={12} className={isSyncingDb ? "animate-spin text-blue-600" : "text-blue-600"} />
+            <span className="hidden xs:inline sm:inline">Sync DB</span>
+          </button>
 
           <button 
             title="Notifications" 
@@ -7240,31 +7297,120 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               {/* ───────────────────────────────────────────────────────────── */}
               {rightPanel.type === 'student-report' && rightPanel.data && (
                 <>
-                  {/* EDITABLE COURSE START DATE CARD */}
-                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2.5">
+                  {/* EDITABLE COURSE TENURE & CALCULATED DURATION CARD */}
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#0F172A] flex items-center gap-1.5">
                         <Calendar size={13} className="text-[#0066FF]" />
-                        <span>Course Start Date (Editable)</span>
+                        <span>Course Tenure & Duration (Live Database)</span>
                       </span>
-                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        Live Active
+                      <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Live Sync</span>
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-[#64748B]">Course Start Date</label>
+                        <input
+                          type="date"
+                          value={rightPanel.data.startDate || '2026-10-25'}
+                          onChange={(e) => {
+                            const newStart = e.target.value;
+                            const currentEnd = rightPanel.data.endDate || '';
+                            const calc = calculateDurationFromDates(newStart, currentEnd);
+                            setRightPanel(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                startDate: newStart,
+                                ...(calc ? { duration: calc } : {})
+                              }
+                            }));
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-mono font-bold text-[#0F172A] focus:outline-none focus:border-[#0066FF]"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase text-[#64748B]">Course End Date</label>
+                        <input
+                          type="date"
+                          value={rightPanel.data.endDate || '2027-01-25'}
+                          onChange={(e) => {
+                            const newEnd = e.target.value;
+                            const currentStart = rightPanel.data.startDate || '';
+                            const calc = calculateDurationFromDates(currentStart, newEnd);
+                            setRightPanel(prev => ({
+                              ...prev,
+                              data: {
+                                ...prev.data,
+                                endDate: newEnd,
+                                ...(calc ? { duration: calc } : {})
+                              }
+                            }));
+                          }}
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-mono font-bold text-[#0F172A] focus:outline-none focus:border-[#0066FF]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold uppercase text-[#64748B]">Internship Duration (Calculated)</label>
+                        {rightPanel.data.startDate && rightPanel.data.endDate && (
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                            Auto: {calculateDurationFromDates(rightPanel.data.startDate, rightPanel.data.endDate) || rightPanel.data.duration}
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="text"
-                        value={rightPanel.data.startDate || '25 Oct 2026'}
-                        onChange={(e) => updateStudentStartDate(rightPanel.data.id, e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-lg bg-white border border-[#E2E8F0] text-xs font-bold text-[#0F172A] focus:outline-none focus:border-[#0066FF]"
-                        placeholder="e.g. 25 Oct 2026"
+                        value={rightPanel.data.duration || '3 Months'}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setRightPanel(prev => ({
+                            ...prev,
+                            data: { ...prev.data, duration: val }
+                          }));
+                        }}
+                        placeholder="e.g. 3 Months, 30 Days"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white border border-[#CBD5E1] text-xs font-bold text-[#0066FF] focus:outline-none focus:border-[#0066FF]"
                       />
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
                       <button
-                        onClick={() => toast.success(`Start date saved for ${rightPanel.data.name}!`)}
-                        className="px-3.5 py-2 rounded-lg bg-[#000000] hover:bg-[#0066FF] text-white font-bold text-xs transition cursor-pointer"
+                        type="button"
+                        onClick={async () => {
+                          await updateStudentTenure(rightPanel.data.id, {
+                            startDate: rightPanel.data.startDate,
+                            endDate: rightPanel.data.endDate,
+                            duration: rightPanel.data.duration
+                          });
+                        }}
+                        className="flex-1 py-2 rounded-lg bg-[#000000] hover:bg-[#0066FF] text-white font-bold text-xs transition cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                       >
-                        Save Date
+                        <CheckCircle2 size={13} />
+                        <span>Save Course Tenure</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditStudentForm(rightPanel.data);
+                          setRightPanel({
+                            isOpen: true,
+                            type: 'edit-student',
+                            title: `Edit Student: ${rightPanel.data.name}`,
+                            data: rightPanel.data
+                          });
+                        }}
+                        className="px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-xs font-bold text-[#64748B] hover:text-black transition cursor-pointer"
+                        title="Edit Full Profile"
+                      >
+                        <Edit2 size={13} />
                       </button>
                     </div>
                   </div>
@@ -7281,6 +7427,27 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             {rightPanel.data.status || 'Verified Enrolled'}
                           </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 p-3 items-center">
+                        <span className="text-[#64748B] flex items-center gap-1.5 font-semibold"><Clock size={13} /> Duration</span>
+                        <div className="col-span-2 font-bold text-[#0066FF]">
+                          {rightPanel.data.duration || '3 Months'}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 p-3 items-center">
+                        <span className="text-[#64748B] flex items-center gap-1.5 font-semibold"><Calendar size={13} /> Start Date</span>
+                        <div className="col-span-2 font-mono font-bold text-[#0F172A]">
+                          {rightPanel.data.startDate || '2026-10-25'}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 p-3 items-center">
+                        <span className="text-[#64748B] flex items-center gap-1.5 font-semibold"><CalendarCheck size={13} /> End Date</span>
+                        <div className="col-span-2 font-mono font-bold text-[#0F172A]">
+                          {rightPanel.data.endDate || '2027-01-25'}
                         </div>
                       </div>
 
