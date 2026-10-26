@@ -28,6 +28,7 @@ import {
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import jsQR from 'jsqr';
 import { exportElementToA4Pdf, exportElementToImage } from '@/lib/exportPdfDocument';
 import { 
   AuthenticCertificateCanvas 
@@ -100,7 +101,7 @@ export default function StudentVerify() {
   const [verifyMode, setVerifyMode] = useState<'boxes' | 'scan'>('boxes');
   const [boxValues, setBoxValues] = useState<[string, string, string, string]>(() => {
     if (paramId) return splitIdInto4Boxes(paramId);
-    return ['ATD', 'INT', '2026', '0001'];
+    return ['', '', '', ''];
   });
 
   const box0Ref = useRef<HTMLInputElement>(null);
@@ -111,6 +112,7 @@ export default function StudentVerify() {
 
   // Camera scanner states
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scanCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
@@ -270,16 +272,27 @@ export default function StudentVerify() {
     setCameraError(null);
     setIsScanning(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
+      let stream: MediaStream;
+      try {
+        // Prefer rear/environment camera on mobile
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+      } catch {
+        // Fallback to any available video source (e.g. laptop webcam)
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        });
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        await videoRef.current.play().catch(e => console.warn('[StudentVerify] Video play prevented:', e));
       }
     } catch (err: any) {
-      console.warn('Camera stream error:', err);
-      setCameraError('Camera access was not permitted or is unavailable. You can upload an image of the QR code below.');
+      console.warn('[StudentVerify] Camera stream error:', err);
+      setCameraError('Camera access was not permitted or is unavailable on this device. You can upload a photo of the QR code below.');
       setIsScanning(false);
     }
   };
@@ -293,14 +306,43 @@ export default function StudentVerify() {
     setIsScanning(false);
   };
 
+  // Auto clean-up camera when unmounting
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
+
+  // Auto-start camera when switching to scan mode
+  useEffect(() => {
+    if (verifyMode === 'scan') {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  }, [verifyMode]);
+
   const handleScannedText = (scannedRaw: string) => {
     let extractedId = scannedRaw.trim();
     try {
-      if (extractedId.includes('?')) {
-        const urlObj = new URL(extractedId, window.location.origin);
-        extractedId = urlObj.searchParams.get('id') || urlObj.searchParams.get('certificateId') || extractedId;
+      if (extractedId.startsWith('http://') || extractedId.startsWith('https://')) {
+        const urlObj = new URL(extractedId);
+        const qId = urlObj.searchParams.get('id') || urlObj.searchParams.get('certificateId');
+        if (qId) {
+          extractedId = qId;
+        } else {
+          const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+          if (pathSegments.length > 0) {
+            extractedId = pathSegments[pathSegments.length - 1];
+          }
+        }
+      } else if (extractedId.includes('?id=')) {
+        const match = extractedId.match(/[?&]id=([^&]+)/);
+        if (match) extractedId = decodeURIComponent(match[1]);
       }
-    } catch {}
+    } catch (e) {
+      console.warn('[StudentVerify] URL parse fallback:', e);
+    }
 
     const parts = splitIdInto4Boxes(extractedId);
     setBoxValues(parts);
@@ -309,27 +351,43 @@ export default function StudentVerify() {
     performVerification(extractedId);
   };
 
-  // Barcode detection frame check
+  // Universal jsQR Frame Decoding Loop
   useEffect(() => {
     if (!isScanning) return;
     let animId: number;
-    let detector: any = null;
-    if ('BarcodeDetector' in window) {
-      try {
-        detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-      } catch (e) {}
-    }
 
-    const checkFrame = async () => {
-      if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA && detector) {
+    const checkFrame = () => {
+      const video = videoRef.current;
+      if (
+        video &&
+        video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0
+      ) {
         try {
-          const codes = await detector.detect(videoRef.current);
-          if (codes && codes.length > 0 && codes[0].rawValue) {
-            handleScannedText(codes[0].rawValue);
-            stopCamera();
-            return;
+          let canvas = scanCanvasRef.current;
+          if (!canvas) {
+            canvas = document.createElement('canvas');
           }
-        } catch (e) {}
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imgData.data, imgData.width, imgData.height, {
+              inversionAttempts: 'attemptBoth',
+            });
+            if (code && code.data && code.data.trim()) {
+              toast.success('QR Code detected & verified!');
+              handleScannedText(code.data);
+              stopCamera();
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('[StudentVerify] Frame scan note:', e);
+        }
       }
       animId = requestAnimationFrame(checkFrame);
     };
@@ -342,31 +400,45 @@ export default function StudentVerify() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const toastId = toast.loading('Analyzing uploaded QR image...');
     try {
-      toast.loading('Scanning uploaded QR code image...');
       const img = new Image();
-      img.src = URL.createObjectURL(file);
-      await new Promise((res, rej) => {
-        img.onload = res;
-        img.onerror = rej;
+      const objectUrl = URL.createObjectURL(file);
+      img.src = objectUrl;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image'));
       });
 
-      if ('BarcodeDetector' in window) {
-        const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
-        const codes = await detector.detect(img);
-        if (codes && codes.length > 0 && codes[0].rawValue) {
-          toast.dismiss();
-          toast.success('QR Code detected from image!');
-          handleScannedText(codes[0].rawValue);
-          return;
-        }
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      if (!ctx) {
+        URL.revokeObjectURL(objectUrl);
+        toast.error('Image processing failed', { id: toastId });
+        return;
       }
 
-      toast.dismiss();
-      toast.info('QR scanned image received. Please verify ID format.');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(objectUrl);
+
+      const code = jsQR(imgData.data, imgData.width, imgData.height, {
+        inversionAttempts: 'attemptBoth',
+      });
+
+      if (code && code.data && code.data.trim()) {
+        toast.success('QR Code found in photo!', { id: toastId });
+        handleScannedText(code.data);
+      } else {
+        toast.error('No readable QR code found in this photo. Please ensure it is clear or enter the 4-part ID.', { id: toastId });
+      }
     } catch (err) {
-      toast.dismiss();
-      toast.error('Unable to decode QR code from the uploaded image.');
+      console.error('[StudentVerify] QR Image read error:', err);
+      toast.error('Could not decode QR code from the selected image.', { id: toastId });
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -427,21 +499,21 @@ export default function StudentVerify() {
             Scan the QR code or enter the 4-part Certificate ID printed on the official document to view the cryptographic record.
           </p>
 
-          {/* MODE SELECTOR BUTTONS */}
-          <div className="flex items-center justify-center gap-2 pt-2">
+          {/* NATIVE SEGMENTED PILL SWITCHER */}
+          <div className="inline-flex p-1 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl mx-auto">
             <button
               type="button"
               onClick={() => {
                 setVerifyMode('boxes');
                 stopCamera();
               }}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
+              className={`px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
                 verifyMode === 'boxes'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-400'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <KeyRound size={16} />
+              <KeyRound size={15} />
               <span>Enter 4-Part ID</span>
             </button>
 
@@ -451,13 +523,13 @@ export default function StudentVerify() {
                 setVerifyMode('scan');
                 startCamera();
               }}
-              className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
+              className={`px-4 sm:px-6 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
                 verifyMode === 'scan'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-400'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Camera size={16} />
+              <Camera size={15} />
               <span>Scan QR Code</span>
             </button>
           </div>
@@ -567,35 +639,11 @@ export default function StudentVerify() {
                     setBoxValues(['', '', '', '']);
                     box0Ref.current?.focus();
                   }}
-                  className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-700"
+                  className="px-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-2xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-800"
                 >
                   <RotateCcw size={14} />
                   <span>Clear</span>
                 </button>
-              </div>
-
-              {/* Sample Instant Clickable Chips */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[11px] text-slate-400">
-                <span className="font-semibold text-slate-500">Sample Records:</span>
-                {[
-                  'ATD-INT-2026-0001',
-                  'AT-IC-MER-2026-0001',
-                  'AT-IC-WDV-2026-0002',
-                  'ATD-INT-2026-0003'
-                ].map((sample) => (
-                  <button
-                    key={sample}
-                    type="button"
-                    onClick={() => {
-                      const parsed = splitIdInto4Boxes(sample);
-                      setBoxValues(parsed);
-                      performVerification(sample);
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-blue-600 hover:text-white text-slate-300 font-mono transition border border-slate-700 cursor-pointer"
-                  >
-                    {sample}
-                  </button>
-                ))}
               </div>
             </div>
           )}
@@ -604,18 +652,18 @@ export default function StudentVerify() {
           {/* OPTION 2: LIVE CAMERA SCAN / UPLOAD QR IMAGE                */}
           {/* ─────────────────────────────────────────────────────────── */}
           {verifyMode === 'scan' && (
-            <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 p-6 rounded-3xl shadow-2xl max-w-xl mx-auto space-y-5 text-center animate-in fade-in duration-200">
+            <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 p-6 rounded-3xl shadow-2xl max-w-xl mx-auto space-y-5 text-center animate-in fade-in duration-200">
               <div className="space-y-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400">
-                  Optical QR Scanner
+                  Universal Optical QR Scanner
                 </span>
                 <p className="text-xs text-slate-400">
-                  Hold the certificate QR code in front of the camera or upload an image file
+                  Align the certificate QR code inside the viewfinder or upload a photo
                 </p>
               </div>
 
-              {/* Live Camera Viewport */}
-              <div className="relative w-full max-w-sm mx-auto aspect-square rounded-2xl overflow-hidden bg-black border-2 border-blue-500/50 shadow-inner flex items-center justify-center">
+              {/* Live Camera Viewport with Native Precision Reticle */}
+              <div className="relative w-full max-w-sm mx-auto aspect-square rounded-3xl overflow-hidden bg-black border-2 border-blue-500/40 shadow-2xl flex items-center justify-center">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -624,45 +672,50 @@ export default function StudentVerify() {
                   className="w-full h-full object-cover"
                 />
 
-                {/* HUD Crosshairs */}
+                {/* Reticle HUD Corners */}
                 <div className="absolute inset-8 pointer-events-none flex flex-col justify-between">
                   <div className="flex justify-between">
-                    <div className="w-8 h-8 border-t-4 border-l-4 border-blue-400 rounded-tl-lg" />
-                    <div className="w-8 h-8 border-t-4 border-r-4 border-blue-400 rounded-tr-lg" />
+                    <div className="w-8 h-8 border-t-3 border-l-3 border-[#38BDF8] rounded-tl-xl shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+                    <div className="w-8 h-8 border-t-3 border-r-3 border-[#38BDF8] rounded-tr-xl shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                   </div>
-                  <div className="w-full h-0.5 bg-blue-400 shadow-[0_0_12px_#60a5fa] animate-pulse" />
+                  {isScanning && (
+                    <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent shadow-[0_0_12px_#38BDF8] animate-pulse" />
+                  )}
                   <div className="flex justify-between">
-                    <div className="w-8 h-8 border-b-4 border-l-4 border-blue-400 rounded-bl-lg" />
-                    <div className="w-8 h-8 border-b-4 border-r-4 border-blue-400 rounded-br-lg" />
+                    <div className="w-8 h-8 border-b-3 border-l-3 border-[#38BDF8] rounded-bl-xl shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
+                    <div className="w-8 h-8 border-b-3 border-r-3 border-[#38BDF8] rounded-br-xl shadow-[0_0_8px_rgba(56,189,248,0.5)]" />
                   </div>
                 </div>
 
                 {!isScanning && (
-                  <div className="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center p-4 space-y-3">
-                    <Camera size={36} className="text-slate-500" />
+                  <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+                      <Camera size={26} />
+                    </div>
                     <p className="text-xs text-slate-300 font-medium">Camera is paused</p>
                     <button
                       type="button"
                       onClick={startCamera}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-md"
+                      className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition cursor-pointer shadow-lg shadow-blue-600/30 flex items-center gap-2"
                     >
-                      Start Camera
+                      <Camera size={14} />
+                      <span>Start Camera</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {cameraError && (
-                <p className="text-xs text-amber-400 bg-amber-950/40 border border-amber-800/60 p-2.5 rounded-xl">
+                <p className="text-xs text-amber-400 bg-amber-950/40 border border-amber-800/60 p-3 rounded-2xl">
                   {cameraError}
                 </p>
               )}
 
-              {/* Upload QR Image or Stop Camera */}
+              {/* Action Toolbar */}
               <div className="flex flex-wrap items-center justify-center gap-3">
-                <label className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-slate-700">
-                  <Upload size={14} className="text-blue-400" />
-                  <span>Upload QR Image</span>
+                <label className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-slate-800 hover:border-slate-700 shadow-sm">
+                  <Upload size={14} className="text-[#38BDF8]" />
+                  <span>Upload QR Photo</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -671,18 +724,29 @@ export default function StudentVerify() {
                   />
                 </label>
 
-                {isScanning && (
+                {isScanning ? (
                   <button
                     type="button"
                     onClick={stopCamera}
-                    className="px-4 py-2.5 bg-rose-900/60 hover:bg-rose-800 text-rose-200 rounded-xl text-xs font-bold transition cursor-pointer border border-rose-700"
+                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition cursor-pointer border border-slate-800"
                   >
-                    Stop Camera
+                    Pause Camera
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startCamera}
+                    className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+                  >
+                    Resume Camera
                   </button>
                 )}
               </div>
             </div>
           )}
+
+          {/* Hidden Canvas for QR Frame Analysis */}
+          <canvas ref={scanCanvasRef} className="hidden" aria-hidden="true" />
         </div>
 
         {/* ───────────────────────────────────────────────────────────────── */}

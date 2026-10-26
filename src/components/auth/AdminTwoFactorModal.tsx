@@ -27,7 +27,7 @@ import {
 } from '@/lib/totp';
 import { toast } from 'sonner';
 
-type TwoFactorMethod = 'totp' | 'email' | 'backup' | 'try_another_way' | 'setup_qr';
+type TwoFactorMethod = 'totp' | 'email' | 'backup' | 'try_another_way';
 
 interface AdminTwoFactorModalProps {
   isOpen: boolean;
@@ -274,24 +274,26 @@ export default function AdminTwoFactorModal({
               </p>
             </div>
 
-            {/* 6 Digit Input Boxes */}
-            <div className="flex justify-center gap-2 sm:gap-2.5" onPaste={handlePaste}>
+            {/* 6 Digit Input Boxes (Optimized for Mobile & Native Feel) */}
+            <div className="flex justify-center items-center gap-1.5 xs:gap-2 sm:gap-2.5 max-w-full px-0.5" onPaste={handlePaste}>
               {otpDigits.map((digit, idx) => (
                 <input
                   key={idx}
                   ref={inputRefs[idx]}
                   type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
-                  className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold font-mono rounded-xl bg-slate-900/90 border transition-all outline-none ${
+                  className={`w-10 h-13 xs:w-11 xs:h-14 sm:w-12 sm:h-14 text-center text-lg xs:text-xl sm:text-2xl font-black font-mono rounded-xl sm:rounded-2xl bg-[#080D1A] border transition-all duration-150 outline-none select-none ${
                     error
-                      ? 'border-red-500/80 text-red-400'
+                      ? 'border-red-500/80 text-red-400 bg-red-950/20'
                       : digit
-                      ? 'border-[#0066FF] text-white ring-2 ring-[#0066FF]/20'
-                      : 'border-slate-800 text-white focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/20'
+                      ? 'border-[#0066FF] text-white ring-2 ring-[#0066FF]/30 shadow-[0_0_12px_rgba(0,102,255,0.3)] bg-[#0066FF]/10'
+                      : 'border-white/10 text-white hover:border-white/20 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/20'
                   }`}
                 />
               ))}
@@ -348,18 +350,7 @@ export default function AdminTwoFactorModal({
                 )}
               </button>
 
-              <div className="flex items-center justify-between text-xs pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError('');
-                    setMethod('setup_qr');
-                  }}
-                  className="text-slate-400 hover:text-slate-200 transition underline underline-offset-4 cursor-pointer"
-                >
-                  Set up Authenticator app
-                </button>
-
+              <div className="flex items-center justify-end text-xs pt-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -487,19 +478,21 @@ export default function AdminTwoFactorModal({
               </p>
             </div>
 
-            {/* 6 Digit Input Boxes */}
-            <div className="flex justify-center gap-2 sm:gap-2.5" onPaste={handlePaste}>
+            {/* 6 Digit Input Boxes (Optimized for Mobile & Native Feel) */}
+            <div className="flex justify-center items-center gap-1.5 xs:gap-2 sm:gap-2.5 max-w-full px-0.5" onPaste={handlePaste}>
               {otpDigits.map((digit, idx) => (
                 <input
                   key={idx}
                   ref={inputRefs[idx]}
                   type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleDigitChange(idx, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(idx, e)}
-                  className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold font-mono rounded-xl bg-slate-900 border border-slate-800 text-white focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition"
+                  className="w-10 h-13 xs:w-11 xs:h-14 sm:w-12 sm:h-14 text-center text-lg xs:text-xl sm:text-2xl font-black font-mono rounded-xl sm:rounded-2xl bg-[#080D1A] border border-slate-800 text-white focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition select-none"
                 />
               ))}
             </div>
@@ -617,61 +610,7 @@ export default function AdminTwoFactorModal({
           </div>
         )}
 
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {/* 5. SETUP QR CODE & SECRET KEY ENROLLMENT                             */}
-        {/* ═════════════════════════════════════════════════════════════════════ */}
-        {method === 'setup_qr' && (
-          <div className="space-y-5 animate-in fade-in duration-200">
-            <div className="text-center">
-              <h3 className="text-base font-bold text-white">Set Up Google Authenticator</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Scan the QR code below using your mobile authenticator app.
-              </p>
-            </div>
 
-            {/* QR Code Card */}
-            <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-inner mx-auto max-w-[200px]">
-              {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Google Authenticator QR Code" className="w-40 h-40 object-contain" />
-              ) : (
-                <div className="w-40 h-40 flex items-center justify-center bg-slate-100 rounded-xl">
-                  <QrCode size={40} className="text-slate-400 animate-pulse" />
-                </div>
-              )}
-            </div>
-
-            {/* Manual Secret Key */}
-            <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl space-y-1">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                Can't scan? Enter key manually:
-              </p>
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-xs font-bold text-[#38BDF8] tracking-wider select-all">
-                  {DEFAULT_ADMIN_TOTP_SECRET}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopySecretKey}
-                  className="px-2.5 py-1 text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 rounded-lg text-white transition flex items-center gap-1 cursor-pointer shrink-0"
-                >
-                  {copiedKey ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-                  <span>{copiedKey ? 'Copied' : 'Copy'}</span>
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setMethod('totp');
-                setOtpDigits(['', '', '', '', '', '']);
-              }}
-              className="w-full py-3 rounded-xl font-bold text-xs bg-[#0066FF] hover:bg-blue-600 text-white transition cursor-pointer shadow-md"
-            >
-              Back to Code Verification
-            </button>
-          </div>
-        )}
 
       </div>
     </div>
