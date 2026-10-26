@@ -291,8 +291,11 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
 
   // Dynamic ViewSwitcher Mode: 'list' (Table) vs 'grid' (Small icons / card boxes)
   const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>({});
-  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'list'): 'list' | 'grid' => {
-    return panelViewMode[tab] || defaultMode;
+  const getViewMode = (tab: string, defaultMode?: 'list' | 'grid'): 'list' | 'grid' => {
+    if (panelViewMode[tab]) return panelViewMode[tab];
+    if (defaultMode) return defaultMode;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    return isMobile ? 'grid' : 'list';
   };
   const setViewMode = (tab: string, mode: 'list' | 'grid') => {
     setPanelViewMode(prev => ({ ...prev, [tab]: mode }));

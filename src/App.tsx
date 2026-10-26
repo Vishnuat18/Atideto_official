@@ -97,15 +97,12 @@ const PageWrapper = ({ children, isOverlay = false }: { children: React.ReactNod
     };
   }, []);
 
-  const location = useLocation();
-  const isFixedScreen = location.pathname === '/login' || location.pathname === '/dashboard' || location.pathname.startsWith('/admin');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.15, ease: 'easeOut' }}
-      className={isFixedScreen ? "w-full h-full overflow-hidden" : isOverlay ? "relative z-[200] w-full min-h-screen" : "relative z-0 w-full min-h-screen"}
+      className={isOverlay ? "relative z-[200] w-full min-h-screen" : "relative z-0 w-full min-h-screen overflow-x-hidden"}
     >
       {children}
     </motion.div>

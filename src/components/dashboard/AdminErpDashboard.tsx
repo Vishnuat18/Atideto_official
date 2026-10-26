@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users,
   BookOpen,
@@ -728,24 +728,31 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
   };
 
   // State to toggle between Table (List) and Grid ("Small icons") view for each panel
-  const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>({
-    'all-students': 'list',
-    'registrations': 'list',
-    'courses': 'list',
-    'internships': 'list',
-    'attendance': 'list',
-    'clients': 'list',
-    'staff': 'list',
-    'reports': 'list',
-    'student-payments': 'list',
-    'finance-payments': 'list',
-    'billing': 'list',
-    'certificates': 'list',
-    'offer-letters': 'list',
+  const [panelViewMode, setPanelViewMode] = useState<Record<string, 'list' | 'grid'>>(() => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const initial = isMobile ? 'grid' : 'list';
+    return {
+      'all-students': initial,
+      'registrations': initial,
+      'courses': initial,
+      'internships': initial,
+      'attendance': initial,
+      'clients': initial,
+      'staff': initial,
+      'reports': initial,
+      'student-payments': initial,
+      'finance-payments': initial,
+      'billing': initial,
+      'certificates': initial,
+      'offer-letters': initial,
+    };
   });
 
-  const getViewMode = (tab: string, defaultMode: 'list' | 'grid' = 'list'): 'list' | 'grid' => {
-    return panelViewMode[tab] || defaultMode;
+  const getViewMode = (tab: string, defaultMode?: 'list' | 'grid'): 'list' | 'grid' => {
+    if (panelViewMode[tab]) return panelViewMode[tab];
+    if (defaultMode) return defaultMode;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    return isMobile ? 'grid' : 'list';
   };
 
   const setViewMode = (tab: string, mode: 'list' | 'grid') => {

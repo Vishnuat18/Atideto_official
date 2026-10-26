@@ -19,9 +19,21 @@ export function useAuth() {
     } catch (e) {}
     return null;
   });
-  const [loading, setLoading] = useState(true);
+  // If user is already cached in localStorage, do not block page render with full screen loader
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem('atideto_sql_user');
+    } catch (e) {
+      return true;
+    }
+  });
 
   useEffect(() => {
+    // Safety fallback: Never keep loading stuck permanently
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
     // Listen for custom storage events (e.g. SQL login from login page)
     const handleStorageChange = () => {
       try {
@@ -38,6 +50,7 @@ export function useAuth() {
     window.addEventListener('atideto_auth_change', handleStorageChange);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(safetyTimer);
       if (firebaseUser) {
         let role = 'student';
         try {
@@ -92,6 +105,7 @@ export function useAuth() {
     });
 
     return () => {
+      clearTimeout(safetyTimer);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('atideto_auth_change', handleStorageChange);
       unsubscribe();
