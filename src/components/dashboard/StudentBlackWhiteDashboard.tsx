@@ -269,6 +269,19 @@ function getCourseCurriculumDetails(courseData: any) {
 export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoomLevel = 0.8, onZoomChange }: StudentProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<StudentTabType>('overview');
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+
+  // Always reset scroll to top on tab switch or mount - never retain scrolled down position
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = 0;
+      mainScrollRef.current.scrollLeft = 0;
+    }
+  }, [activeTab]);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileMoreSheetOpen, setMobileMoreSheetOpen] = useState(false);
@@ -972,13 +985,13 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {/* MAIN WORKSPACE CONTENT: Clean Minimal Canvas                         */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
-        <main className="flex-1 h-full overflow-y-auto min-h-0 bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
+        <main ref={mainScrollRef} className="flex-1 h-full overflow-y-auto overflow-x-hidden max-w-full touch-pan-y min-h-0 bg-[#F8FAFC] p-3 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
           
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 1: OVERVIEW & ANALYTICS (Exact Reference Image 2 Layout)       */}
           {/* ───────────────────────────────────────────────────────────────── */}
           {activeTab === 'overview' && (
-            <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
               
               {/* Header Title with Date */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
@@ -996,8 +1009,63 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                 </div>
               </div>
 
-              {/* 4 Top Metric Cards (Apple Fitness / Android Material 2x2 on Mobile, 4x1 on Desktop) */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+              {/* Mobile View: High-density compact small-icon metric badges (sm:hidden) */}
+              <div className="grid grid-cols-2 gap-2 sm:hidden">
+                {/* 1. Courses */}
+                <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <BookOpen size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-black text-[#0F172A] leading-none">
+                      {enrolledCourses.length}
+                    </div>
+                    <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Courses</span>
+                  </div>
+                </div>
+
+                {/* 2. Internships */}
+                <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Briefcase size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-black text-[#0F172A] leading-none">
+                      {internships.length}
+                    </div>
+                    <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Internship</span>
+                  </div>
+                </div>
+
+                {/* 3. Attendance */}
+                <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <CalendarCheck size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-black text-[#0F172A] leading-none">
+                      {studentProfile?.attendance || 96}%
+                    </div>
+                    <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Attendance</span>
+                  </div>
+                </div>
+
+                {/* 4. Score */}
+                <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Award size={15} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-black text-[#0F172A] leading-none">
+                      {studentProfile?.score || 95}/100
+                    </div>
+                    <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Score</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop / Tablet View: 4 Top Metric Cards (hidden sm:grid) */}
+              <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
                 
                 {/* 1. Enrolled Courses */}
                 <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
@@ -1076,10 +1144,10 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2 pt-1 sm:pt-0">
                     <button 
                       onClick={() => setActiveTab('courses')}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#000000] hover:bg-[#1E293B] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#000000] hover:bg-[#1E293B] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                     >
                       <BookOpen size={13} />
                       <span>View Curriculum Syllabus</span>
@@ -1087,7 +1155,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     </button>
                     <button 
                       onClick={() => setActiveTab('attendance')}
-                      className="px-3.5 py-1.5 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#0F172A] text-xs font-bold transition cursor-pointer"
+                      className="px-3.5 py-2 sm:py-1.5 rounded-xl bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#0F172A] text-xs font-bold transition cursor-pointer active:scale-95"
                     >
                       Sprint Tasks
                     </button>

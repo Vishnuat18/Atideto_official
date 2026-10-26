@@ -4,6 +4,7 @@ import { ChevronDown, LayoutDashboard, LogOut, Shield, User as UserIcon } from '
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import PullChain from './PullChain';
+import MobileNativeMenu from './MobileNativeMenu';
 import ServicesMegaMenu from './ServicesMegaMenu';
 import CoursesMegaMenu from './CoursesMegaMenu';
 import UpskillMegaMenu from './UpskillMegaMenu';
@@ -198,8 +199,13 @@ export default function Navigation() {
   const showNav = !scrolled || isVisible || isAnyMenuOpen;
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ease-out pointer-events-none ${
+    <>
+      {/* Mobile Native Header Bar & Dark Careem-Style Menu (Visible only on mobile < md) */}
+      <MobileNativeMenu />
+
+      {/* Desktop Floating Navbar (Visible strictly on md+ screens) */}
+      <header
+        className={`hidden md:flex fixed top-0 left-0 right-0 z-50 justify-center transition-all duration-300 ease-out pointer-events-none ${
         scrolled ? 'pt-3 sm:pt-4 px-3 sm:px-6' : 'pt-0 px-0'
       } ${
         !showNav
@@ -563,5 +569,6 @@ export default function Navigation() {
         </div>
       </nav>
     </header>
+    </>
   );
 }

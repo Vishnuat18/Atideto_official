@@ -203,6 +203,19 @@ interface RightPanelState {
 export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel = 0.8, onZoomChange }: AdminErpProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+
+  // Always reset scroll to top on tab switch or mount - never retain scrolled down position
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = 0;
+      mainScrollRef.current.scrollLeft = 0;
+    }
+  }, [activeTab]);
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileMoreSheetOpen, setMobileMoreSheetOpen] = useState(false);
@@ -1923,128 +1936,169 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
         {/* ═════════════════════════════════════════════════════════════════════ */}
         {/* MAIN WORKSPACE CONTENT: Clean Minimal Canvas (Independent Scroll)    */}
         {/* ═════════════════════════════════════════════════════════════════════ */}
-        <main className="flex-1 h-full overflow-y-auto min-h-0 bg-[#F8FAFC] p-3.5 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
+        <main ref={mainScrollRef} className="flex-1 h-full overflow-y-auto overflow-x-hidden max-w-full touch-pan-y min-h-0 bg-[#F8FAFC] p-3 sm:p-6 lg:p-8 custom-scrollbar pb-24 sm:pb-8">
           
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 1: OVERVIEW & ANALYTICS (Exact Reference Image 2 Layout)       */}
           {/* ───────────────────────────────────────────────────────────────── */}
-          {activeTab === 'overview' && (
-            <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
-              
-              {/* Header Title with Date */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
-                <div>
-                  <h1 className="text-xl sm:text-3xl font-black text-[#0F172A] tracking-tight">
-                    Overview & Analytics
-                  </h1>
-                  <p className="text-xs text-[#64748B] mt-0.5">
-                    Real-time cohort enrollments, financial settlements, and operational status
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-[#64748B] font-medium">
-                  <Calendar size={13} className="text-[#0066FF]" />
-                  <span>Wednesday, 21 Oct 2026</span>
-                </div>
-              </div>
+          {activeTab === 'overview' && (() => {
+            const cohortVerified = students.reduce((acc, s) => acc + (parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
+            const cohortInvoiced = students.reduce((acc, s) => acc + (parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
+            const corporateVerified = crmClients.reduce((acc, c) => acc + (c.amountPaid ? parseInt(c.amountPaid.replace(/[^0-9]/g, ''), 10) : (c.receivedAmount || 0)), 0);
+            const corporateTotal = crmClients.reduce((acc, c) => acc + (c.contractValue ? parseInt(c.contractValue.replace(/[^0-9]/g, ''), 10) : (c.quotationAmount || 0)), 0);
 
-              {/* 4 Top Metric Cards (Apple Fitness / Android Material 2x2 on Mobile, 4x1 on Desktop) */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+            const verifiedRevenue = cohortVerified + corporateVerified;
+            const totalInvoiced = cohortInvoiced + corporateTotal;
+            const studentsWithDue = students.filter(s => {
+              const tot = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
+              const pd = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+              return tot > pd;
+            });
+            const corporateDue = Math.max(0, corporateTotal - corporateVerified);
+            const totalPendingDues = Math.max(0, totalInvoiced - verifiedRevenue);
+            const collectionRate = totalInvoiced > 0 ? Math.round((verifiedRevenue / totalInvoiced) * 100) : 0;
+
+            return (
+              <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
                 
-                {/* 1. Total Students */}
-                <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
-                  <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
-                      <Users size={14} className="sm:hidden" />
-                      <Users size={16} className="hidden sm:block" />
-                    </div>
-                    <span>Students</span>
+                {/* Header Title with Date */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
+                  <div>
+                    <h1 className="text-xl sm:text-3xl font-black text-[#0F172A] tracking-tight">
+                      Overview & Analytics
+                    </h1>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Real-time cohort enrollments, financial settlements, and operational status
+                    </p>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
-                    {students.length}
+                  <div className="flex items-center gap-1.5 text-xs text-[#64748B] font-medium">
+                    <Calendar size={13} className="text-[#0066FF]" />
+                    <span>Wednesday, 21 Oct 2026</span>
                   </div>
-                  <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">{students.length} Registered Cohort</p>
                 </div>
 
-                {/* 2. Active Courses */}
-                <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
-                  <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
-                      <BookOpen size={14} className="sm:hidden" />
-                      <BookOpen size={16} className="hidden sm:block" />
+                {/* Mobile View: High-density compact small-icon metric badges (sm:hidden) */}
+                <div className="grid grid-cols-2 gap-2 sm:hidden">
+                  {/* 1. Students */}
+                  <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Users size={15} />
                     </div>
-                    <span>Active Courses</span>
+                    <div className="min-w-0">
+                      <div className="text-base font-black text-[#0F172A] leading-none">
+                        {students.length}
+                      </div>
+                      <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Students</span>
+                    </div>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
-                    {coursesList.length}
+
+                  {/* 2. Courses */}
+                  <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <BookOpen size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-base font-black text-[#0F172A] leading-none">
+                        {coursesList.length}
+                      </div>
+                      <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Courses</span>
+                    </div>
                   </div>
-                  <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">AI, Web & Cloud</p>
+
+                  {/* 3. Verified Rev */}
+                  <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <IndianRupee size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-base font-black text-[#0F172A] leading-none">
+                        ₹{verifiedRevenue >= 1000 ? `${(verifiedRevenue / 1000).toFixed(1)}k` : verifiedRevenue}
+                      </div>
+                      <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Verified Rev</span>
+                    </div>
+                  </div>
+
+                  {/* 4. Pending Due */}
+                  <div className="p-2.5 rounded-xl bg-white border border-[#E2E8F0] shadow-xs flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <ClipboardList size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className={`text-base font-black leading-none ${studentsWithDue.length > 0 || corporateDue > 0 ? 'text-amber-600' : 'text-[#0F172A]'}`}>
+                        {studentsWithDue.length}
+                      </div>
+                      <span className="text-[10px] text-[#64748B] font-semibold block truncate mt-0.5">Pending Dues</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 3. Verified Revenue & 4. Pending Action (Real cohort + corporate data) */}
-                {(() => {
-                  const cohortVerified = students.reduce((acc, s) => {
-                    return acc + (parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0);
-                  }, 0);
-                  const cohortInvoiced = students.reduce((acc, s) => {
-                    return acc + (parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0);
-                  }, 0);
-                  const corporateVerified = crmClients.reduce((acc, c) => {
-                    const pd = c.amountPaid ? parseInt(c.amountPaid.replace(/[^0-9]/g, ''), 10) : (c.receivedAmount || 0);
-                    return acc + (pd || 0);
-                  }, 0);
-                  const corporateTotal = crmClients.reduce((acc, c) => {
-                    const quot = c.contractValue ? parseInt(c.contractValue.replace(/[^0-9]/g, ''), 10) : (c.quotationAmount || 0);
-                    return acc + (quot || 0);
-                  }, 0);
-
-                  const verifiedRevenue = cohortVerified + corporateVerified;
-                  const totalInvoiced = cohortInvoiced + corporateTotal;
-                  const studentsWithDue = students.filter(s => {
-                    const tot = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                    const pd = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                    return tot > pd;
-                  });
-                  const corporateDue = Math.max(0, corporateTotal - corporateVerified);
-                  const totalPendingDues = Math.max(0, totalInvoiced - verifiedRevenue);
-                  const collectionRate = totalInvoiced > 0 ? Math.round((verifiedRevenue / totalInvoiced) * 100) : 0;
-
-                  return (
-                    <>
-                      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
-                        <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
-                            <IndianRupee size={14} className="sm:hidden" />
-                            <IndianRupee size={16} className="hidden sm:block" />
-                          </div>
-                          <span>Verified Rev</span>
-                        </div>
-                        <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
-                          ₹{verifiedRevenue.toLocaleString('en-IN')}
-                        </div>
-                        <p className="text-[10px] sm:text-[11px] text-[#0066FF] font-semibold flex items-center gap-1 break-words">
-                          <CheckCircle2 size={11} /> {collectionRate}% of ₹{totalInvoiced.toLocaleString('en-IN')}
-                        </p>
+                {/* Desktop / Tablet View: 4 Top Metric Cards (hidden sm:grid) */}
+                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+                  
+                  {/* 1. Total Students */}
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
+                    <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
+                        <Users size={14} className="sm:hidden" />
+                        <Users size={16} className="hidden sm:block" />
                       </div>
+                      <span>Students</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
+                      {students.length}
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">{students.length} Registered Cohort</p>
+                  </div>
 
-                      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
-                        <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
-                            <ClipboardList size={14} className="sm:hidden" />
-                            <ClipboardList size={16} className="hidden sm:block" />
-                          </div>
-                          <span>Pending Due</span>
-                        </div>
-                        <div className={`text-2xl sm:text-3xl font-black ${studentsWithDue.length > 0 || corporateDue > 0 ? 'text-amber-600' : 'text-[#0F172A]'}`}>
-                          {studentsWithDue.length}
-                        </div>
-                        <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">
-                          {totalPendingDues === 0 ? 'All Clear' : `₹${totalPendingDues.toLocaleString('en-IN')} Due`}
-                        </p>
+                  {/* 2. Active Courses */}
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
+                    <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
+                        <BookOpen size={14} className="sm:hidden" />
+                        <BookOpen size={16} className="hidden sm:block" />
                       </div>
-                    </>
-                  );
-                })()}
-              </div>
+                      <span>Active Courses</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
+                      {coursesList.length}
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">AI, Web & Cloud</p>
+                  </div>
+
+                  {/* 3. Verified Revenue */}
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
+                    <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
+                        <IndianRupee size={14} className="sm:hidden" />
+                        <IndianRupee size={16} className="hidden sm:block" />
+                      </div>
+                      <span>Verified Rev</span>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-[#0F172A]">
+                      ₹{verifiedRevenue.toLocaleString('en-IN')}
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-[#0066FF] font-semibold flex items-center gap-1 break-words">
+                      <CheckCircle2 size={11} /> {collectionRate}% of ₹{totalInvoiced.toLocaleString('en-IN')}
+                    </p>
+                  </div>
+
+                  {/* 4. Pending Due */}
+                  <div className="p-3.5 sm:p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-2.5 sm:space-y-4">
+                    <div className="flex items-center gap-2 sm:gap-2.5 text-[11px] sm:text-xs font-semibold text-[#64748B]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#000000] text-white flex items-center justify-center shrink-0">
+                        <ClipboardList size={14} className="sm:hidden" />
+                        <ClipboardList size={16} className="hidden sm:block" />
+                      </div>
+                      <span>Pending Due</span>
+                    </div>
+                    <div className={`text-2xl sm:text-3xl font-black ${studentsWithDue.length > 0 || corporateDue > 0 ? 'text-amber-600' : 'text-[#0F172A]'}`}>
+                      {studentsWithDue.length}
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-[#94A3B8] font-medium break-words">
+                      {totalPendingDues === 0 ? 'All Clear' : `₹${totalPendingDues.toLocaleString('en-IN')} Due`}
+                    </p>
+                  </div>
+                </div>
 
               {/* Large Section: Employee CRM & Corporate Training Operations (Exact Reference Image 2) */}
               <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-5">
@@ -2199,7 +2253,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               </div>
 
             </div>
-          )}
+          );
+        })()}
 
           {/* ───────────────────────────────────────────────────────────────── */}
           {/* TAB 2: ALL REGISTERED STUDENTS                                    */}
