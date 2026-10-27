@@ -1073,14 +1073,20 @@ export function getStoredStudents(): StudentCohortRecord[] {
   return finalStudents;
 }
 
-export function saveStoredStudents(students: StudentCohortRecord[], notify = false) {
+export function saveStoredStudents(students: StudentCohortRecord[], silent = false) {
   if (typeof window === 'undefined') return;
   try {
     const deduplicated = deduplicateAndMergeStudents(students);
-    localStorage.setItem(CACHE_KEY, JSON.stringify(deduplicated));
-    localStorage.setItem('atideto_students_cache', JSON.stringify(deduplicated));
-    if (notify) {
-      window.dispatchEvent(new CustomEvent('atideto-students-updated', { detail: deduplicated }));
+    const newJson = JSON.stringify(deduplicated);
+    const existingJson = localStorage.getItem(CACHE_KEY);
+
+    // Only update and dispatch if data actually changed
+    if (existingJson !== newJson) {
+      localStorage.setItem(CACHE_KEY, newJson);
+      localStorage.setItem('atideto_students_cache', newJson);
+      if (!silent) {
+        window.dispatchEvent(new CustomEvent('atideto-students-updated', { detail: deduplicated }));
+      }
     }
   } catch (e) {
     console.error('Failed to save student cohort to localStorage:', e);

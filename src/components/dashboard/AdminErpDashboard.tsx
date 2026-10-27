@@ -1759,7 +1759,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     const unsubscribeCloud = subscribeToCloudSync((fresh) => {
       if (fresh.students && Array.isArray(fresh.students) && fresh.students.length > 0) {
         setStudents(fresh.students);
-        saveStoredStudents(fresh.students);
+        saveStoredStudents(fresh.students, true);
 
         // If the right drawer is currently open showing a student dossier, live-update its fields
         setRightPanel(prev => {
@@ -1790,8 +1790,13 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
     // Local custom event listener for immediate same-tab/cross-tab state updates
     const handleLocalStudentUpdate = (e: any) => {
       const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
-      if (list && Array.isArray(list)) {
-        setStudents(list);
+      if (list && Array.isArray(list) && list.length > 0) {
+        setStudents(prev => {
+          if (prev.length === list.length && prev[0]?.id === list[0]?.id && prev[0]?.score === list[0]?.score) {
+            return prev;
+          }
+          return list;
+        });
       }
     };
     window.addEventListener('atideto_students_updated', handleLocalStudentUpdate);

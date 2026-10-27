@@ -689,9 +689,12 @@ export default function Login() {
         setResendCooldown(30);
         setIsDelivered(true);
 
+        const devOtp = (res as any).devOtp;
         toast.success(`Verification code dispatched to ${email}`, {
           duration: 9000,
-          description: "Please check your inbox. If you cannot find the email, please check your spam or junk folder."
+          description: devOtp
+            ? `Your code is ${devOtp}. Check inbox (and spam folder) or enter code directly.`
+            : "Please check your inbox. If you cannot find the email, please check your spam or junk folder."
         });
         setTimeout(() => {
           otpInputRefs[0].current?.focus();

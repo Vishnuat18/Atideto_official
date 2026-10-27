@@ -408,6 +408,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
     const fetchAndSyncStudent = async () => {
       if (isFetching || !isMounted) return;
       isFetching = true;
+
       try {
         let stored = getStoredStudents();
         try {
@@ -420,7 +421,13 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
         }
 
         if (!isMounted) return;
-        setCohortStudents(stored);
+
+        setCohortStudents(prev => {
+          if (prev.length === stored.length && prev[0]?.id === stored[0]?.id && prev[0]?.score === stored[0]?.score) {
+            return prev;
+          }
+          return stored;
+        });
 
         const userEmail = (user?.email || '').toLowerCase().trim();
         const userName = (user?.name || '').toLowerCase().trim();
@@ -432,7 +439,12 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
         );
 
         if (found) {
-          setStudentProfile(found);
+          setStudentProfile((prev: any) => {
+            if (prev && prev.id === found.id && prev.attendance === found.attendance && prev.feePaid === found.feePaid && prev.status === found.status) {
+              return prev;
+            }
+            return found;
+          });
         } else if (userEmail) {
           setStudentProfile((prev: any) => ({
             ...prev,
@@ -444,51 +456,30 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
             score: prev?.score || 92
           }));
         } else if (stored.length > 0) {
-          setStudentProfile(stored[0]);
+          setStudentProfile((prev: any) => prev || stored[0]);
         }
       } finally {
         isFetching = false;
       }
     };
 
-    // Initial sync on mount
     fetchAndSyncStudent();
-
-    // Direct event handler updating local state without triggering new network requests
-    const handleLocalUpdate = (e: any) => {
-      if (!isMounted) return;
-      const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
-      if (list && Array.isArray(list) && list.length > 0) {
-        setCohortStudents(list);
-        const userEmail = (user?.email || '').toLowerCase().trim();
-        const userName = (user?.name || '').toLowerCase().trim();
-        const found = list.find((s: any) => 
-          (userEmail && s.email && s.email.toLowerCase() === userEmail) ||
-          (userName && s.name && s.name.toLowerCase() === userName)
-        );
-        if (found) setStudentProfile(found);
-      }
-    };
-
-    // Cloud subscription updates directly without re-fetching
-    const unsubscribeCloud = subscribeToCloudSync((fresh) => {
-      if (!isMounted || !fresh || !fresh.students) return;
-      if (Array.isArray(fresh.students) && fresh.students.length > 0) {
-        setCohortStudents(fresh.students);
-        const userEmail = (user?.email || '').toLowerCase().trim();
-        const found = fresh.students.find((s: any) => userEmail && s.email && s.email.toLowerCase() === userEmail);
-        if (found) setStudentProfile(found);
-      }
+    const unsubscribeCloud = subscribeToCloudSync(() => {
+      fetchAndSyncStudent();
     });
 
-    window.addEventListener('atideto-students-updated', handleLocalUpdate);
-    window.addEventListener('atideto_students_updated', handleLocalUpdate);
+    const handleUpdate = () => {
+      fetchAndSyncStudent();
+    };
+
+    window.addEventListener('atideto-students-updated', handleUpdate);
+    window.addEventListener('atideto_students_updated', handleUpdate);
 
     return () => {
       isMounted = false;
       unsubscribeCloud();
-      window.removeEventListener('atideto-students-updated', handleLocalUpdate);
-      window.removeEventListener('atideto_students_updated', handleLocalUpdate);
+      window.removeEventListener('atideto-students-updated', handleUpdate);
+      window.removeEventListener('atideto_students_updated', handleUpdate);
     };
   }, [user]);
 

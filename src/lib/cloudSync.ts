@@ -44,7 +44,7 @@ export async function fetchCloudStudents(): Promise<StudentCohortRecord[] | null
         endDate: s.endDate || '2027-01-25',
         duration: s.duration || '3 Months'
       }));
-      saveStoredStudents(cleaned);
+      saveStoredStudents(cleaned, true);
       return cleaned;
     }
   } catch (err) {
@@ -327,8 +327,7 @@ async function touchCloudMeta(entity: string) {
 export function subscribeToCloudSync(onSync: (data: any) => void) {
   if (typeof window === 'undefined') return () => {};
 
-  // Initialize with current time so it only triggers for future mutations
-  let lastKnownSync = Date.now();
+  let lastKnownSync: number | null = null;
   let isChecking = false;
 
   const checkForUpdates = async () => {
@@ -338,10 +337,17 @@ export function subscribeToCloudSync(onSync: (data: any) => void) {
       const metaRes = await fetch(`${RTDB_BASE}/meta.json?_t=${Date.now()}`, { cache: 'no-store' });
       if (metaRes.ok) {
         const meta: CloudMeta = await metaRes.json();
-        if (meta && meta.lastSync && meta.lastSync > lastKnownSync) {
-          lastKnownSync = meta.lastSync;
-          const freshData = await syncAllCloudData();
-          onSync(freshData);
+        if (meta && meta.lastSync) {
+          // On first run, record the current timestamp without triggering an immediate full re-render
+          if (lastKnownSync === null) {
+            lastKnownSync = meta.lastSync;
+            return;
+          }
+          if (meta.lastSync > lastKnownSync) {
+            lastKnownSync = meta.lastSync;
+            const freshData = await syncAllCloudData();
+            onSync(freshData);
+          }
         }
       }
     } catch (err) {
@@ -351,8 +357,11 @@ export function subscribeToCloudSync(onSync: (data: any) => void) {
     }
   };
 
-  // Periodic background check every 10 seconds
-  const interval = setInterval(checkForUpdates, 10000);
+  // Initial check on mount to initialize lastKnownSync
+  checkForUpdates();
+
+  // Gentle periodic polling every 15 seconds (never causes 1-second UI loops)
+  const interval = setInterval(checkForUpdates, 15000);
 
   // Sync on tab focus or screen unlock
   const handleFocus = () => {

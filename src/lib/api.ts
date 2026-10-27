@@ -838,7 +838,7 @@ export async function getStudentsFromDb(): Promise<StudentCohortRecord[]> {
   try {
     const cloudStudents = await fetchCloudStudents();
     if (cloudStudents && cloudStudents.length > 0) {
-      saveStoredStudents(cloudStudents);
+      saveStoredStudents(cloudStudents, true);
       return cloudStudents;
     }
   } catch (err) {
