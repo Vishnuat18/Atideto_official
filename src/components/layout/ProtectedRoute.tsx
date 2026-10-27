@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, checkIsAdmin } from '@/hooks/useAuth';
 import LogoLoader from '@/components/ui/LogoLoader';
 
 interface ProtectedRouteProps {
@@ -14,13 +14,24 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
     return <LogoLoader size="fullscreen" />;
   }
 
-  if (!user) {
+  // Fallback to localStorage session check
+  let effectiveUser = user;
+  if (!effectiveUser) {
+    try {
+      const saved = localStorage.getItem('atideto_sql_user');
+      if (saved) effectiveUser = JSON.parse(saved);
+    } catch {}
+  }
+
+  if (!effectiveUser) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    // Non-admin attempting to view admin ERP gets redirected to student dashboard
-    if (requiredRole === 'admin') {
+  if (requiredRole === 'admin') {
+    const isAdmin = checkIsAdmin(effectiveUser.email, effectiveUser.role) ||
+      (typeof window !== 'undefined' && localStorage.getItem('atideto_dashboard_mode') === 'admin');
+
+    if (!isAdmin) {
       return <Navigate to="/dashboard" replace />;
     }
   }

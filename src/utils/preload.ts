@@ -35,6 +35,8 @@ export const preloadRoute = (path: string) => {
         import('@/pages/TermsAndConditions');
         break;
       case '/dashboard':
+      case '/admin':
+      case '/admin-erp':
         import('@/pages/Dashboard');
         break;
       case '/profile':

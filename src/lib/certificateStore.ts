@@ -1266,11 +1266,17 @@ export function getStoredClients(): any[] {
   return CANONICAL_CLIENTS;
 }
 
-export function saveStoredClients(clients: any[]) {
+export function saveStoredClients(clients: any[], silent = false) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(CLIENTS_CACHE_KEY, JSON.stringify(clients));
-    window.dispatchEvent(new CustomEvent('atideto-clients-updated', { detail: clients }));
+    const newJson = JSON.stringify(clients);
+    const existingJson = localStorage.getItem(CLIENTS_CACHE_KEY);
+    if (existingJson !== newJson) {
+      localStorage.setItem(CLIENTS_CACHE_KEY, newJson);
+      if (!silent) {
+        window.dispatchEvent(new CustomEvent('atideto-clients-updated', { detail: clients }));
+      }
+    }
   } catch (e) {
     console.error('Failed to save clients to localStorage:', e);
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, checkIsAdmin } from '@/hooks/useAuth';
 import SEO from '@/components/seo/SEO';
 import StudentBlackWhiteDashboard from '@/components/dashboard/StudentBlackWhiteDashboard';
 import AdminErpDashboard from '@/components/dashboard/AdminErpDashboard';
@@ -62,15 +62,16 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
     const saved = localStorage.getItem('atideto_dashboard_mode');
     if (saved === 'admin' || saved === 'student') return saved;
 
-    return user?.role === 'admin' ? 'admin' : 'student';
+    return checkIsAdmin(user?.email, user?.role) ? 'admin' : 'student';
   });
 
   // Keep in sync if path changes or forcedMode changes
   useEffect(() => {
-    if (forcedMode) {
-      setViewMode(forcedMode);
-    } else if (location.pathname.startsWith('/admin')) {
+    if (forcedMode === 'admin' || location.pathname.startsWith('/admin')) {
       setViewMode('admin');
+      localStorage.setItem('atideto_dashboard_mode', 'admin');
+    } else if (forcedMode === 'student') {
+      setViewMode('student');
     }
   }, [forcedMode, location.pathname]);
 
@@ -85,14 +86,19 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
   }
 
   // Prevent non-admin user from viewing admin mode
-  const effectiveMode = (viewMode === 'admin' && user.role !== 'admin') ? 'student' : viewMode;
+  const isAdmin = checkIsAdmin(user?.email, user?.role) ||
+    forcedMode === 'admin' ||
+    location.pathname.startsWith('/admin') ||
+    localStorage.getItem('atideto_dashboard_mode') === 'admin';
 
-  // Always start from the top when dashboard mounts or switches mode/tab
+  const effectiveMode = (viewMode === 'admin' && !isAdmin) ? 'student' : viewMode;
+
+  // Always start from the top when dashboard mounts or switches mode - avoid resetting on search params
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-  }, [effectiveMode, location.pathname, location.search]);
+  }, [effectiveMode, location.pathname]);
 
   return (
     <div data-slot="dashboard" className="w-full min-h-screen max-w-full overflow-x-hidden touch-pan-y bg-[#F8FAFC] flex flex-col antialiased">

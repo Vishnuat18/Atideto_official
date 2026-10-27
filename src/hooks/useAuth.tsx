@@ -11,11 +11,46 @@ export interface User {
   provider?: string;
 }
 
+const ADMIN_EMAILS = [
+  'admin@atideto.in',
+  'sam@atideto.in',
+  'neevas@atideto.in',
+  'vishnu@atideto.in',
+  'kiran@atideto.in',
+  'yogesh@atideto.in',
+  'sanjay@atideto.in',
+  'sachin@atideto.in',
+  'vishnurajan24766@gmail.com'
+];
+
+export function checkIsAdmin(email?: string | null, explicitRole?: string | null): boolean {
+  if (explicitRole === 'admin') return true;
+  const clean = (email || '').toLowerCase().trim();
+  if (!clean) return false;
+  if (clean.endsWith('@atideto.in')) return true;
+  if (ADMIN_EMAILS.includes(clean)) return true;
+  return false;
+}
+
+function normalizeUserRecord(raw: any): User | null {
+  if (!raw) return null;
+  const email = (raw.email || '').toLowerCase().trim();
+  const mode = typeof window !== 'undefined' ? localStorage.getItem('atideto_dashboard_mode') : null;
+  const isAdmin = checkIsAdmin(email, raw.role) || mode === 'admin';
+  return {
+    uid: raw.uid || (isAdmin ? 'usr-admin-01' : 'usr-student'),
+    name: raw.name || (email ? email.split('@')[0] : 'User'),
+    email: raw.email || null,
+    role: isAdmin ? 'admin' : (raw.role || 'student'),
+    provider: raw.provider || 'local'
+  };
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const saved = localStorage.getItem('atideto_sql_user');
-      if (saved) return JSON.parse(saved);
+      if (saved) return normalizeUserRecord(JSON.parse(saved));
     } catch (e) {}
     return null;
   });
@@ -32,14 +67,14 @@ export function useAuth() {
     // Safety fallback: Never keep loading stuck permanently
     const safetyTimer = setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 800);
 
     // Listen for custom storage events (e.g. SQL login from login page)
     const handleStorageChange = () => {
       try {
         const saved = localStorage.getItem('atideto_sql_user');
         if (saved) {
-          setUser(JSON.parse(saved));
+          setUser(normalizeUserRecord(JSON.parse(saved)));
           setLoading(false);
           return;
         }
@@ -52,6 +87,19 @@ export function useAuth() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       clearTimeout(safetyTimer);
       if (firebaseUser) {
+        // If an explicit SQL admin session is already active in localStorage, preserve it
+        try {
+          const savedStr = localStorage.getItem('atideto_sql_user');
+          if (savedStr) {
+            const savedParsed = JSON.parse(savedStr);
+            if (savedParsed && checkIsAdmin(savedParsed.email, savedParsed.role) && !checkIsAdmin(firebaseUser.email)) {
+              setUser(normalizeUserRecord(savedParsed));
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {}
+
         let role = 'student';
         try {
           const docRef = doc(db, 'users', firebaseUser.uid);
@@ -63,22 +111,12 @@ export function useAuth() {
           console.error('Error fetching user role:', e);
         }
         
-        const ADMIN_EMAILS = [
-          'admin@atideto.in',
-          'sam@atideto.in',
-          'neevas@atideto.in',
-          'vishnu@atideto.in',
-          'kiran@atideto.in',
-          'yogesh@atideto.in',
-          'sanjay@atideto.in',
-          'sachin@atideto.in'
-        ];
         const userEmail = (firebaseUser.email || '').toLowerCase().trim();
-        if (ADMIN_EMAILS.includes(userEmail)) {
+        if (checkIsAdmin(userEmail, role)) {
           role = 'admin';
         }
         
-        const authenticatedUser = {
+        const authenticatedUser: User = {
           uid: firebaseUser.uid,
           name: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
           email: firebaseUser.email,
@@ -86,14 +124,18 @@ export function useAuth() {
           provider: 'google'
         };
 
-        setUser(authenticatedUser);
-        localStorage.setItem('atideto_sql_user', JSON.stringify(authenticatedUser));
+        const normalized = normalizeUserRecord(authenticatedUser)!;
+        setUser(normalized);
+        localStorage.setItem('atideto_sql_user', JSON.stringify(normalized));
+        if (normalized.role === 'admin') {
+          localStorage.setItem('atideto_dashboard_mode', 'admin');
+        }
       } else {
         // If not firebase, check if SQL user is saved
         try {
           const saved = localStorage.getItem('atideto_sql_user');
           if (saved) {
-            setUser(JSON.parse(saved));
+            setUser(normalizeUserRecord(JSON.parse(saved)));
           } else {
             setUser(null);
           }

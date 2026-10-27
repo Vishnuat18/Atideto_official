@@ -882,8 +882,7 @@ export async function getStudentsFromDb(): Promise<StudentCohortRecord[]> {
           tools: typeof r.tools === 'string' ? JSON.parse(r.tools || '[]') : (r.tools || []),
           area: typeof r.area === 'string' ? JSON.parse(r.area || '[]') : (r.area || [])
         }));
-        saveStoredStudents(mapped);
-        saveCloudStudents(mapped);
+        saveStoredStudents(mapped, true);
         return mapped;
       }
     }
@@ -1058,7 +1057,6 @@ export async function getRegistrationsFromDb() {
           createdAt: r.created_at
         }));
         localStorage.setItem('atideto_registrations', JSON.stringify(mapped));
-        saveCloudRegistrations(mapped);
         return mapped;
       }
     }
@@ -1236,8 +1234,7 @@ export async function getClientsFromDb() {
           contractValue: r.contract_value,
           pipelineStatus: r.pipeline_status
         }));
-        saveStoredClients(mapped);
-        saveCloudClients(mapped);
+        saveStoredClients(mapped, true);
         return mapped;
       }
     }
@@ -1344,7 +1341,6 @@ export async function getStaffFromDb() {
           other_socials: typeof r.other_socials === 'string' ? JSON.parse(r.other_socials || '[]') : (r.other_socials || [])
         }));
         localStorage.setItem('atideto_staff_cache', JSON.stringify(mapped));
-        saveCloudStaff(mapped);
         return mapped;
       }
     }
@@ -1440,7 +1436,6 @@ export async function getPaymentsFromDb() {
           date: r.date
         }));
         localStorage.setItem('atideto_payments_cache', JSON.stringify(mapped));
-        saveCloudPayments(mapped);
         return mapped;
       }
     }

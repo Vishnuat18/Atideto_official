@@ -242,10 +242,14 @@ export default function Login() {
 
   const handleTwoFactorSuccess = (verifiedUser: any) => {
     setAdmin2faState({ isOpen: false, email: "", tempUser: null });
-    localStorage.setItem('atideto_sql_user', JSON.stringify(verifiedUser));
+    const adminUser = {
+      ...verifiedUser,
+      role: 'admin'
+    };
+    localStorage.setItem('atideto_sql_user', JSON.stringify(adminUser));
     localStorage.setItem('atideto_dashboard_mode', 'admin');
     window.dispatchEvent(new Event('atideto_auth_change'));
-    toast.success(`Two-Step Verification approved. Signed in as ${verifiedUser.name}!`);
+    toast.success(`Two-Step Verification approved. Signed in as ${verifiedUser.name || 'Administrator'}!`);
     navigate("/admin");
   };
 

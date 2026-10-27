@@ -329,9 +329,12 @@ export function subscribeToCloudSync(onSync: (data: any) => void) {
 
   let lastKnownSync: number | null = null;
   let isChecking = false;
+  let lastCheckTime = 0;
 
   const checkForUpdates = async () => {
-    if (isChecking) return;
+    const now = Date.now();
+    if (isChecking || (now - lastCheckTime < 8000)) return;
+    lastCheckTime = now;
     isChecking = true;
     try {
       const metaRes = await fetch(`${RTDB_BASE}/meta.json?_t=${Date.now()}`, { cache: 'no-store' });

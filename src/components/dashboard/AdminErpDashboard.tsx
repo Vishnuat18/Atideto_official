@@ -595,19 +595,32 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
   useEffect(() => {
     const handleUpdate = (e: any) => {
-      if (e.detail && Array.isArray(e.detail)) {
-        setStudents(e.detail);
+      const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
+      if (list && Array.isArray(list) && list.length > 0) {
+        setStudents(prev => {
+          if (prev.length === list.length && prev[0]?.id === list[0]?.id && prev[0]?.score === list[0]?.score && prev[0]?.status === list[0]?.status) {
+            return prev;
+          }
+          return list;
+        });
       }
     };
     const handleClientsUpdate = (e: any) => {
       if (e.detail && Array.isArray(e.detail)) {
-        setCrmClients(e.detail);
+        setCrmClients(prev => {
+          if (prev.length === e.detail.length && prev[0]?.id === e.detail[0]?.id) {
+            return prev;
+          }
+          return e.detail;
+        });
       }
     };
     window.addEventListener('atideto-students-updated', handleUpdate);
+    window.addEventListener('atideto_students_updated', handleUpdate);
     window.addEventListener('atideto-clients-updated', handleClientsUpdate);
     return () => {
       window.removeEventListener('atideto-students-updated', handleUpdate);
+      window.removeEventListener('atideto_students_updated', handleUpdate);
       window.removeEventListener('atideto-clients-updated', handleClientsUpdate);
     };
   }, []);
@@ -1715,11 +1728,11 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
       if (cloudData) {
         if (cloudData.students && Array.isArray(cloudData.students) && cloudData.students.length > 0) {
           setStudents(cloudData.students);
-          saveStoredStudents(cloudData.students);
+          saveStoredStudents(cloudData.students, true);
         }
         if (cloudData.clients && Array.isArray(cloudData.clients)) {
           setCrmClients(cloudData.clients);
-          saveStoredClients(cloudData.clients);
+          saveStoredClients(cloudData.clients, true);
         }
         if (cloudData.staff && Array.isArray(cloudData.staff) && cloudData.staff.length > 0) {
           setStaffMembers(cloudData.staff);
@@ -1774,7 +1787,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
       }
       if (fresh.clients && Array.isArray(fresh.clients)) {
         setCrmClients(fresh.clients);
-        saveStoredClients(fresh.clients);
+        saveStoredClients(fresh.clients, true);
       }
       if (fresh.staff && Array.isArray(fresh.staff)) {
         setStaffMembers(fresh.staff);
@@ -1787,25 +1800,8 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
       }
     });
 
-    // Local custom event listener for immediate same-tab/cross-tab state updates
-    const handleLocalStudentUpdate = (e: any) => {
-      const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
-      if (list && Array.isArray(list) && list.length > 0) {
-        setStudents(prev => {
-          if (prev.length === list.length && prev[0]?.id === list[0]?.id && prev[0]?.score === list[0]?.score) {
-            return prev;
-          }
-          return list;
-        });
-      }
-    };
-    window.addEventListener('atideto_students_updated', handleLocalStudentUpdate);
-    window.addEventListener('atideto-students-updated', handleLocalStudentUpdate);
-
     return () => {
       unsubscribeCloud();
-      window.removeEventListener('atideto_students_updated', handleLocalStudentUpdate);
-      window.removeEventListener('atideto-students-updated', handleLocalStudentUpdate);
     };
   }, []);
 
