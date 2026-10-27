@@ -10,17 +10,18 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <LogoLoader size="fullscreen" />;
-  }
-
-  // Fallback to localStorage session check
+  // Check active session immediately from hook or cache
   let effectiveUser = user;
-  if (!effectiveUser) {
+  if (!effectiveUser && typeof window !== 'undefined') {
     try {
       const saved = localStorage.getItem('atideto_sql_user');
       if (saved) effectiveUser = JSON.parse(saved);
     } catch {}
+  }
+
+  // Only display fullscreen loader if no user is cached anywhere and auth is truly initializing
+  if (loading && !effectiveUser) {
+    return <LogoLoader size="fullscreen" />;
   }
 
   if (!effectiveUser) {

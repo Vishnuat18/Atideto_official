@@ -206,7 +206,12 @@ interface RightPanelState {
   mode?: 'certificate' | 'offer-letter' | 'attendance';
 }
 
-export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel = 0.8, onZoomChange }: AdminErpProps) {
+export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zoomLevel = 0.8, onZoomChange }: AdminErpProps) {
+  const user = rawUser || {
+    name: 'Administrator',
+    email: 'admin@atideto.in',
+    role: 'admin'
+  };
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const mainScrollRef = useRef<HTMLElement | null>(null);
@@ -1912,10 +1917,10 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
               className="w-8 h-8 rounded-full bg-[#000000] text-white font-black text-xs flex items-center justify-center shadow-sm cursor-pointer active:scale-95 hover:ring-2 hover:ring-[#0066FF]/20 transition"
               title="ERP Settings"
             >
-              {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
             </button>
             <div className="hidden sm:block text-left text-xs leading-tight">
-              <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{user.name || 'Atideto Admin'}</p>
+              <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{user?.name || 'Atideto Admin'}</p>
               <p className="text-[#64748B] text-[10px] mt-0.5 font-medium">Enterprise ERP</p>
             </div>
             <button 
@@ -5373,7 +5378,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
 
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-xl bg-black text-white font-black text-base flex items-center justify-center shrink-0">
-                            {member.name.charAt(0)}
+                            {member.name ? member.name.charAt(0) : 'E'}
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="font-extrabold text-base text-[#0F172A] break-words">
@@ -10047,7 +10052,7 @@ export default function AdminErpDashboard({ user, onSwitchToStudent, zoomLevel =
             <div className="p-4 sm:p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-11 h-11 rounded-2xl bg-[#000000] text-white font-black text-sm flex items-center justify-center shadow-sm shrink-0">
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">

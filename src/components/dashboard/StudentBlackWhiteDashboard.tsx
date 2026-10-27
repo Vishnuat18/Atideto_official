@@ -266,7 +266,12 @@ function getCourseCurriculumDetails(courseData: any) {
   };
 }
 
-export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoomLevel = 0.8, onZoomChange }: StudentProps) {
+export default function StudentBlackWhiteDashboard({ user: rawUser, onSwitchToAdmin, zoomLevel = 0.8, onZoomChange }: StudentProps) {
+  const user = rawUser || {
+    name: 'Candidate Student',
+    email: 'student@atideto.in',
+    role: 'student'
+  };
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<StudentTabType>('overview');
   const mainScrollRef = useRef<HTMLElement | null>(null);
@@ -893,10 +898,10 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
               className="w-8 h-8 rounded-full bg-[#000000] text-white font-black text-xs flex items-center justify-center shadow-sm cursor-pointer active:scale-95 hover:ring-2 hover:ring-[#0066FF]/20 transition"
               title="Open Student Profile"
             >
-              {(studentProfile?.name || user.name || 'S').charAt(0).toUpperCase()}
+              {(studentProfile?.name || user?.name || 'S').charAt(0).toUpperCase()}
             </button>
             <div className="hidden sm:block text-left text-xs leading-tight">
-              <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{studentProfile?.name || user.name}</p>
+              <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{studentProfile?.name || user?.name || 'Student'}</p>
               <p className="text-[#64748B] text-[10px] mt-0.5 font-medium">{studentProfile?.degree || 'Verified Candidate'}</p>
             </div>
             <button 
@@ -2503,11 +2508,11 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
               <div className="p-6 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-sm space-y-5 text-xs">
                 <div className="flex items-center gap-4 pb-4 border-b border-[#F1F5F9]">
                   <div className="w-16 h-16 rounded-full bg-[#000000] text-white text-2xl font-black flex items-center justify-center shadow-sm">
-                    {(studentProfile?.name || user.name).charAt(0).toUpperCase()}
+                    {(studentProfile?.name || user?.name || 'S').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-[#0F172A]">{studentProfile?.name || user.name}</h3>
-                    <p className="text-[#64748B] text-xs">{studentProfile?.email || user.email}</p>
+                    <h3 className="font-bold text-lg text-[#0F172A]">{studentProfile?.name || user?.name || 'Student'}</h3>
+                    <p className="text-[#64748B] text-xs">{studentProfile?.email || user?.email || ''}</p>
                     <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#0066FF]/10 text-[#0066FF] border border-[#0066FF]/20">
                       Verified Enrolled Candidate • ID: {studentProfile?.id || 'AT-MEC-2027-01'}
                     </span>
@@ -2520,7 +2525,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     <input
                       type="text"
                       key={`name-${studentProfile?.id}`}
-                      defaultValue={studentProfile?.name || user.name}
+                      defaultValue={studentProfile?.name || user?.name || ''}
                       className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] focus:outline-none"
                     />
                   </div>
@@ -2531,7 +2536,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                       type="email"
                       disabled
                       key={`email-${studentProfile?.id}`}
-                      defaultValue={studentProfile?.email || user.email}
+                      defaultValue={studentProfile?.email || user?.email || ''}
                       className="w-full px-3 py-2 rounded-lg bg-[#F1F5F9] border border-[#E2E8F0] text-[#64748B] cursor-not-allowed"
                     />
                   </div>
@@ -2950,7 +2955,7 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
                     <div className="text-center py-2 space-y-1.5">
                       <h3 className="font-serif text-lg font-black uppercase tracking-tight">Certificate of Accomplishment</h3>
                       <p className="text-[11px] text-gray-600">Presented to</p>
-                      <h2 className="text-xl font-bold font-sans underline decoration-2">{user.name}</h2>
+                      <h2 className="text-xl font-bold font-sans underline decoration-2">{user?.name || studentProfile?.name || 'Candidate'}</h2>
                       <p className="text-[11px] text-gray-700 max-w-sm mx-auto">
                         For successfully mastering advanced engineering cohorts in <b>{rightPanel.data?.domain || 'Artificial Intelligence'}</b>.
                       </p>
@@ -3260,12 +3265,12 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
             <div className="p-4 sm:p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-11 h-11 rounded-2xl bg-[#000000] text-white font-black text-sm flex items-center justify-center shadow-sm shrink-0">
-                  {(studentProfile?.name || user.name || 'S').charAt(0).toUpperCase()}
+                  {(studentProfile?.name || user?.name || 'S').charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-extrabold text-sm text-[#0F172A] truncate">
-                      {studentProfile?.name || user.name}
+                      {studentProfile?.name || user?.name || 'Student'}
                     </h3>
                     <span className="px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
                       Enrolled

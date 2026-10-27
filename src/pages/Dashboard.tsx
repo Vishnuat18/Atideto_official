@@ -81,12 +81,20 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
   };
 
   // Require legitimate authenticated user
-  if (!user) {
+  let effectiveUser = user;
+  if (!effectiveUser && typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('atideto_sql_user');
+      if (saved) effectiveUser = JSON.parse(saved);
+    } catch {}
+  }
+
+  if (!effectiveUser) {
     return <Navigate to="/login" replace />;
   }
 
   // Prevent non-admin user from viewing admin mode
-  const isAdmin = checkIsAdmin(user?.email, user?.role) ||
+  const isAdmin = checkIsAdmin(effectiveUser?.email, effectiveUser?.role) ||
     forcedMode === 'admin' ||
     location.pathname.startsWith('/admin') ||
     localStorage.getItem('atideto_dashboard_mode') === 'admin';
@@ -110,7 +118,7 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
             noindex={true} 
           />
           <AdminErpDashboard 
-            user={user} 
+            user={effectiveUser} 
             zoomLevel={zoomLevel}
             onZoomChange={handleZoomChange}
           />
@@ -123,7 +131,7 @@ export default function Dashboard({ forcedMode }: DashboardProps) {
             noindex={true} 
           />
           <StudentBlackWhiteDashboard 
-            user={user} 
+            user={effectiveUser} 
             zoomLevel={zoomLevel}
             onZoomChange={handleZoomChange}
           />
