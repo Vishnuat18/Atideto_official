@@ -77,7 +77,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
   scale = 1,
   nameFont = "'Cormorant Garamond', Georgia, serif",
   nameColor = '#12539c',
-  nameSize = 52,
+  nameSize = 58,
   signatoryTitle = 'Founder, ATIDETO Technologies',
   udyamId = 'UDYAM-TN-20-0242534',
   supportEmail = 'hello@atideto.com',
@@ -88,15 +88,15 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
   style = {},
   // Sizing controls
   overallScale = 1.0,
-  logoHeight = 82,
-  certTitleSize = 40,
-  domainFontSize = 14,
-  domainMarginTop = 18,
-  domainMarginBottom = 12,
-  bodyFontSize = 15.5,
-  qrSize = 88,
-  metaFontSize = 13.5,
-  footerFontSize = 12.5
+  logoHeight = 98,
+  certTitleSize = 44,
+  domainFontSize = 17,
+  domainMarginTop = 38,
+  domainMarginBottom = 16,
+  bodyFontSize = 19,
+  qrSize = 120,
+  metaFontSize = 15,
+  footerFontSize = 14
 }) => {
   const studentName = data?.name || 'Candidate Name';
   const collegeName = data?.college || 'Institution / College';
@@ -186,8 +186,8 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
       />
 
-      {/* Inner Content Layer with balanced padding and spacing */}
-      <div className="relative z-10 w-full h-full flex flex-col justify-between px-[68px] pt-[42px] pb-[28px]">
+      {/* Inner Content Layer — calibrated to use the A4 landscape page cleanly. */}
+      <div className="relative z-10 w-full h-full flex flex-col justify-between px-[68px] pt-[36px] pb-[22px]">
 
         {/* Top Header: Left ATIDETO logo | Right: Startup India + MSME + UDYAM ID */}
         <div 
@@ -261,7 +261,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
         </div>
 
         {/* Center Content Block - Vertically Centered */}
-        <div className="flex-1 flex flex-col justify-center my-auto py-1 text-center">
+        <div className="flex-1 flex flex-col justify-center my-auto py-2 text-center">
 
           {/* Eyebrow & Title */}
           <div>
@@ -283,7 +283,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
           </div>
 
           {/* Student Name */}
-          <div className="mt-2 mb-0">
+          <div className="mt-3 mb-0">
             <h2
               style={{
                 fontFamily: nameFont || "'Cormorant Garamond', Georgia, serif",
@@ -291,7 +291,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
                 fontSize: `${effNameSize}px`,
                 fontWeight: 700
               }}
-              className="font-bold tracking-wide italic m-0"
+              className="font-bold tracking-wide italic m-0 leading-[1.08]"
             >
               {studentName}
             </h2>
@@ -300,57 +300,77 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
           {/* Domain Title Capsule Box directly below student name */}
           <div 
             className="flex justify-center items-center"
+            data-certificate-domain-row="true"
             style={{
               marginTop: `${effDomainMarginTop}px`,
-              marginBottom: `${effDomainMarginBottom}px`
+              marginBottom: `${effDomainMarginBottom}px`,
+              position: 'relative',
             }}
           >
             <div
-              className="inline-flex items-center justify-center gap-2 rounded-full shadow-xs"
+              className="inline-flex items-center justify-center rounded-full shadow-xs"
+              data-certificate-domain-box="true"
               style={{
-                border: '1.2px solid #caa868',
+                border: '1.5px solid #caa868',
                 backgroundColor: '#ffffff',
-                padding: `${Math.max(4, Math.round(effDomainFontSize * 0.45))}px ${Math.max(16, Math.round(effDomainFontSize * 1.9))}px`,
-                boxSizing: 'border-box'
+                minWidth: `${Math.round(430 * masterScale)}px`,
+                maxWidth: `${Math.round(780 * masterScale)}px`,
+                height: `${Math.max(38, Math.round(effDomainFontSize * 2.3))}px`,
+                paddingLeft: `${Math.max(26, Math.round(effDomainFontSize * 2.1))}px`,
+                paddingRight: `${Math.max(26, Math.round(effDomainFontSize * 2.1))}px`,
+                boxSizing: 'border-box',
+                lineHeight: 1
               }}
             >
-              <span
+              <div
+                data-certificate-domain-content="true"
                 style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: `${effDomainFontSize}px`,
-                  fontWeight: 600,
-                  color: '#0b2545',
-                  lineHeight: '1.2',
                   display: 'inline-flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  gap: '6px',
+                  position: 'relative',
+                  top: '-6px',
+                  lineHeight: 1
                 }}
-                className="whitespace-nowrap"
               >
-                Internship Domain :
-              </span>
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: `${effDomainFontSize}px`,
-                  fontWeight: 700,
-                  color: '#12539c',
-                  lineHeight: '1.2',
-                  display: 'inline-flex',
-                  alignItems: 'center'
-                }}
-                className="whitespace-nowrap"
-              >
-                {domainName}
-              </span>
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: `${effDomainFontSize}px`,
+                    fontWeight: 600,
+                    color: '#0b2545',
+                    lineHeight: 1,
+                    display: 'inline-block',
+                    verticalAlign: 'middle'
+                  }}
+                  className="whitespace-nowrap select-none"
+                >
+                  Internship Domain :
+                </span>
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: `${effDomainFontSize}px`,
+                    fontWeight: 700,
+                    color: '#12539c',
+                    lineHeight: 1,
+                    display: 'inline-block',
+                    verticalAlign: 'middle'
+                  }}
+                  className="whitespace-nowrap select-none"
+                >
+                  {domainName}
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Description Paragraphs with responsive, customizable font size */}
           <div 
-            className="text-center max-w-[1060px] mx-auto text-[#2c3746] space-y-3"
+            className="text-center max-w-[1140px] mx-auto text-[#2c3746] space-y-4"
             style={{
               fontSize: `${effBodyFontSize}px`,
-              lineHeight: '1.75'
+              lineHeight: '1.58'
             }}
           >
             <p className="m-0">
@@ -368,29 +388,29 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
         </div>
 
         {/* Bottom Section: Left=Meta, Center=QR, Right=Signature */}
-        <div className="grid grid-cols-3 items-end pt-2 pb-2">
+        <div className="grid grid-cols-3 items-end pt-3 pb-1">
           {/* Left Column: Metadata */}
           <div 
-            className="flex flex-col gap-2 font-sans"
+            className="flex flex-col gap-2.5 font-sans"
             style={{ fontSize: `${effMetaFontSize}px` }}
           >
             <div className="flex items-center">
-              <span className="font-bold text-[#0b2545] w-[95px]">Duration</span>
+              <span className="font-bold text-[#0b2545] w-[105px]">Duration</span>
               <span className="font-mono text-black font-semibold">{duration}</span>
             </div>
             <div className="flex items-center">
-              <span className="font-bold text-[#0b2545] w-[95px]">Issue Date</span>
+              <span className="font-bold text-[#0b2545] w-[105px]">Issue Date</span>
               <span className="font-mono text-black font-semibold">{formattedIssueDate}</span>
             </div>
             <div className="flex items-center">
-              <span className="font-bold text-[#0b2545] w-[95px]">Verify ID</span>
+              <span className="font-bold text-[#0b2545] w-[105px]">Verify ID</span>
               <span className="font-mono text-black font-extrabold">{certId}</span>
             </div>
           </div>
 
           {/* Middle Column: Scalable QR Code */}
           <div className="flex flex-col items-center justify-center">
-            <div className="p-1.5 bg-white border border-slate-300 rounded-lg shadow-xs">
+            <div className="p-2 bg-white border border-slate-300 rounded-lg shadow-xs">
               <img
                 src={computedQrUrl || qrPlaceholderImg}
                 alt="Verification QR"
@@ -408,7 +428,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
             </div>
             <span 
               style={{ fontSize: `${Math.max(9, Math.round(effQrSize * 0.125))}px` }}
-              className="font-semibold text-[#5c7595] mt-1.5 tracking-wide"
+              className="font-semibold text-[#5c7595] mt-2 tracking-wide"
             >
               Scan to verify
             </span>
@@ -416,7 +436,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
 
           {/* Right Column: Signature */}
           <div className="flex flex-col items-end text-right">
-            <div className="w-[230px] h-[2px] bg-[#0b2545]/80 mb-2" />
+            <div className="w-[260px] h-[2px] bg-[#0b2545]/80 mb-2.5" />
             <p 
               className="font-sans font-bold text-[#0b2545] m-0"
               style={{ fontSize: `${effMetaFontSize + 0.5}px` }}
@@ -428,7 +448,7 @@ export const AuthenticCertificateCanvas: React.FC<AuthenticCertificateCanvasProp
 
         {/* Footer Contact Strip */}
         <div 
-          className="flex items-center justify-center gap-14 text-[#5c7595] pb-1 font-sans"
+          className="flex items-center justify-center gap-16 text-[#5c7595] pb-0 font-sans"
           style={{ fontSize: `${effFooterFontSize}px` }}
         >
           <div className="flex items-center gap-2 shrink-0">

@@ -207,6 +207,10 @@ interface RightPanelState {
   mode?: 'certificate' | 'offer-letter' | 'attendance';
 }
 
+// Records from the API may contain numeric database IDs.  Convert every value
+// before searching so a malformed or legacy record cannot crash the admin UI.
+const toSearchText = (value: unknown): string => String(value ?? '').toLowerCase();
+
 export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zoomLevel = 0.8, onZoomChange }: AdminErpProps) {
   const user = rawUser || {
     name: 'Administrator',
@@ -1048,21 +1052,21 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
 
   // Filtered Candidate Registrations (Live Website 4-Stepper Submissions)
   const filteredRegistrations = registrationsList.filter(r => {
-    const q = filterSearch.toLowerCase().trim();
-    const name = (r.studentName || r.student_name || r.name || '').toLowerCase();
-    const email = (r.email || '').toLowerCase();
-    const phone = (r.phone || '').toLowerCase();
-    const id = (r.id || r.regId || r.reg_id || '').toLowerCase();
-    const col = (r.college || '').toLowerCase();
-    const dom = (r.domain || r.courseInterest || r.course_interest || '').toLowerCase();
+    const q = toSearchText(filterSearch).trim();
+    const name = toSearchText(r.studentName || r.student_name || r.name);
+    const email = toSearchText(r.email);
+    const phone = toSearchText(r.phone);
+    const id = toSearchText(r.id || r.regId || r.reg_id);
+    const col = toSearchText(r.college);
+    const dom = toSearchText(r.domain || r.courseInterest || r.course_interest);
 
     const matchesSearch = !q ||
       name.includes(q) || email.includes(q) || phone.includes(q) || id.includes(q) || col.includes(q) || dom.includes(q);
 
     const matchesCollege = filterCollege === 'All Colleges' || 
-      normalizeCollege(r.college).toLowerCase() === normalizeCollege(filterCollege).toLowerCase();
+      toSearchText(normalizeCollege(r.college)) === toSearchText(normalizeCollege(filterCollege));
     const matchesDomain = filterDomain === 'All Domains' || 
-      normalizeDomain(r.domain || r.courseInterest || r.course_interest).toLowerCase() === normalizeDomain(filterDomain).toLowerCase();
+      toSearchText(normalizeDomain(r.domain || r.courseInterest || r.course_interest)) === toSearchText(normalizeDomain(filterDomain));
 
     return matchesSearch && matchesCollege && matchesDomain;
   });

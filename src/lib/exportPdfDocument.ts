@@ -181,6 +181,36 @@ export async function captureElementToCanvas(
       clonedEl.style.boxShadow = 'none';
       clonedEl.style.borderRadius = '0';
       clonedEl.style.overflow = 'hidden';
+
+      // Keep the domain capsule on the same baseline in the export clone as it
+      // has in the live preview. This avoids flex/text metric rounding moving
+      // the badge upward in html2canvas-generated PNGs and PDFs.
+      const domainRow = clonedEl.querySelector<HTMLElement>('[data-certificate-domain-row]');
+      const domainBox = clonedEl.querySelector<HTMLElement>('[data-certificate-domain-box]');
+      if (domainRow && domainBox) {
+        const sourceDomainRow = targetElement.querySelector<HTMLElement>('[data-certificate-domain-row]');
+        const sourceMarginTop = sourceDomainRow
+          ? Number.parseFloat(window.getComputedStyle(sourceDomainRow).marginTop)
+          : 0;
+
+        // Maintain exact 1:1 margin-top and baseline alignment between the
+        // live canvas element and cloned export element for 100% WYSIWYG fidelity
+        domainRow.style.marginTop = `${Math.max(0, sourceMarginTop)}px`;
+        domainRow.style.position = 'relative';
+        domainRow.style.top = '0px';
+        domainRow.style.transform = 'none';
+        domainRow.style.alignItems = 'center';
+        domainBox.style.position = 'relative';
+        domainBox.style.top = '0px';
+        domainBox.style.transform = 'none';
+        domainBox.style.alignItems = 'center';
+      }
+
+      const domainContent = clonedEl.querySelector<HTMLElement>('[data-certificate-domain-content]');
+      if (domainContent) {
+        domainContent.style.position = 'relative';
+        domainContent.style.top = '-6px';
+      }
     }
   });
 }

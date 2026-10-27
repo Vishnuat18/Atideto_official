@@ -217,20 +217,20 @@ export const CertificateGeneratorDrawer: React.FC<CertificateGeneratorDrawerProp
   const [activeStudioTab, setActiveStudioTab] = useState<'details' | 'typography' | 'presets'>('details');
   const [nameFont, setNameFont] = useState<'Cormorant Garamond' | 'Playfair Display' | 'Great Vibes' | 'Inter' | 'Cinzel' | 'Bodoni Moda'>('Cormorant Garamond');
   const [nameColor, setNameColor] = useState('#12539c');
-  const [nameSize, setNameSize] = useState(52);
+  const [nameSize, setNameSize] = useState(58);
   const [themePreset, setThemePreset] = useState<'navy-gold' | 'executive' | 'modern-blue' | 'classic-serif'>('navy-gold');
 
   // Internship Certificate Granular Sizing Options
   const [overallScale, setOverallScale] = useState<number>(1.0);
-  const [logoHeight, setLogoHeight] = useState<number>(82);
-  const [certTitleSize, setCertTitleSize] = useState<number>(40);
-  const [domainFontSize, setDomainFontSize] = useState<number>(14);
-  const [domainMarginTop, setDomainMarginTop] = useState<number>(18);
-  const [domainMarginBottom, setDomainMarginBottom] = useState<number>(12);
-  const [bodyFontSize, setBodyFontSize] = useState<number>(15.5);
-  const [qrSize, setQrSize] = useState<number>(88);
-  const [metaFontSize, setMetaFontSize] = useState<number>(13.5);
-  const [footerFontSize, setFooterFontSize] = useState<number>(12.5);
+  const [logoHeight, setLogoHeight] = useState<number>(98);
+  const [certTitleSize, setCertTitleSize] = useState<number>(44);
+  const [domainFontSize, setDomainFontSize] = useState<number>(17);
+  const [domainMarginTop, setDomainMarginTop] = useState<number>(38);
+  const [domainMarginBottom, setDomainMarginBottom] = useState<number>(16);
+  const [bodyFontSize, setBodyFontSize] = useState<number>(19);
+  const [qrSize, setQrSize] = useState<number>(120);
+  const [metaFontSize, setMetaFontSize] = useState<number>(15);
+  const [footerFontSize, setFooterFontSize] = useState<number>(14);
 
   const handleIncreaseOverallScale = () => {
     setOverallScale((prev) => {
@@ -254,8 +254,8 @@ export const CertificateGeneratorDrawer: React.FC<CertificateGeneratorDrawerProp
     setCertTitleSize(40);
     setNameSize(52);
     setDomainFontSize(14);
-    setDomainMarginTop(18);
-    setDomainMarginBottom(12);
+    setDomainMarginTop(38);
+    setDomainMarginBottom(16);
     setBodyFontSize(15.5);
     setQrSize(88);
     setMetaFontSize(13.5);
