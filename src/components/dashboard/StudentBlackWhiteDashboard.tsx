@@ -403,59 +403,92 @@ export default function StudentBlackWhiteDashboard({ user, onSwitchToAdmin, zoom
 
   useEffect(() => {
     let isMounted = true;
+    let isFetching = false;
+
     const fetchAndSyncStudent = async () => {
-      let stored = getStoredStudents();
+      if (isFetching || !isMounted) return;
+      isFetching = true;
       try {
-        const dbStudents = await getStudentsFromDb();
-        if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
-          stored = dbStudents;
+        let stored = getStoredStudents();
+        try {
+          const dbStudents = await getStudentsFromDb();
+          if (dbStudents && Array.isArray(dbStudents) && dbStudents.length > 0) {
+            stored = dbStudents;
+          }
+        } catch (e) {
+          console.warn('Student sync notice:', e);
         }
-      } catch (e) {
-        console.warn('Student sync notice:', e);
-      }
 
-      if (!isMounted) return;
-      setCohortStudents(stored);
+        if (!isMounted) return;
+        setCohortStudents(stored);
 
-      const userEmail = (user?.email || '').toLowerCase().trim();
-      const userName = (user?.name || '').toLowerCase().trim();
+        const userEmail = (user?.email || '').toLowerCase().trim();
+        const userName = (user?.name || '').toLowerCase().trim();
 
-      const found = stored.find((s: any) => 
-        (userEmail && s.email && s.email.toLowerCase() === userEmail) ||
-        (userName && s.name && s.name.toLowerCase() === userName) ||
-        (studentProfile && (s.id === studentProfile.id || s.studentId === studentProfile.studentId))
-      );
+        const found = stored.find((s: any) => 
+          (userEmail && s.email && s.email.toLowerCase() === userEmail) ||
+          (userName && s.name && s.name.toLowerCase() === userName) ||
+          (studentProfile && (s.id === studentProfile.id || s.studentId === studentProfile.studentId))
+        );
 
-      if (found) {
-        setStudentProfile(found);
-      } else if (userEmail) {
-        setStudentProfile((prev: any) => ({
-          ...prev,
-          id: user?.uid || `STD-${Date.now()}`,
-          name: user?.name || userEmail.split('@')[0],
-          email: userEmail,
-          status: 'Active',
-          attendance: prev?.attendance || 95,
-          score: prev?.score || 92
-        }));
-      } else if (stored.length > 0) {
-        setStudentProfile(stored[0]);
+        if (found) {
+          setStudentProfile(found);
+        } else if (userEmail) {
+          setStudentProfile((prev: any) => ({
+            ...prev,
+            id: user?.uid || `STD-${Date.now()}`,
+            name: user?.name || userEmail.split('@')[0],
+            email: userEmail,
+            status: 'Active',
+            attendance: prev?.attendance || 95,
+            score: prev?.score || 92
+          }));
+        } else if (stored.length > 0) {
+          setStudentProfile(stored[0]);
+        }
+      } finally {
+        isFetching = false;
       }
     };
 
+    // Initial sync on mount
     fetchAndSyncStudent();
-    const unsubscribeCloud = subscribeToCloudSync(() => {
-      fetchAndSyncStudent();
+
+    // Direct event handler updating local state without triggering new network requests
+    const handleLocalUpdate = (e: any) => {
+      if (!isMounted) return;
+      const list = Array.isArray(e.detail) ? e.detail : (e.detail?.fullList || e.detail?.students);
+      if (list && Array.isArray(list) && list.length > 0) {
+        setCohortStudents(list);
+        const userEmail = (user?.email || '').toLowerCase().trim();
+        const userName = (user?.name || '').toLowerCase().trim();
+        const found = list.find((s: any) => 
+          (userEmail && s.email && s.email.toLowerCase() === userEmail) ||
+          (userName && s.name && s.name.toLowerCase() === userName)
+        );
+        if (found) setStudentProfile(found);
+      }
+    };
+
+    // Cloud subscription updates directly without re-fetching
+    const unsubscribeCloud = subscribeToCloudSync((fresh) => {
+      if (!isMounted || !fresh || !fresh.students) return;
+      if (Array.isArray(fresh.students) && fresh.students.length > 0) {
+        setCohortStudents(fresh.students);
+        const userEmail = (user?.email || '').toLowerCase().trim();
+        const found = fresh.students.find((s: any) => userEmail && s.email && s.email.toLowerCase() === userEmail);
+        if (found) setStudentProfile(found);
+      }
     });
-    window.addEventListener('atideto-students-updated', fetchAndSyncStudent);
-    window.addEventListener('atideto_students_updated', fetchAndSyncStudent);
-    window.addEventListener('atideto_payment_update', fetchAndSyncStudent);
+
+    window.addEventListener('atideto-students-updated', handleLocalUpdate);
+    window.addEventListener('atideto_students_updated', handleLocalUpdate);
+
     return () => {
       isMounted = false;
       unsubscribeCloud();
-      window.removeEventListener('atideto-students-updated', fetchAndSyncStudent);
-      window.removeEventListener('atideto_students_updated', fetchAndSyncStudent);
-      window.removeEventListener('atideto_payment_update', fetchAndSyncStudent);
+      window.removeEventListener('atideto-students-updated', handleLocalUpdate);
+      window.removeEventListener('atideto_students_updated', handleLocalUpdate);
     };
   }, [user]);
 

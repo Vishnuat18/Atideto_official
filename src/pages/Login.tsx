@@ -21,7 +21,9 @@ import {
   sendForgotPasswordOtp,
   verifyForgotPasswordOtp,
   resetPasswordAndLogin,
-  activateStudentAccount
+  activateStudentAccount,
+  saveCloudUser,
+  saveCloudStudent
 } from "@/lib/api";
 import { checkPasswordRequirements } from "@/lib/utils";
 import { PasswordRequirements } from "@/components/ui/password-requirements";
@@ -307,28 +309,98 @@ export default function Login() {
 
     try {
       if (mode === "register") {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        let authUid = `usr-${Date.now()}`;
+        const cleanEmail = email.toLowerCase().trim();
+        const displayName = form.name.trim();
+        const selectedRole = form.role || (cleanEmail.endsWith('@atideto.in') ? 'admin' : 'student');
 
+        // 1. Try Firebase Auth (if available / not blocked)
         try {
-          await updateProfile(user, { displayName: form.name.trim() });
-          await setDoc(
-            doc(db, "users", user.uid),
-            {
-              name: form.name.trim(),
-              email: email,
-              role: form.role || "student",
-              createdAt: new Date().toISOString()
-            },
-            { merge: true }
-          );
-          await sendEmailVerification(user);
-        } catch (fsErr) {
-          console.warn("User profile sync notice:", fsErr);
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          if (userCredential && userCredential.user) {
+            authUid = userCredential.user.uid;
+            try {
+              await updateProfile(userCredential.user, { displayName });
+              await setDoc(
+                doc(db, "users", authUid),
+                {
+                  name: displayName,
+                  email: cleanEmail,
+                  role: selectedRole,
+                  createdAt: new Date().toISOString()
+                },
+                { merge: true }
+              );
+            } catch (fsErr) {
+              console.warn("User profile sync notice:", fsErr);
+            }
+          }
+        } catch (firebaseErr: any) {
+          console.warn("Firebase Auth create notice:", firebaseErr?.code || firebaseErr?.message);
         }
 
-        toast.success(`Account created successfully for ${form.name.trim()}`);
-        navigate("/dashboard");
+        const newUserRecord = {
+          uid: authUid,
+          name: displayName,
+          email: cleanEmail,
+          role: selectedRole,
+          password: password,
+          provider: 'registered'
+        };
+
+        // 2. Persist to authoritative Cloud RTDB (Enables multi-device / cross-phone login)
+        try {
+          await saveCloudUser(newUserRecord);
+        } catch (cloudErr) {
+          console.warn("Cloud user save notice:", cloudErr);
+        }
+
+        // 3. If student, ensure cohort entry in Cloud RTDB
+        if (selectedRole === 'student') {
+          try {
+            await saveCloudStudent(authUid, {
+              id: authUid,
+              studentId: authUid,
+              name: displayName,
+              email: cleanEmail,
+              role: 'student',
+              status: 'active',
+              startDate: '2026-10-25',
+              endDate: '2027-01-25',
+              duration: '3 Months'
+            });
+          } catch (stErr) {
+            console.warn("Cloud student cohort save notice:", stErr);
+          }
+        }
+
+        // 4. Update local user registry cache
+        try {
+          const localUsersStr = localStorage.getItem('atideto_registered_users');
+          let localUsers = localUsersStr ? JSON.parse(localUsersStr) : [];
+          localUsers.push(newUserRecord);
+          localStorage.setItem('atideto_registered_users', JSON.stringify(localUsers));
+        } catch {}
+
+        // 5. Establish authenticated session
+        const sessionUser = {
+          uid: authUid,
+          name: displayName,
+          email: cleanEmail,
+          role: selectedRole,
+          provider: 'registered'
+        };
+        localStorage.setItem('atideto_sql_user', JSON.stringify(sessionUser));
+        localStorage.setItem('atideto_dashboard_mode', selectedRole === 'admin' ? 'admin' : 'student');
+        window.dispatchEvent(new Event('atideto_auth_change'));
+
+        toast.success(`Account created successfully for ${displayName}! Welcome to Atideto.`);
+        if (selectedRole === 'admin') {
+          navigate("/admin");
+        } else {
+          navigate("/dashboard");
+        }
+        return;
       } else if (mode === "login") {
         const cleanEmail = email.toLowerCase().trim();
         const cleanPass = password.trim();

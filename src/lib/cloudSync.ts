@@ -327,7 +327,8 @@ async function touchCloudMeta(entity: string) {
 export function subscribeToCloudSync(onSync: (data: any) => void) {
   if (typeof window === 'undefined') return () => {};
 
-  let lastKnownSync = 0;
+  // Initialize with current time so it only triggers for future mutations
+  let lastKnownSync = Date.now();
   let isChecking = false;
 
   const checkForUpdates = async () => {
@@ -350,11 +351,8 @@ export function subscribeToCloudSync(onSync: (data: any) => void) {
     }
   };
 
-  // Immediate check on mount
-  checkForUpdates();
-
-  // Periodic polling every 6 seconds
-  const interval = setInterval(checkForUpdates, 6000);
+  // Periodic background check every 10 seconds
+  const interval = setInterval(checkForUpdates, 10000);
 
   // Sync on tab focus or screen unlock
   const handleFocus = () => {
@@ -372,3 +370,132 @@ export function subscribeToCloudSync(onSync: (data: any) => void) {
     document.removeEventListener('visibilitychange', handleFocus);
   };
 }
+
+/**
+ * Sanitize an email address for use as a Firebase Realtime Database node key.
+ */
+export function encodeEmailKey(email: string): string {
+  return (email || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+}
+
+/**
+ * Save user credentials and account details to Cloud RTDB.
+ * Enables login from any device or phone even when MySQL is offline.
+ */
+export async function saveCloudUser(userData: {
+  email: string;
+  name?: string;
+  password?: string;
+  role?: string;
+  uid?: string;
+  studentId?: string;
+}): Promise<boolean> {
+  const cleanEmail = (userData.email || '').toLowerCase().trim();
+  if (!cleanEmail) return false;
+  const key = encodeEmailKey(cleanEmail);
+
+  try {
+    const existing = await fetchCloudUser(cleanEmail);
+    const updated = {
+      ...(existing || {}),
+      email: cleanEmail,
+      name: userData.name || existing?.name || cleanEmail.split('@')[0],
+      role: userData.role || existing?.role || (cleanEmail.endsWith('@atideto.in') ? 'admin' : 'student'),
+      uid: userData.uid || existing?.uid || `usr-${Date.now()}`,
+      ...(userData.password ? { password: userData.password } : {}),
+      ...(userData.studentId ? { studentId: userData.studentId } : {}),
+      updatedAt: Date.now()
+    };
+
+    const res = await fetch(`${RTDB_BASE}/users/${key}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated)
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('[CloudSync] saveCloudUser error:', err);
+    return false;
+  }
+}
+
+/**
+ * Retrieve user record from Cloud RTDB by email.
+ */
+export async function fetchCloudUser(email: string): Promise<any | null> {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  if (!cleanEmail) return null;
+  const key = encodeEmailKey(cleanEmail);
+  try {
+    const res = await fetch(`${RTDB_BASE}/users/${key}.json?_t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Save active OTP to Cloud RTDB for multi-instance stateless verification.
+ */
+export async function saveCloudOtp(email: string, otp: string, expiresAt: number): Promise<boolean> {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  if (!cleanEmail || !otp) return false;
+  const key = encodeEmailKey(cleanEmail);
+  try {
+    const res = await fetch(`${RTDB_BASE}/otps/${key}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: otp,
+        expires: expiresAt,
+        verified: false,
+        createdAt: Date.now()
+      })
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Verify OTP against Cloud RTDB.
+ */
+export async function verifyCloudOtp(email: string, otp: string): Promise<boolean> {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  if (!cleanEmail || !otp) return false;
+  const key = encodeEmailKey(cleanEmail);
+  try {
+    const res = await fetch(`${RTDB_BASE}/otps/${key}.json?_t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data) return false;
+    const isValid = String(data.code).trim() === String(otp).trim() && Date.now() <= data.expires;
+    if (isValid) {
+      await fetch(`${RTDB_BASE}/otps/${key}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verified: true })
+      });
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
+/**
+ * Delete OTP after successful password reset.
+ */
+export async function deleteCloudOtp(email: string): Promise<boolean> {
+  const cleanEmail = (email || '').toLowerCase().trim();
+  if (!cleanEmail) return false;
+  const key = encodeEmailKey(cleanEmail);
+  try {
+    const res = await fetch(`${RTDB_BASE}/otps/${key}.json`, { method: 'DELETE' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
