@@ -648,10 +648,20 @@ const CACHE_KEY = 'atideto_cohort_students_v2';
 
 export const CLIENTS_CACHE_KEY = 'atideto_crm_clients';
 
+// Safe currency / numeric parser that handles numbers, formatted strings (e.g. '₹15,000'),
+// descriptive non-numeric text (e.g. 'Strategic Collaboration', 'N/A'), null, and undefined
+// without ever throwing TypeErrors or returning NaN.
+export function parseCurrencyNumber(val: any): number {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  const str = String(val).replace(/[^0-9]/g, '');
+  return parseInt(str, 10) || 0;
+}
+
 // Canonical domain normalizer to merge duplicate tracks & spelling/casing variations
 export function normalizeDomain(domain?: string): string {
   if (!domain) return 'Full Stack Web Development';
-  const clean = domain.trim();
+  const clean = String(domain).trim();
   const lower = clean.toLowerCase();
 
   // Full Stack variations
@@ -722,7 +732,7 @@ export function normalizeDomain(domain?: string): string {
 // Canonical college normalizer to trim whitespace and harmonize variations
 export function normalizeCollege(college?: string): string {
   if (!college) return 'Mahendra Engineering College';
-  const clean = college.trim().replace(/[\s,]+$/, '');
+  const clean = String(college).trim().replace(/[\s,]+$/, '');
   const lower = clean.toLowerCase();
 
   if (lower.includes('mahendra college of engineering') || lower.includes('mce')) {

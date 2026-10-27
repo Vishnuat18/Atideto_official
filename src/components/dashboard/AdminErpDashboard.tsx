@@ -124,6 +124,7 @@ import {
   normalizeDomain,
   normalizeCollege,
   deduplicateAndMergeStudents,
+  parseCurrencyNumber,
   StudentCohortRecord 
 } from '@/lib/certificateStore';
 import { calculateDurationFromDates } from '@/constants/registrationOptions';
@@ -688,7 +689,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
       toast.error('Please enter expense title and amount');
       return;
     }
-    const cleanNum = parseInt(expenseForm.amount.replace(/[^0-9]/g, ''), 10) || 0;
+    const cleanNum = parseCurrencyNumber(expenseForm.amount);
     const newExp = {
       id: `EXP-2026-00${expensesList.length + 1}`,
       title: expenseForm.title,
@@ -937,10 +938,10 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
 
     const updated = students.map(s => {
       if (selectedStudentIds.includes(s.id)) {
-        const totalFeeToUse = bulkTotalFeeChoice.trim() || s.feeTotal || 'To Be Decided by Admin';
-        const totalNum = parseInt(totalFeeToUse.replace(/[^0-9]/g, ''), 10) || 0;
+        const totalFeeToUse = String(bulkTotalFeeChoice || '').trim() || s.feeTotal || 'To Be Decided by Admin';
+        const totalNum = parseCurrencyNumber(totalFeeToUse);
         
-        let calculatedPaid = bulkPaymentAmount.trim();
+        let calculatedPaid = String(bulkPaymentAmount || '').trim();
         if (isFull) {
           calculatedPaid = totalNum > 0 ? `₹${totalNum.toLocaleString('en-IN')}` : totalFeeToUse;
         } else if (isPartial) {
@@ -975,12 +976,13 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
           updateStudentInRegistry(sId, target);
           saveFinalizedPayment(sId, target.feePaid, target.feeTotal, target.paymentStatus);
           await updateStudentInDb(sId, target);
+          const pStatus = String(target.paymentStatus || '').toLowerCase();
           await recordPaymentInDb({
             txnId: `TXN-BULK-${Date.now().toString().slice(-4)}-${sId.slice(-2)}`,
             studentName: target.name,
             amount: target.feePaid || '₹0',
             method: 'Admin Bulk Update',
-            status: target.paymentStatus.toLowerCase().includes('due') || target.paymentStatus.toLowerCase().includes('pending') ? 'Pending' : 'Success',
+            status: pStatus.includes('due') || pStatus.includes('pending') ? 'Pending' : 'Success',
             course: target.course || target.domain,
             date: '2026-10-22'
           });
@@ -998,12 +1000,13 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
   };
 
   // Dynamic filter option lists with merged canonical options
+  const safeStudentsList = Array.isArray(students) ? students : [];
   const availableColleges = ['All Colleges', ...Array.from(new Set(
-    students.map(s => normalizeCollege(s.college)).filter(Boolean)
+    safeStudentsList.map(s => s?.college ? normalizeCollege(s.college) : '').filter(Boolean)
   )).sort()];
   
   const availableDomains = ['All Domains', ...Array.from(new Set(
-    students.map(s => normalizeDomain(s.domain || s.course)).filter(Boolean)
+    safeStudentsList.map(s => (s?.domain || s?.course) ? normalizeDomain(s.domain || s.course) : '').filter(Boolean)
   )).sort()];
   
   const availableStatuses = ['All Statuses', 'Verified Enrolled', 'Active Industrial Track', 'Completed'];
@@ -1011,22 +1014,30 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
   const availableAttendanceRates = ['All Rates', '100% Present', '>= 90% Regular', '< 90% Needs Attention'];
 
   // Global Filtered Students calculation matching all filter dropdowns
-  const filteredStudents = students.filter(s => {
+  const filteredStudents = safeStudentsList.filter(s => {
+    if (!s) return false;
     const q = filterSearch.toLowerCase().trim();
+    const name = String(s.name || '').toLowerCase();
+    const email = String(s.email || '').toLowerCase();
+    const phone = String(s.phone || '').toLowerCase();
+    const id = String(s.id || s.studentId || '').toLowerCase();
+    const colStr = String(s.college || '');
+    const domStr = String(s.domain || s.course || '');
+
     const matchesSearch = !q ||
-      s.name.toLowerCase().includes(q) ||
-      s.email.toLowerCase().includes(q) ||
-      s.phone.toLowerCase().includes(q) ||
-      s.id.toLowerCase().includes(q) ||
-      (s.college && normalizeCollege(s.college).toLowerCase().includes(q)) ||
-      (s.domain && normalizeDomain(s.domain || s.course).toLowerCase().includes(q));
+      name.includes(q) ||
+      email.includes(q) ||
+      phone.includes(q) ||
+      id.includes(q) ||
+      (colStr && normalizeCollege(colStr).toLowerCase().includes(q)) ||
+      (domStr && normalizeDomain(domStr).toLowerCase().includes(q));
     
     const matchesCollege = filterCollege === 'All Colleges' || 
-      normalizeCollege(s.college).toLowerCase() === normalizeCollege(filterCollege).toLowerCase();
+      normalizeCollege(colStr).toLowerCase() === normalizeCollege(filterCollege).toLowerCase();
     const matchesDomain = filterDomain === 'All Domains' || 
-      normalizeDomain(s.domain || s.course).toLowerCase() === normalizeDomain(filterDomain).toLowerCase();
-    const matchesStatus = filterStatus === 'All Statuses' || (s.status && s.status.toLowerCase() === filterStatus.toLowerCase());
-    const matchesPayment = filterPayment === 'All Payments' || (s.paymentStatus && s.paymentStatus.toLowerCase() === filterPayment.toLowerCase());
+      normalizeDomain(domStr).toLowerCase() === normalizeDomain(filterDomain).toLowerCase();
+    const matchesStatus = filterStatus === 'All Statuses' || (s.status && String(s.status).toLowerCase() === filterStatus.toLowerCase());
+    const matchesPayment = filterPayment === 'All Payments' || (s.paymentStatus && String(s.paymentStatus).toLowerCase() === filterPayment.toLowerCase());
     const matchesAttendance = filterAttendanceRate === 'All Rates' ||
       (filterAttendanceRate === '100% Present' && (s.attendance ?? 95) >= 100) ||
       (filterAttendanceRate === '>= 90% Regular' && (s.attendance ?? 95) >= 90) ||
@@ -1098,81 +1109,91 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
   };
 
   // Filtered Courses Catalog
-  const availableCourseCategories = Array.from(new Set(['All Categories', ...coursesList.map(c => c.category).filter(Boolean)]));
-  const filteredCourses = coursesList.filter(c => {
+  const safeCoursesList = Array.isArray(coursesList) ? coursesList : [];
+  const availableCourseCategories = Array.from(new Set(['All Categories', ...safeCoursesList.map(c => c?.category).filter(Boolean)]));
+  const filteredCourses = safeCoursesList.filter(c => {
+    if (!c) return false;
     const q = courseSearch.toLowerCase().trim();
     const matchesSearch = !q ||
-      c.title.toLowerCase().includes(q) ||
-      (c.instructor && c.instructor.toLowerCase().includes(q)) ||
-      (c.category && c.category.toLowerCase().includes(q)) ||
-      (c.tools && c.tools.some((t: string) => t.toLowerCase().includes(q)));
-    const matchesCategory = courseCategoryFilter === 'All Categories' || (c.category && c.category.toLowerCase() === courseCategoryFilter.toLowerCase());
+      String(c.title || '').toLowerCase().includes(q) ||
+      String(c.instructor || '').toLowerCase().includes(q) ||
+      String(c.category || '').toLowerCase().includes(q) ||
+      (Array.isArray(c.tools) && c.tools.some((t: string) => String(t || '').toLowerCase().includes(q)));
+    const matchesCategory = courseCategoryFilter === 'All Categories' || (c.category && String(c.category).toLowerCase() === courseCategoryFilter.toLowerCase());
     return matchesSearch && matchesCategory;
   });
 
   // Filtered Internships Catalog
-  const availableInternshipCategories = Array.from(new Set(['All Categories', ...internshipsList.map(i => i.category).filter(Boolean)]));
-  const availableInternshipDurations = Array.from(new Set(['All Durations', ...internshipsList.map(i => i.duration).filter(Boolean)]));
-  const filteredInternships = internshipsList.filter(i => {
+  const safeInternshipsList = Array.isArray(internshipsList) ? internshipsList : [];
+  const availableInternshipCategories = Array.from(new Set(['All Categories', ...safeInternshipsList.map(i => i?.category).filter(Boolean)]));
+  const availableInternshipDurations = Array.from(new Set(['All Durations', ...safeInternshipsList.map(i => i?.duration).filter(Boolean)]));
+  const filteredInternships = safeInternshipsList.filter(i => {
+    if (!i) return false;
     const q = internshipSearch.toLowerCase().trim();
     const matchesSearch = !q ||
-      i.title.toLowerCase().includes(q) ||
-      (i.mentor && i.mentor.toLowerCase().includes(q)) ||
-      (i.category && i.category.toLowerCase().includes(q)) ||
-      (i.description && i.description.toLowerCase().includes(q)) ||
-      (i.skills && i.skills.some((s: string) => s.toLowerCase().includes(q)));
-    const matchesCategory = internshipCategoryFilter === 'All Categories' || (i.category && i.category.toLowerCase() === internshipCategoryFilter.toLowerCase());
-    const matchesDuration = internshipDurationFilter === 'All Durations' || (i.duration && i.duration.toLowerCase() === internshipDurationFilter.toLowerCase());
+      String(i.title || '').toLowerCase().includes(q) ||
+      String(i.mentor || '').toLowerCase().includes(q) ||
+      String(i.category || '').toLowerCase().includes(q) ||
+      String(i.description || '').toLowerCase().includes(q) ||
+      (Array.isArray(i.skills) && i.skills.some((s: string) => String(s || '').toLowerCase().includes(q)));
+    const matchesCategory = internshipCategoryFilter === 'All Categories' || (i.category && String(i.category).toLowerCase() === internshipCategoryFilter.toLowerCase());
+    const matchesDuration = internshipDurationFilter === 'All Durations' || (i.duration && String(i.duration).toLowerCase() === internshipDurationFilter.toLowerCase());
     return matchesSearch && matchesCategory && matchesDuration;
   });
 
   // Filtered Corporate Clients
-  const availableClientStatuses = Array.from(new Set(['All Statuses', ...crmClients.map(c => c.mouStatus).filter(Boolean)]));
-  const availableClientIndustries = Array.from(new Set(['All Industries', ...crmClients.map(c => c.industry).filter(Boolean)]));
-  const filteredClients = crmClients.filter(c => {
+  const safeClientsList = Array.isArray(crmClients) ? crmClients : [];
+  const availableClientStatuses = Array.from(new Set(['All Statuses', ...safeClientsList.map(c => c?.mouStatus).filter(Boolean)]));
+  const availableClientIndustries = Array.from(new Set(['All Industries', ...safeClientsList.map(c => c?.industry).filter(Boolean)]));
+  const filteredClients = safeClientsList.filter(c => {
+    if (!c) return false;
     const q = clientSearch.toLowerCase().trim();
     const matchesSearch = !q ||
-      c.name.toLowerCase().includes(q) ||
-      (c.industry && c.industry.toLowerCase().includes(q)) ||
-      (c.contactPerson && c.contactPerson.toLowerCase().includes(q)) ||
-      (c.email && c.email.toLowerCase().includes(q)) ||
-      (c.phone && c.phone.toLowerCase().includes(q)) ||
-      (c.id && c.id.toLowerCase().includes(q));
-    const matchesStatus = clientStatusFilter === 'All Statuses' || (c.mouStatus && c.mouStatus.toLowerCase() === clientStatusFilter.toLowerCase());
-    const matchesIndustry = clientIndustryFilter === 'All Industries' || (c.industry && c.industry.toLowerCase() === clientIndustryFilter.toLowerCase());
+      String(c.name || '').toLowerCase().includes(q) ||
+      String(c.industry || '').toLowerCase().includes(q) ||
+      String(c.contactPerson || c.contact_person || '').toLowerCase().includes(q) ||
+      String(c.email || '').toLowerCase().includes(q) ||
+      String(c.phone || '').toLowerCase().includes(q) ||
+      String(c.id || c.client_id || '').toLowerCase().includes(q);
+    const matchesStatus = clientStatusFilter === 'All Statuses' || (c.mouStatus && String(c.mouStatus).toLowerCase() === clientStatusFilter.toLowerCase());
+    const matchesIndustry = clientIndustryFilter === 'All Industries' || (c.industry && String(c.industry).toLowerCase() === clientIndustryFilter.toLowerCase());
     return matchesSearch && matchesStatus && matchesIndustry;
   });
 
   // Filtered Staff / Employees
-  const availableStaffDepts = Array.from(new Set(['All Departments', ...staffMembers.map(m => m.department).filter(Boolean)]));
-  const availableStaffStatuses = Array.from(new Set(['All Statuses', ...staffMembers.map(m => m.status).filter(Boolean)]));
-  const filteredStaff = staffMembers.filter(m => {
+  const safeStaffList = Array.isArray(staffMembers) ? staffMembers : [];
+  const availableStaffDepts = Array.from(new Set(['All Departments', ...safeStaffList.map(m => m?.department).filter(Boolean)]));
+  const availableStaffStatuses = Array.from(new Set(['All Statuses', ...safeStaffList.map(m => m?.status).filter(Boolean)]));
+  const filteredStaff = safeStaffList.filter(m => {
+    if (!m) return false;
     const q = staffSearch.toLowerCase().trim();
     const matchesSearch = !q ||
-      m.name.toLowerCase().includes(q) ||
-      (m.role && m.role.toLowerCase().includes(q)) ||
-      (m.emp_id && m.emp_id.toLowerCase().includes(q)) ||
-      (m.email && m.email.toLowerCase().includes(q)) ||
-      (m.phone && m.phone.toLowerCase().includes(q)) ||
-      (m.department && m.department.toLowerCase().includes(q));
-    const matchesDept = staffDeptFilter === 'All Departments' || (m.department && m.department.toLowerCase() === staffDeptFilter.toLowerCase());
-    const matchesStatus = staffStatusFilter === 'All Statuses' || (m.status && m.status.toLowerCase() === staffStatusFilter.toLowerCase());
+      String(m.name || '').toLowerCase().includes(q) ||
+      String(m.role || '').toLowerCase().includes(q) ||
+      String(m.emp_id || m.empId || '').toLowerCase().includes(q) ||
+      String(m.email || '').toLowerCase().includes(q) ||
+      String(m.phone || '').toLowerCase().includes(q) ||
+      String(m.department || '').toLowerCase().includes(q);
+    const matchesDept = staffDeptFilter === 'All Departments' || (m.department && String(m.department).toLowerCase() === staffDeptFilter.toLowerCase());
+    const matchesStatus = staffStatusFilter === 'All Statuses' || (m.status && String(m.status).toLowerCase() === staffStatusFilter.toLowerCase());
     return matchesSearch && matchesDept && matchesStatus;
   });
 
   // Filtered Finance Payments Ledger
-  const availableFinanceStatuses = Array.from(new Set(['All Statuses', ...paymentsList.map(p => p.status).filter(Boolean)]));
-  const availableFinanceMethods = Array.from(new Set(['All Methods', ...paymentsList.map(p => p.method).filter(Boolean)]));
-  const filteredFinancePayments = paymentsList.filter(p => {
+  const safePaymentsList = Array.isArray(paymentsList) ? paymentsList : [];
+  const availableFinanceStatuses = Array.from(new Set(['All Statuses', ...safePaymentsList.map(p => p?.status).filter(Boolean)]));
+  const availableFinanceMethods = Array.from(new Set(['All Methods', ...safePaymentsList.map(p => p?.method).filter(Boolean)]));
+  const filteredFinancePayments = safePaymentsList.filter(p => {
+    if (!p) return false;
     const q = financeSearch.toLowerCase().trim();
     const matchesSearch = !q ||
-      p.id.toLowerCase().includes(q) ||
-      p.payer.toLowerCase().includes(q) ||
-      p.type.toLowerCase().includes(q) ||
-      p.amount.toLowerCase().includes(q) ||
-      p.method.toLowerCase().includes(q);
-    const matchesStatus = financeStatusFilter === 'All Statuses' || (p.status && p.status.toLowerCase() === financeStatusFilter.toLowerCase());
-    const matchesMethod = financeMethodFilter === 'All Methods' || (p.method && p.method.toLowerCase() === financeMethodFilter.toLowerCase());
+      String(p.id || '').toLowerCase().includes(q) ||
+      String(p.payer || '').toLowerCase().includes(q) ||
+      String(p.type || '').toLowerCase().includes(q) ||
+      String(p.amount || '').toLowerCase().includes(q) ||
+      String(p.method || '').toLowerCase().includes(q);
+    const matchesStatus = financeStatusFilter === 'All Statuses' || (p.status && String(p.status).toLowerCase() === financeStatusFilter.toLowerCase());
+    const matchesMethod = financeMethodFilter === 'All Methods' || (p.method && String(p.method).toLowerCase() === financeMethodFilter.toLowerCase());
     return matchesSearch && matchesStatus && matchesMethod;
   });
 
@@ -1564,9 +1585,9 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
     const newId = `AT-MEC-2027-${String(students.length + 1).padStart(2, '0')}`;
     const newRecord = {
       id: newId,
-      name: newStudentForm.name.trim(),
-      email: newStudentForm.email.trim() || `${newStudentForm.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@gmail.com`,
-      phone: newStudentForm.phone.trim() || '+91 98000 00000',
+      name: String(newStudentForm.name || '').trim(),
+      email: String(newStudentForm.email || '').trim() || `${String(newStudentForm.name || 'student').toLowerCase().replace(/[^a-z0-9]/g, '')}@gmail.com`,
+      phone: String(newStudentForm.phone || '').trim() || '+91 98000 00000',
       college: newStudentForm.college,
       degree: newStudentForm.degree,
       gradYear: newStudentForm.gradYear,
@@ -2163,16 +2184,19 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
           {/* TAB 1: OVERVIEW & ANALYTICS (Exact Reference Image 2 Layout)       */}
           {/* ───────────────────────────────────────────────────────────────── */}
           {activeTab === 'overview' && (() => {
-            const cohortVerified = students.reduce((acc, s) => acc + (parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
-            const cohortInvoiced = students.reduce((acc, s) => acc + (parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
-            const corporateVerified = crmClients.reduce((acc, c) => acc + (c.amountPaid ? parseInt(c.amountPaid.replace(/[^0-9]/g, ''), 10) : (c.receivedAmount || 0)), 0);
-            const corporateTotal = crmClients.reduce((acc, c) => acc + (c.contractValue ? parseInt(c.contractValue.replace(/[^0-9]/g, ''), 10) : (c.quotationAmount || 0)), 0);
+            const safeStudents = Array.isArray(students) ? students : [];
+            const safeClients = Array.isArray(crmClients) ? crmClients : [];
+
+            const cohortVerified = safeStudents.reduce((acc, s) => acc + parseCurrencyNumber(s?.feePaid), 0);
+            const cohortInvoiced = safeStudents.reduce((acc, s) => acc + parseCurrencyNumber(s?.feeTotal), 0);
+            const corporateVerified = safeClients.reduce((acc, c) => acc + (c?.receivedAmount ? Number(c.receivedAmount) : parseCurrencyNumber(c?.amountPaid)), 0);
+            const corporateTotal = safeClients.reduce((acc, c) => acc + (c?.quotationAmount ? Number(c.quotationAmount) : parseCurrencyNumber(c?.contractValue || c?.contract_value)), 0);
 
             const verifiedRevenue = cohortVerified + corporateVerified;
             const totalInvoiced = cohortInvoiced + corporateTotal;
-            const studentsWithDue = students.filter(s => {
-              const tot = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-              const pd = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            const studentsWithDue = safeStudents.filter(s => {
+              const tot = parseCurrencyNumber(s?.feeTotal);
+              const pd = parseCurrencyNumber(s?.feePaid);
               return tot > pd;
             });
             const corporateDue = Math.max(0, corporateTotal - corporateVerified);
@@ -3108,7 +3132,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                       </thead>
                       <tbody className="divide-y divide-[#F1F5F9]">
                         {filteredCourses.map((course, idx) => {
-                          const batchCode = `Batch ${course.id.replace('c-', '').toUpperCase().slice(0, 4)}-2026-09`;
+                          const batchCode = `Batch ${String(course?.id || '').replace('c-', '').toUpperCase().slice(0, 4)}-2026-09`;
                           const type = idx % 2 === 0 ? 'INTERNSHIP' : 'TRAINING';
                           const fee = idx % 2 === 0 ? '₹9,999' : idx % 3 === 0 ? '₹12,999' : '₹7,999';
                           const schedule = idx % 2 === 0 ? '01 Sept 2026' : '15 Sept 2026';
@@ -5236,7 +5260,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                                 <div className="flex items-center gap-1 text-slate-400">
                                   {member.instagram && (
                                     <a
-                                      href={member.instagram.startsWith('http') ? member.instagram : `https://instagram.com/${member.instagram.replace(/^@/, '')}`}
+                                      href={String(member.instagram).startsWith('http') ? member.instagram : `https://instagram.com/${String(member.instagram).replace(/^@/, '')}`}
                                       target="_blank"
                                       rel="noreferrer"
                                       className="p-1 hover:text-pink-600 transition"
@@ -5432,7 +5456,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                         <div className="flex items-center gap-2 pt-1 text-slate-500">
                           {member.instagram && (
                             <a
-                              href={member.instagram.startsWith('http') ? member.instagram : `https://instagram.com/${member.instagram.replace(/^@/, '')}`}
+                              href={String(member.instagram).startsWith('http') ? member.instagram : `https://instagram.com/${String(member.instagram).replace(/^@/, '')}`}
                               target="_blank"
                               rel="noreferrer"
                               className="p-1 hover:text-pink-600 transition"
@@ -5746,12 +5770,13 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
           {/* TAB: PAYMENTS & DUE (Reference Image 2: Students -> Payments & Due) */}
           {/* ───────────────────────────────────────────────────────────────── */}
           {activeTab === 'student-payments' && (() => {
-            const totalCohortFee = students.reduce((acc, s) => {
-              const num = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            const safeStudents = Array.isArray(students) ? students : [];
+            const totalCohortFee = safeStudents.reduce((acc, s) => {
+              const num = parseCurrencyNumber(s?.feeTotal);
               return acc + num;
             }, 0);
-            const totalCohortCollected = students.reduce((acc, s) => {
-              const num = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+            const totalCohortCollected = safeStudents.reduce((acc, s) => {
+              const num = parseCurrencyNumber(s?.feePaid);
               return acc + num;
             }, 0);
             const totalCohortDues = Math.max(0, totalCohortFee - totalCohortCollected);
@@ -5851,8 +5876,8 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                             </tr>
                           ) : (
                             filteredStudents.map((s) => {
-                              const totalNum = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                              const paidNum = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                              const totalNum = parseCurrencyNumber(s?.feeTotal);
+                              const paidNum = parseCurrencyNumber(s?.feePaid);
                               const dueNum = Math.max(0, totalNum - paidNum);
                               const paidPercent = totalNum > 0 ? Math.min(100, Math.round((paidNum / totalNum) * 100)) : 100;
 
@@ -5954,8 +5979,8 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                   /* Small Icons / Card Box Grid (Grid View) */
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredStudents.map((s) => {
-                      const totalNum = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                      const paidNum = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                      const totalNum = parseCurrencyNumber(s?.feeTotal);
+                      const paidNum = parseCurrencyNumber(s?.feePaid);
                       const dueNum = Math.max(0, totalNum - paidNum);
                       const paidPercent = totalNum > 0 ? Math.min(100, Math.round((paidNum / totalNum) * 100)) : 100;
 
@@ -6098,17 +6123,19 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
 
               {/* Financial Metrics (Strict 2-Color Minimal) */}
               {(() => {
-                const cohortInvoiced = students.reduce((acc, s) => acc + (parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
-                const cohortRealized = students.reduce((acc, s) => acc + (parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0), 0);
+                const safeStudents = Array.isArray(students) ? students : [];
+                const safeClients = Array.isArray(crmClients) ? crmClients : [];
+                const cohortInvoiced = safeStudents.reduce((acc, s) => acc + parseCurrencyNumber(s?.feeTotal), 0);
+                const cohortRealized = safeStudents.reduce((acc, s) => acc + parseCurrencyNumber(s?.feePaid), 0);
                 const cohortOutstanding = Math.max(0, cohortInvoiced - cohortRealized);
 
                 // Real Corporate Quotations & Payments (Arrox Tech: Quotation 15,000, Received 8,000)
-                const corporateInvoiced = crmClients.reduce((acc, c) => {
-                  const val = c.quotationAmount || parseInt(String(c.contractValue || c.contract_value || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                const corporateInvoiced = safeClients.reduce((acc, c) => {
+                  const val = c?.quotationAmount ? Number(c.quotationAmount) : parseCurrencyNumber(c?.contractValue || c?.contract_value);
                   return acc + val;
                 }, 0);
-                const corporateRealized = crmClients.reduce((acc, c) => {
-                  const val = c.receivedAmount || parseInt(String(c.amountPaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                const corporateRealized = safeClients.reduce((acc, c) => {
+                  const val = c?.receivedAmount ? Number(c.receivedAmount) : parseCurrencyNumber(c?.amountPaid);
                   return acc + val;
                 }, 0);
                 const corporateOutstanding = Math.max(0, corporateInvoiced - corporateRealized);
@@ -6401,9 +6428,9 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#F1F5F9]">
-                      {students.map((s) => {
-                        const totalNum = parseInt((s.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                        const paidNum = parseInt((s.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                      {(Array.isArray(students) ? students : []).map((s) => {
+                        const totalNum = parseCurrencyNumber(s?.feeTotal);
+                        const paidNum = parseCurrencyNumber(s?.feePaid);
                         const dueNum = Math.max(0, totalNum - paidNum);
                         const paidPercent = totalNum > 0 ? Math.min(100, Math.round((paidNum / totalNum) * 100)) : 100;
 
@@ -7541,7 +7568,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                           <span className="font-mono font-bold text-[#0F172A]">{rightPanel.data.phone}</span>
                           {rightPanel.data.phone && (
                             <a
-                              href={`https://wa.me/${rightPanel.data.phone.replace(/[^0-9]/g, '')}`}
+                              href={`https://wa.me/${String(rightPanel?.data?.phone || '').replace(/[^0-9]/g, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold flex items-center gap-1 transition"
@@ -7594,7 +7621,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                           </div>
                           <div>
                             <p className="font-bold text-[#0F172A] text-xs">
-                              MEC_Admission_Slip_{rightPanel.data.name.replace(/\s+/g, '_')}.pdf
+                              MEC_Admission_Slip_{String(rightPanel?.data?.name || 'Student').replace(/\s+/g, '_')}.pdf
                             </p>
                             <p className="text-[10px] text-[#64748B]">Mahendra Engineering College • IT Class of 2027</p>
                           </div>
@@ -7645,7 +7672,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                           degree: rightPanel.data.degree || 'B.Tech Information Technology',
                           domain: rightPanel.data.domain || 'Full stack Web Development',
                           duration: rightPanel.data.duration || '3 Months (Oct 2026 - Jan 2027)',
-                          certId: rightPanel.data.certId || `ATIDETO-CERT-2026-${rightPanel.data.id.replace('AT-', '')}`,
+                          certId: rightPanel.data.certId || `ATIDETO-CERT-2026-${String(rightPanel?.data?.id || '').replace('AT-', '')}`,
                           issueDate: rightPanel.data.issueDate || '2026-10-21',
                           stipend: 'Standard Industrial Cohort',
                           evalScore: `${rightPanel.data.score || 95}/100 (Exemplary Distinction)`
@@ -7962,8 +7989,8 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                         <div className="min-w-0 flex-1">
                           <span className="font-bold text-[#0F172A] block break-words">
                             {rightPanel.data.mouStatus === 'Mou not signed'
-                              ? `Atideto_${rightPanel.data.name.replace(/\s+/g, '_')}_Project_Charter_Draft.pdf`
-                              : `Atideto_${rightPanel.data.name.replace(/\s+/g, '_')}_MOU_Signed.pdf`
+                              ? `Atideto_${String(rightPanel?.data?.name || 'Client').replace(/\s+/g, '_')}_Project_Charter_Draft.pdf`
+                              : `Atideto_${String(rightPanel?.data?.name || 'Client').replace(/\s+/g, '_')}_MOU_Signed.pdf`
                             }
                           </span>
                           <span className={`text-[10px] font-semibold ${
@@ -8392,8 +8419,8 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                     </div>
 
                     {(() => {
-                      const totalNum = parseInt((editStudentForm.feeTotal || '0').replace(/[^0-9]/g, ''), 10) || 0;
-                      const paidNum = parseInt((editStudentForm.feePaid || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                      const totalNum = parseCurrencyNumber(editStudentForm?.feeTotal);
+                      const paidNum = parseCurrencyNumber(editStudentForm?.feePaid);
                       const dueNum = Math.max(0, totalNum - paidNum);
                       const paidPercent = totalNum > 0 ? Math.min(100, Math.round((paidNum / totalNum) * 100)) : 0;
                       const duePercent = Math.max(0, 100 - paidPercent);
@@ -8759,7 +8786,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                         emp_id: staffForm.emp_id || `EMP-0${staffMembers.length + 1}`,
                         name: staffForm.name,
                         role: staffForm.role,
-                        email: staffForm.email || `${staffForm.name.toLowerCase().replace(/\s+/g, '.')}@atideto.in`,
+                        email: staffForm.email || `${String(staffForm.name || 'staff').toLowerCase().replace(/\s+/g, '.')}@atideto.in`,
                         phone: staffForm.phone,
                         department: staffForm.department,
                         status: staffForm.status || 'Active',
@@ -9445,7 +9472,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent, zo
                     <div className="space-y-2">
                       {rightPanel.data.instagram && (
                         <a
-                          href={rightPanel.data.instagram.startsWith('http') ? rightPanel.data.instagram : `https://instagram.com/${rightPanel.data.instagram.replace(/^@/, '')}`}
+                          href={String(rightPanel?.data?.instagram || '').startsWith('http') ? rightPanel.data.instagram : `https://instagram.com/${String(rightPanel?.data?.instagram || '').replace(/^@/, '')}`}
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-pink-50 border border-slate-100 transition group"
