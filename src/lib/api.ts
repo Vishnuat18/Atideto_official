@@ -955,7 +955,7 @@ export async function createStudentInDb(studentData: any) {
   };
 
   addStudentToRegistry(normalizedData);
-  saveCloudStudent(id, normalizedData);
+  await saveCloudStudent(id, normalizedData);
 
   try {
     const res = await fetch(`${API_BASE}/students`, {
@@ -984,7 +984,7 @@ export async function updateStudentInDb(studentId: string, updates: any) {
   }
 
   // 1. Immediately persist to Cloud Realtime Database (Multi-mobile instant sync)
-  saveCloudStudent(studentId, updates);
+  await saveCloudStudent(studentId, updates);
 
   // 2. Update local browser registry cache
   updateStudentInRegistry(studentId, updates);
@@ -1035,7 +1035,7 @@ export async function updateStudentInDb(studentId: string, updates: any) {
 }
 
 export async function deleteStudentFromDb(studentId: string) {
-  deleteCloudStudent(studentId);
+  await deleteCloudStudent(studentId);
   deleteStudentFromRegistry(studentId);
   removeStudentFromRegistry(studentId);
 

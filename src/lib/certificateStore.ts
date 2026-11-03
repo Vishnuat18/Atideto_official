@@ -1736,15 +1736,12 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
 
       const paymentStatus = fin ? fin.paymentStatus : (existing.paymentStatus || raw.paymentStatus || 'Pending Admin Decision');
 
-      // College & Dates for Mahendra College of Engineering (14/09/2026 to 14/10/2026, 30 Days)
+      // College & Dates: the first-seen (authoritative) record always wins so a
+      // stale local cache can never overwrite fresh cloud values.
       const collegeVal = 'Mahendra College of Engineering';
-      const startDateVal = (raw.startDate && raw.startDate !== '2026-09-04' && raw.startDate !== '2026-09-24' && raw.startDate !== '2026-10-25')
-        ? raw.startDate
-        : '2026-09-14';
-      const endDateVal = (raw.endDate && raw.endDate !== '2026-10-23' && raw.endDate !== '2027-01-25')
-        ? raw.endDate
-        : '2026-10-14';
-      const durationVal = raw.duration || existing.duration || '30 Days';
+      const startDateVal = existing.startDate || raw.startDate || '2026-09-14';
+      const endDateVal = existing.endDate || raw.endDate || '2026-10-14';
+      const durationVal = existing.duration || raw.duration || '30 Days';
 
       // Existing record in storage always takes priority over default/canonical values
       const mergedRecord: StudentCohortRecord = {
@@ -1762,9 +1759,9 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         startDate: startDateVal,
         endDate: endDateVal,
         duration: durationVal,
-        mentor: raw.mentor || existing.mentor || 'Karthik Ramanathan (AI & Web Lead)',
-        attendance: raw.attendance !== undefined ? Number(raw.attendance) : (existing.attendance ?? 95),
-        score: raw.score !== undefined ? Number(raw.score) : (existing.score ?? 95),
+        mentor: existing.mentor || raw.mentor || 'Karthik Ramanathan (AI & Web Lead)',
+        attendance: existing.attendance !== undefined ? Number(existing.attendance) : (raw.attendance !== undefined ? Number(raw.attendance) : 95),
+        score: existing.score !== undefined ? Number(existing.score) : (raw.score !== undefined ? Number(raw.score) : 95),
         feePaid,
         feeTotal,
         paymentStatus,
@@ -1825,7 +1822,7 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         gradYear: raw.gradYear || '2027',
         course: normDomain,
         domain: normDomain,
-        startDate: (raw.startDate && raw.startDate !== '2026-09-04') ? raw.startDate : '2026-09-14',
+        startDate: raw.startDate || '2026-09-14',
         endDate: raw.endDate || '2026-10-14',
         duration: raw.duration || '30 Days',
         mentor: raw.mentor || 'Karthik Ramanathan (AI & Web Lead)',
@@ -1904,22 +1901,11 @@ export function getStoredStudents(): StudentCohortRecord[] {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const hasStale = parsed.some((s: any) =>
-            s.id === '710022104001' ||
-            String(s.id || '').startsWith('AT-MEC-') ||
-            String(s.id || '').startsWith('AT-MCE-') ||
-            s.id === '621523205084' ||
-            s.startDate === '2026-09-04' ||
-            s.startDate === '2026-09-24' ||
-            s.startDate === '2026-10-25'
-          );
-          const hasPremKumar = parsed.some((s: any) => s.email === 'premkumar35006@gmail.com');
-          if (!hasStale && hasPremKumar && parsed.length >= 21) {
-            list = [...parsed];
-          } else {
-            localStorage.removeItem(CACHE_KEY);
-          }
+        // Never discard the cached cohort based on date/ID heuristics: those
+        // heuristics also matched legitimate records (e.g. new students using
+        // the default 2026-10-25 start date), which silently wiped the cache.
+        if (Array.isArray(parsed)) {
+          list = parsed.filter(Boolean);
         }
       }
     }

@@ -7,8 +7,7 @@ import {
   saveStoredStudents,
   getStoredStudents,
   deduplicateAndMergeStudents,
-  generateUniqueDocumentIds,
-  CANONICAL_COHORT_STUDENTS
+  generateUniqueDocumentIds
 } from './certificateStore';
 import type { ExpenseRecord, RevenueRecord } from './financeTypes';
 
@@ -41,24 +40,10 @@ export async function fetchCloudStudents(): Promise<StudentCohortRecord[] | null
     }
 
     if (list.length > 0) {
-      // Check if cloud data is stale (contains AT-MEC-, AT-MCE-, old dates, or missing Prem Kumar)
-      const hasStale = list.some(s =>
-        String(s.id || '').startsWith('AT-MEC-') ||
-        String(s.id || '').startsWith('AT-MCE-') ||
-        s.id === '621523205084' ||
-        s.startDate === '2026-09-04' ||
-        s.startDate === '2026-09-24' ||
-        s.startDate === '2026-10-25'
-      );
-      const hasPremKumar = list.some(s => s.email === 'premkumar35006@gmail.com');
-
-      if (hasStale || !hasPremKumar || list.length < CANONICAL_COHORT_STUDENTS.length) {
-        const canonical = getStoredStudents();
-        await saveCloudStudents(canonical);
-        return canonical;
-      }
-
-      // Clean and normalize each record
+      // Cloud is the authoritative source of truth. Never replace it with a
+      // local/canonical snapshot — doing so reverts edits made on any device
+      // (previously new students using the default 2026-10-25 dates triggered
+      // a full overwrite with the 21 canonical records).
       const cleaned = list.map(s => ({
         ...s,
         id: s.registerNumber || s.studentId || s.id,
@@ -68,13 +53,14 @@ export async function fetchCloudStudents(): Promise<StudentCohortRecord[] | null
         degree: s.degree || 'B.Tech Information Technology',
         tools: Array.isArray(s.tools) ? s.tools : ['React', 'Node.js', 'Express', 'MongoDB'],
         area: Array.isArray(s.area) ? s.area : ['Full Stack', 'Web Development'],
-        startDate: (s.startDate && s.startDate !== '2026-09-04' && s.startDate !== '2026-09-24' && s.startDate !== '2026-10-25') ? s.startDate : '2026-09-14',
-        endDate: (s.endDate && s.endDate !== '2026-10-23' && s.endDate !== '2027-01-25') ? s.endDate : '2026-10-14',
+        startDate: s.startDate || '2026-09-14',
+        endDate: s.endDate || '2026-10-14',
         duration: s.duration || '30 Days'
       }));
-      // Always fold in the canonical cohort (and the local cache) so newly
-      // added canonical students show up on every tab, on every device,
-      // even when the cloud snapshot predates them.
+
+      // Merge local/canonical records additively only. Because cloud records
+      // come first and the merge now prefers the first-seen record, fresh
+      // cloud values always win over stale local cache values.
       const merged = deduplicateAndMergeStudents([...cleaned, ...getStoredStudents()]);
       saveStoredStudents(merged, true);
 
