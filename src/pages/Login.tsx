@@ -21,7 +21,6 @@ import {
   sendForgotPasswordOtp,
   verifyForgotPasswordOtp,
   resetPasswordAndLogin,
-  activateStudentAccount,
   saveCloudUser,
   saveCloudStudent
 } from "@/lib/api";
@@ -51,7 +50,7 @@ import {
   Sparkles
 } from "lucide-react";
 
-type Mode = "login" | "register" | "forgot" | "activate";
+type Mode = "login" | "register" | "forgot";
 type ForgotStep = "enter_email" | "enter_code" | "change_password";
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -216,6 +215,67 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Admin Login (unlocked by clicking Atideto logo 3 times)
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  // Logo triple-click detection
+  const logoClicksRef = useRef<number>(0);
+  const logoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoClick = () => {
+    logoClicksRef.current += 1;
+    if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
+
+    if (logoClicksRef.current >= 3) {
+      logoClicksRef.current = 0;
+      setIsAdminMode(prev => {
+        const next = !prev;
+        toast.info(next ? "Admin Portal Unlocked" : "Student Portal Activated");
+        return next;
+      });
+      setError("");
+    } else {
+      logoTimerRef.current = setTimeout(() => {
+        logoClicksRef.current = 0;
+      }, 1500);
+    }
+  };
+
+  const handleAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const emailClean = adminEmail.trim().toLowerCase();
+    const passClean = adminPassword.trim();
+
+    if (emailClean === "admin@atideto.in" && passClean === "semester@4K") {
+      setAdminLoading(true);
+      const adminUser = {
+        uid: "usr-admin-01",
+        id: 1,
+        name: "Administrator",
+        email: "admin@atideto.in",
+        role: "admin",
+        provider: "local"
+      };
+      try {
+        localStorage.setItem("atideto_sql_user", JSON.stringify(adminUser));
+        localStorage.setItem("atideto_dashboard_mode", "admin");
+        window.dispatchEvent(new Event("atideto_auth_change"));
+      } catch { /* ignore */ }
+      toast.success("Administrator login approved! Opening ERP Suite...");
+      setTimeout(() => {
+        navigate("/admin");
+      }, 300);
+    } else {
+      setError("Invalid admin credentials. Access denied.");
+    }
+  };
 
   // Forgot Password Steps: enter_email -> enter_code -> change_password
   const [forgotStep, setForgotStep] = useState<ForgotStep>("enter_email");
@@ -406,6 +466,32 @@ export default function Login() {
         const cleanEmail = email.toLowerCase().trim();
         const cleanPass = password.trim();
 
+        // Specific Admin verification (only admin@atideto.in and semester@4K)
+        if (cleanEmail === "admin@atideto.in") {
+          if (cleanPass === "semester@4K") {
+            const adminUser = {
+              uid: "usr-admin-01",
+              id: 1,
+              name: "Administrator",
+              email: "admin@atideto.in",
+              role: "admin",
+              provider: "local"
+            };
+            try {
+              localStorage.setItem("atideto_sql_user", JSON.stringify(adminUser));
+              localStorage.setItem("atideto_dashboard_mode", "admin");
+              window.dispatchEvent(new Event("atideto_auth_change"));
+            } catch { /* ignore */ }
+            toast.success("Signed in as Administrator!");
+            navigate("/admin");
+            return;
+          } else {
+            setError("Invalid admin credentials. Access denied.");
+            setLoading(false);
+            return;
+          }
+        }
+
         // 1. Try secure API authentication
         try {
           const sqlRes = await loginWithSql(cleanEmail, cleanPass);
@@ -528,52 +614,6 @@ export default function Login() {
       } else {
         setError(getAuthErrorMessage(err));
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Student Account Activation Handler (First-Time Login)
-  const handleActivateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    const identifier = form.email.trim();
-    if (!identifier) {
-      setError("Please enter your registered student email address or Student ID.");
-      return;
-    }
-
-    if (!form.password || form.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    if (form.password !== form.confirm) {
-      setError("Passwords do not match. Please verify both fields.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const isEmail = identifier.includes("@");
-      const res = await activateStudentAccount({
-        email: isEmail ? identifier : "",
-        studentId: isEmail ? undefined : identifier,
-        password: form.password
-      });
-
-      if (res && res.success && res.user) {
-        localStorage.setItem('atideto_sql_user', JSON.stringify(res.user));
-        localStorage.setItem('atideto_dashboard_mode', 'student');
-        window.dispatchEvent(new Event('atideto_auth_change'));
-        toast.success(res.message || "Student account activated successfully!");
-        navigate("/dashboard");
-      } else {
-        setError(res.message || "No registered student found with this identifier. Please register first.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to activate student account.");
     } finally {
       setLoading(false);
     }
@@ -892,7 +932,11 @@ export default function Login() {
 
         {/* Top: Brand Logo + v2.4 Enterprise Pill */}
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div
+            onClick={handleLogoClick}
+            className="flex items-center gap-3 cursor-pointer select-none active:scale-95 transition-transform"
+            title="Atideto Technologies"
+          >
             <img
               src={atidetoLogo}
               alt="Atideto"
@@ -954,19 +998,39 @@ export default function Login() {
 
         {/* Top Row: Back to Home + Mode Switcher */}
         <div className="relative z-10 flex items-center justify-between w-full shrink-0">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs text-slate-400 hover:text-white hover:bg-white/[0.06] rounded-full px-3 h-8"
-          >
-            <Link to="/">
+          {isAdminMode ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setIsAdminMode(false);
+                setError("");
+              }}
+              className="gap-1.5 text-xs text-slate-400 hover:text-white hover:bg-white/[0.06] rounded-full px-3 h-8 cursor-pointer"
+            >
               <ChevronLeft className="size-3.5" />
-              Return to Website
-            </Link>
-          </Button>
+              <span>Back to Student Login</span>
+            </Button>
+          ) : (
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs text-slate-400 hover:text-white hover:bg-white/[0.06] rounded-full px-3 h-8"
+            >
+              <Link to="/">
+                <ChevronLeft className="size-3.5" />
+                Return to Website
+              </Link>
+            </Button>
+          )}
 
-          {mode !== "forgot" && (
+          {isAdminMode ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold font-mono">
+              <ShieldCheck className="size-3.5 text-red-400" />
+              <span>Admin Mode</span>
+            </div>
+          ) : mode !== "forgot" && (
             <div className="inline-flex p-0.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-md">
               <button
                 type="button"
@@ -974,7 +1038,7 @@ export default function Login() {
                   setError("");
                   setMode("login");
                 }}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
                   mode === "login"
                     ? "bg-[#0066FF] text-white shadow-[0_0_12px_rgba(0,102,255,0.4)]"
                     : "text-slate-400 hover:text-white"
@@ -986,29 +1050,15 @@ export default function Login() {
                 type="button"
                 onClick={() => {
                   setError("");
-                  setMode("activate");
-                }}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
-                  mode === "activate"
-                    ? "bg-[#0066FF] text-white shadow-[0_0_12px_rgba(0,102,255,0.4)]"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                Activate Student
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setError("");
                   setMode("register");
                 }}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                className={`px-3.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
                   mode === "register"
                     ? "bg-[#0066FF] text-white shadow-[0_0_12px_rgba(0,102,255,0.4)]"
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                Create Account
+                Sign Up
               </button>
             </div>
           )}
@@ -1020,7 +1070,11 @@ export default function Login() {
         <div className="relative z-10 mx-auto w-full max-w-[390px] my-auto space-y-3.5 shrink-0">
 
           {/* Mobile Header Brand Icon (Hidden on Desktop) */}
-          <div className="flex items-center gap-2 lg:hidden mb-1">
+          <div
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 lg:hidden mb-1 cursor-pointer select-none active:scale-95 transition-transform"
+            title="Atideto Technologies"
+          >
             <img src={atidetoLogo} alt="Atideto" className="h-7 w-auto object-contain" />
             <span className="text-white font-bold text-base">Atideto Technologies</span>
           </div>
@@ -1033,121 +1087,91 @@ export default function Login() {
           )}
 
           {/* ═════════════════════════════════════════════════════════════════ */}
-          {/* MODE: ACTIVATE STUDENT ACCOUNT (FIRST-TIME LOGIN)                 */}
+          {/* MODE: ADMIN LOGIN (ONLY 2 INPUT FIELDS: GMAIL & PASSWORD)        */}
           {/* ═════════════════════════════════════════════════════════════════ */}
-          {mode === "activate" ? (
-            <div className="space-y-3.5">
+          {isAdminMode ? (
+            <div className="space-y-3.5 animate-in fade-in zoom-in-95 duration-200">
               <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0066FF]/10 border border-[#0066FF]/20 text-[#38BDF8] text-[11px] font-semibold mb-1">
-                  <Sparkles className="size-3.5" />
-                  <span>Student First-Time Setup</span>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-[11px] font-semibold mb-1">
+                  <ShieldCheck className="size-3.5 text-red-400" />
+                  <span>Restricted Admin Portal</span>
                 </div>
                 <h2
                   className="text-2xl font-bold tracking-tight text-white"
                   style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
-                  Activate Student Account
+                  Administrator Sign In
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Enter your registered student email or Student ID to establish your personal password and access your dashboard.
+                  Enter authorized administrator credentials to manage Atideto ERP suite.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-left">
-                <p className="text-[11px] leading-relaxed text-blue-200">
-                  💡 <strong>Default Password Tip:</strong> All enrolled cohort students can also log in directly on the Sign In tab using default password <code className="bg-black/30 px-1 py-0.5 rounded text-white font-mono font-bold">student123</code>.
-                </p>
-              </div>
-
-              <form onSubmit={handleActivateSubmit} className="space-y-3">
+              {/* Form with ONLY 2 INPUT FIELDS: GMAIL & PASSWORD */}
+              <form onSubmit={handleAdminSubmit} className="space-y-3 pt-1">
+                {/* 1. Gmail Input Field */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-300">Registered Student Email or Student ID</label>
+                  <label className="text-xs font-medium text-slate-300">Admin Gmail</label>
                   <div className="relative">
                     <input
-                      type="text"
-                      placeholder="e.g. suresh@gmail.com or 621523205106"
-                      value={form.email}
-                      onChange={(e) => update("email", e.target.value)}
+                      type="email"
+                      placeholder="admin@atideto.in"
+                      value={adminEmail}
+                      onChange={(e) => setAdminEmail(e.target.value)}
                       required
+                      autoFocus
                       className="w-full pl-9 pr-3 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
                     />
-                    <User className="absolute left-3 top-2.5 size-4 text-slate-500" />
+                    <Mail className="absolute left-3 top-2.5 size-4 text-slate-500" />
                   </div>
                 </div>
 
+                {/* 2. Password Input Field */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-slate-300">Create New Password</label>
+                  <label className="text-xs font-medium text-slate-300">Admin Password</label>
                   <div className="relative">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showAdminPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      value={form.password}
-                      onChange={(e) => update("password", e.target.value)}
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
                       required
                       className="w-full pl-9 pr-9 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
                     />
                     <Lock className="absolute left-3 top-2.5 size-4 text-slate-500" />
                     <button
                       type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowAdminPassword(!showAdminPassword)}
                       className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition cursor-pointer"
                     >
-                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                  <PasswordRequirements password={form.password} compact={true} className="pt-1" />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-300">Confirm Password</label>
-                    {form.confirm && (
-                      <span className={`text-[10px] font-medium flex items-center gap-1 ${
-                        form.password === form.confirm ? "text-emerald-400" : "text-rose-400"
-                      }`}>
-                        {form.password === form.confirm ? "✓ Passwords match" : "✕ Passwords do not match"}
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={form.confirm}
-                      onChange={(e) => update("confirm", e.target.value)}
-                      required
-                      className="w-full pl-9 pr-9 py-2 bg-[#0C1222] border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#0066FF] transition"
-                    />
-                    <Lock className="absolute left-3 top-2.5 size-4 text-slate-500" />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition cursor-pointer"
-                    >
-                      {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {showAdminPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
                 </div>
 
+                {/* Submit Action Button */}
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={adminLoading}
                   className="w-full h-10 mt-1 text-xs font-semibold bg-[#0066FF] hover:bg-[#2EA8FF] text-white rounded-xl shadow-[0_0_16px_rgba(0,102,255,0.4)] cursor-pointer transition flex items-center justify-center gap-1.5"
                 >
-                  {loading && <Loader2 className="size-3.5 animate-spin mr-2" />}
-                  Activate & Open Dashboard
+                  {adminLoading ? <Loader2 className="size-3.5 animate-spin mr-2" /> : <ShieldCheck className="size-3.5 mr-2" />}
+                  Sign In as Administrator
                 </Button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("");
-                    setMode("login");
-                  }}
-                  className="w-full text-center text-xs text-slate-400 hover:text-white transition cursor-pointer pt-1"
-                >
-                  ← Back to Sign In
-                </button>
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAdminMode(false);
+                      setError("");
+                    }}
+                    className="text-xs text-slate-400 hover:text-white transition flex items-center justify-center gap-1 mx-auto cursor-pointer"
+                  >
+                    <ChevronLeft size={14} />
+                    <span>Return to Student Sign In</span>
+                  </button>
+                </div>
               </form>
             </div>
           ) : mode === "forgot" ? (
@@ -1559,21 +1583,6 @@ export default function Login() {
                       {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
-                  {mode === "login" && (
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
-                      <span>Default student password: <strong className="text-white font-mono">student123</strong></span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setError("");
-                          setMode("activate");
-                        }}
-                        className="text-[#38BDF8] hover:underline cursor-pointer font-medium"
-                      >
-                        Activate Account
-                      </button>
-                    </div>
-                  )}
                   {mode === "register" && (
                     <PasswordRequirements password={form.password} compact={true} className="pt-1" />
                   )}
