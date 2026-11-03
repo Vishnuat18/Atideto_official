@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   Check,
+  Clock3,
   CheckCircle2,
   ChevronDown,
   GraduationCap,
@@ -34,8 +35,8 @@ import {
 } from '@/constants/internshipDomains';
 import {
   calculateAutomaticEndDate,
+  calculateDurationFromDates,
   DEGREE_OPTIONS,
-  DURATION_OPTIONS,
   SPECIALIZATION_OPTIONS
 } from '@/constants/registrationOptions';
 
@@ -64,9 +65,6 @@ const GENDER_OPTIONS = toOptions(['Male', 'Female', 'Other', 'Prefer not to say'
 const MODE_OPTIONS = toOptions(MODES);
 const DEGREE_SELECT_OPTIONS = toOptions(DEGREE_OPTIONS);
 const DEPARTMENT_SELECT_OPTIONS = toOptions(SPECIALIZATION_OPTIONS);
-const DURATION_SELECT_OPTIONS: SelectOption[] = DURATION_OPTIONS
-  .filter(option => option.value !== 'Other')
-  .map(option => ({ value: option.value, label: option.label }));
 const DOMAIN_SELECT_OPTIONS: SelectOption[] = [
   ...STANDARD_DOMAINS.map(domain => ({ value: domain, label: domain })),
   { value: 'Other', label: 'Other / Custom domain' }
@@ -96,15 +94,10 @@ interface FormState {
   customDomain: string;
   mode: string;
   startDate: string;
-  duration: string;
+  endDate: string;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
-
-const formatDisplayDate = (iso: string) => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
-  return match ? `${match[3]}-${match[2]}-${match[1]}` : iso;
-};
 
 const initialForm = (collegeName = ''): FormState => ({
   fullName: '',
@@ -123,7 +116,7 @@ const initialForm = (collegeName = ''): FormState => ({
   customDomain: '',
   mode: MODES[0],
   startDate: today(),
-  duration: '30 Days'
+  endDate: calculateAutomaticEndDate(today(), '30 Days')
 });
 
 const labelClass = 'text-[11px] font-extrabold uppercase tracking-wider text-slate-500';
@@ -180,9 +173,9 @@ export default function QrRegistration() {
     };
   }, [qrId]);
 
-  const endDate = useMemo(
-    () => calculateAutomaticEndDate(form.startDate, form.duration),
-    [form.startDate, form.duration]
+  const duration = useMemo(
+    () => calculateDurationFromDates(form.startDate, form.endDate),
+    [form.startDate, form.endDate]
   );
 
   const update = (patch: Partial<FormState>) => setForm(prev => ({ ...prev, ...patch }));
@@ -204,7 +197,8 @@ export default function QrRegistration() {
     if (!form.academicBatch.trim()) return 'Please enter your academic batch (e.g. 2022 - 2026).';
     if (!resolvedDomain) return 'Please select or type your internship domain.';
     if (!form.startDate) return 'Please choose your preferred start date.';
-    if (!form.duration) return 'Please choose a duration.';
+    if (!form.endDate) return 'Please choose your preferred end date.';
+    if (!duration || duration === '0 Days') return 'End date must be after the start date.';
     return null;
   };
 
@@ -242,8 +236,8 @@ export default function QrRegistration() {
         domain: resolvedDomain,
         mode: form.mode,
         startDate: form.startDate,
-        endDate,
-        duration: form.duration,
+        endDate: form.endDate,
+        duration,
         attendancePct: 100,
         amount: campaign?.amount,
         studentId,
@@ -280,8 +274,8 @@ export default function QrRegistration() {
       course: resolvedDomain,
       domain: resolvedDomain,
       startDate: form.startDate,
-      endDate,
-      duration: form.duration,
+      endDate: form.endDate,
+      duration,
       mode: form.mode,
       notes: `QR Registration | ${qrId} | Dept: ${resolvedDepartment} | Reg No: ${form.registerNo} | Batch: ${form.academicBatch}`
     }).catch(() => {
@@ -623,18 +617,39 @@ export default function QrRegistration() {
                   </div>
                 </div>
                 <div>
-                  <label className={labelClass}>Duration *</label>
-                  <SelectMenu
-                    className="mt-1.5"
-                    value={form.duration}
-                    onChange={value => update({ duration: value })}
-                    options={DURATION_SELECT_OPTIONS}
-                    placeholder="Select duration"
-                  />
+                  <label className={labelClass}>Preferred end date *</label>
+                  <div className="relative mt-1.5">
+                    <input
+                      type="date"
+                      value={form.endDate}
+                      min={form.startDate || undefined}
+                      onChange={e => update({ endDate: e.target.value })}
+                      onClick={e => {
+                        try {
+                          e.currentTarget.showPicker?.();
+                        } catch {
+                          /* browsers may block showPicker on synthetic clicks */
+                        }
+                      }}
+                      className={`${inputClass} qr-date-input cursor-pointer pr-10 [color-scheme:light]`}
+                    />
+                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                  </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Duration (auto-calculated)</label>
+                  <div className="relative mt-1.5">
+                    <input
+                      value={duration || 'Select both dates'}
+                      readOnly
+                      className={`${inputClass} cursor-default bg-slate-50 pr-10 font-bold text-slate-700`}
+                    />
+                    <Clock3 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
                 <div>
                   <label className={labelClass}>Mode</label>
                   <SelectMenu
@@ -644,17 +659,6 @@ export default function QrRegistration() {
                     options={MODE_OPTIONS}
                     placeholder="Select mode"
                   />
-                </div>
-                <div>
-                  <label className={labelClass}>Expected end date</label>
-                  <div className="relative mt-1.5">
-                    <input
-                      value={formatDisplayDate(endDate)}
-                      readOnly
-                      className={`${inputClass} cursor-default bg-slate-50 pr-10 text-slate-500`}
-                    />
-                    <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  </div>
                 </div>
               </div>
             </section>

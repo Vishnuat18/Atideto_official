@@ -84,6 +84,7 @@ function toStudentRecord(sub: QrSubmission, amount?: number): Partial<StudentCoh
     startDate: sub.startDate,
     endDate: sub.endDate,
     duration: sub.duration,
+    createdAt: sub.submittedAt || new Date().toISOString(),
     mentor: 'Atideto Internship Team',
     attendance: Number(sub.attendancePct) || 100,
     score: 95,
@@ -135,6 +136,7 @@ export default function QrCodesPanel() {
   const [editForm, setEditForm] = useState<QrSubmission | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
   const [importingId, setImportingId] = useState('');
+  const [importingAllId, setImportingAllId] = useState('');
 
   const loadCampaigns = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -307,6 +309,68 @@ export default function QrCodesPanel() {
     toast.success('QR campaign deleted');
   };
 
+  const importSubmissions = async (
+    list: QrSubmission[],
+    amount: number | undefined,
+    sourceLabel: string
+  ) => {
+    const pending = list.filter(sub => !sub.imported);
+    if (pending.length === 0) {
+      toast.success(`All students from ${sourceLabel} are already in the student list`);
+      return;
+    }
+
+    let registry: StudentCohortRecord[] = [];
+    const imported: QrSubmission[] = [];
+
+    for (const sub of pending) {
+      const studentId = sub.studentId || `AT-QR-${sub.id.toUpperCase()}`;
+      const record = {
+        ...toStudentRecord(sub, sub.amount ?? amount),
+        id: studentId,
+        studentId
+      };
+      registry = addStudentToRegistry(record);
+      registry = updateStudentInRegistry(studentId, {
+        college: sub.collegeName,
+        academicBatch: sub.academicBatch,
+        department: sub.department,
+        gender: sub.gender,
+        mode: sub.mode,
+        registerNumber: sub.registerNo || studentId,
+        name: sub.fullName,
+        createdAt: sub.submittedAt || new Date().toISOString()
+      });
+      await markQrSubmissionImported(sub, studentId);
+      imported.push({ ...sub, studentId, imported: true });
+    }
+
+    await persistRegistry(registry);
+    const importedById = new Map(imported.map(sub => [sub.id, sub]));
+    setSubmissions(prev =>
+      prev.map(sub => {
+        const next = importedById.get(sub.id);
+        return next ? { ...sub, studentId: next.studentId, imported: true } : sub;
+      })
+    );
+    toast.success(
+      `${imported.length} student${imported.length === 1 ? '' : 's'} imported from ${sourceLabel}`
+    );
+  };
+
+  const handleImportAllForCampaign = async (campaign: QrCampaign) => {
+    setImportingAllId(campaign.id);
+    try {
+      const list = await fetchQrSubmissions(campaign.id);
+      await importSubmissions(list, campaign.amount, campaign.collegeName);
+      await loadCampaigns();
+    } catch {
+      toast.error('Could not import the students from this QR campaign');
+    } finally {
+      setImportingAllId('');
+    }
+  };
+
   const handleImport = async (sub: QrSubmission) => {
     setImportingId(sub.id);
     try {
@@ -320,7 +384,8 @@ export default function QrCodesPanel() {
         gender: sub.gender,
         mode: sub.mode,
         registerNumber: sub.registerNo || studentId,
-        name: sub.fullName
+        name: sub.fullName,
+        createdAt: sub.submittedAt || new Date().toISOString()
       });
       await persistRegistry(list);
       await markQrSubmissionImported(sub, studentId);
@@ -541,6 +606,19 @@ export default function QrCodesPanel() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleImportAllForCampaign(campaign)}
+                  disabled={importingAllId === campaign.id || (Number(campaign.submissionCount) || 0) === 0}
+                  title="Import all students from this QR into the student list"
+                  className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {importingAllId === campaign.id ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <UserPlus size={15} />
+                  )}
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleCopyLink(campaign.id)}
                   title="Copy registration link"
                   className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
@@ -698,6 +776,29 @@ export default function QrCodesPanel() {
                   <>
                     <button
                       type="button"
+                      onClick={async () => {
+                        setImportingAllId(selected.id);
+                        try {
+                          await importSubmissions(submissions, selected.amount, selected.collegeName);
+                          await loadCampaigns();
+                        } catch {
+                          toast.error('Could not import the students from this QR campaign');
+                        } finally {
+                          setImportingAllId('');
+                        }
+                      }}
+                      disabled={importingAllId === selected.id || submissions.every(sub => sub.imported)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-[11px] font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {importingAllId === selected.id ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <UserPlus size={13} />
+                      )}
+                      Import all
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleCopyLink(selected.id)}
                       className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                     >
@@ -828,6 +929,37 @@ export default function QrCodesPanel() {
                     </div>
                   ) : (
                     <div className="space-y-2">
+                      {(() => {
+                        const pendingCount = submissions.filter(s => !s.imported).length;
+                        if (pendingCount > 0) {
+                          return (
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                setImportingAllId(selected.id);
+                                try {
+                                  await importSubmissions(submissions, selected.amount, selected.collegeName);
+                                  await loadCampaigns();
+                                } catch {
+                                  toast.error('Could not import the students from this QR campaign');
+                                } finally {
+                                  setImportingAllId('');
+                                }
+                              }}
+                              disabled={importingAllId === selected.id}
+                              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                            >
+                              {importingAllId === selected.id ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <UserPlus size={16} />
+                              )}
+                              Import all {pendingCount} pending student{pendingCount === 1 ? '' : 's'} into certificate registry
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                       {filteredSubmissions.map(sub => (
                         <button
                           key={sub.id}

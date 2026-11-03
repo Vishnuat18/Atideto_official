@@ -114,6 +114,7 @@ import {
 } from '@/lib/api';
 import { CertificateGeneratorDrawer } from './CertificateGeneratorDrawer';
 import QrCodesPanel from './QrCodesPanel';
+import BatchGroupCards, { groupRegistrationsIntoBatches, groupStudentsIntoBatches } from './BatchGroupCards';
 import GraphicalRepresentationAnalytics from './GraphicalRepresentationAnalytics';
 import { FinanceHub } from './FinanceHub';
 import { 
@@ -249,6 +250,22 @@ const normalizeStaffRecords = (records: any[]): any[] => {
     }
     return member;
   });
+};
+
+// Newest additions/joins float to the top of every student list.
+const studentRecency = (student: any): number => {
+  const candidates = [
+    student?.createdAt,
+    student?.submittedAt,
+    student?.startDate,
+    student?.issueDate
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const time = new Date(candidate).getTime();
+    if (Number.isFinite(time)) return time;
+  }
+  return 0;
 };
 
 export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: AdminErpProps) {
@@ -1611,7 +1628,12 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
       (filterAttendanceRate === '< 90% Needs Attention' && (s.attendance ?? 95) < 90);
 
     return matchesSearch && matchesCollege && matchesDegree && matchesDomain && matchesStatus && matchesPayment && matchesAttendance;
-  }), [safeStudentsList, deferredFilterSearch, filterCollege, filterDegree, filterDomain, filterStatus, filterPayment, filterAttendanceRate]);
+  }).sort((a, b) => studentRecency(b) - studentRecency(a)), [safeStudentsList, deferredFilterSearch, filterCollege, filterDegree, filterDomain, filterStatus, filterPayment, filterAttendanceRate]);
+
+  const studentBatchGroups = useMemo(
+    () => groupStudentsIntoBatches(filteredStudents as StudentCohortRecord[]),
+    [filteredStudents]
+  );
 
   // Filtered Candidate Registrations (Live Website 4-Stepper Submissions)
   const filteredRegistrations = useMemo(() => registrationsList.filter(r => {
@@ -1635,7 +1657,12 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
       toSearchText(normalizeDomain(r.domain || r.courseInterest || r.course_interest)) === toSearchText(normalizeDomain(filterDomain));
 
     return matchesSearch && matchesCollege && matchesDegree && matchesDomain;
-  }), [registrationsList, deferredFilterSearch, filterCollege, filterDegree, filterDomain]);
+  }).sort((a, b) => studentRecency(b) - studentRecency(a)), [registrationsList, deferredFilterSearch, filterCollege, filterDegree, filterDomain]);
+
+  const registrationBatchGroups = useMemo(
+    () => groupRegistrationsIntoBatches(filteredRegistrations),
+    [filteredRegistrations]
+  );
 
   // Handle Candidate Approval
   const handleApproveRegistration = async (reg: any) => {
@@ -3444,7 +3471,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#F1F5F9]">
-                      {students.slice(0, 5).map((s) => (
+                      {[...students].sort((a, b) => studentRecency(b) - studentRecency(a)).slice(0, 5).map((s) => (
                         <tr
                           key={s.id}
                           onClick={() => setRightPanel({
@@ -3505,7 +3532,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ViewSwitcher tab="all-students" defaultMode="list" />
+                  <ViewSwitcher tab="all-students" defaultMode="grid" />
                   <button
                     type="button"
                     onClick={handleSaveAllErpContents}
@@ -3688,100 +3715,22 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   </div>
                 </div>
               ) : (
-                /* Small Icons / Card Box Grid (Grid View) showing student details only */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredStudents.map((s) => (
-                    <div
-                      key={s.id}
-                      onClick={() => setRightPanel({
-                        isOpen: true,
-                        type: 'student-report',
-                        title: `Student Dossier: ${s.name}`,
-                        data: s
-                      })}
-                      className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-black transition cursor-pointer flex flex-col justify-between space-y-3"
-                    >
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2 py-0.5 rounded text-[11.5px] font-bold tracking-wider uppercase font-mono">
-                            {s.id}
-                          </span>
-                          <span className="text-[11.5px] font-bold px-2 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-800">
-                            Class of {s.gradYear || '2027'}
-                          </span>
-                        </div>
-
-                        <div>
-                          <h4 className="font-bold text-base text-[#0F172A] break-words">{s.name}</h4>
-                          <p className="text-xs text-[#64748B] mt-0.5 break-words">{s.college}</p>
-                        </div>
-
-                        <div className="pt-2 border-t border-[#F1F5F9] text-xs space-y-1 text-[#475569]">
-                          <p><span className="font-semibold text-black">Degree:</span> {s.degree}</p>
-                          <p className="break-all"><span className="font-semibold text-black">Email:</span> {s.email}</p>
-                          <p className="font-mono"><span className="font-semibold text-black">Phone:</span> {s.phone}</p>
-                        </div>
-
-                        <div className="pt-1.5" onClick={(e) => e.stopPropagation()}>
-                          <div className="relative inline-block w-full">
-                            <select
-                              value={s.status || 'Active'}
-                              onChange={(e) => handleUpdateStudentStatus(s.id, e.target.value)}
-                              className="w-full px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#E2E8F0] bg-white text-[#0F172A] shadow-2xs focus:outline-none focus:border-black cursor-pointer appearance-none pr-6"
-                            >
-                              <option value="Active">Status: Active</option>
-                              <option value="Enrolled">Status: Enrolled</option>
-                              <option value="Completed">Status: Completed</option>
-                              <option value="On Leave">Status: On Leave</option>
-                              <option value="Dropped">Status: Dropped</option>
-                            </select>
-                            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#64748B] pointer-events-none" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 pt-2 border-t border-[#F1F5F9]" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditStudentForm(s);
-                            setRightPanel({
-                              isOpen: true,
-                              type: 'edit-student',
-                              title: `Edit Student: ${s.name}`,
-                              data: s
-                            });
-                          }}
-                          className="flex-1 py-1.5 rounded-lg bg-white border border-[#CBD5E1] hover:bg-slate-100 text-[#0F172A] font-bold text-xs transition flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <Pencil size={12} />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setRightPanel({
-                            isOpen: true,
-                            type: 'student-report',
-                            title: `Student Dossier: ${s.name}`,
-                            data: s
-                          })}
-                          className="flex-1 py-1.5 rounded-lg bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <span>Dossier</span>
-                          <ArrowUpRight size={12} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteStudent(s.id, s.name)}
-                          className="p-1.5 rounded-lg bg-white border border-[#CBD5E1] hover:bg-red-50 text-slate-500 hover:text-red-600 transition cursor-pointer"
-                          title="Delete Student from entire ERP"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <BatchGroupCards
+                  batches={studentBatchGroups}
+                  studentLabel="student"
+                  emptyTitle="No student batches found"
+                  emptyHint="Try adjusting the college, domain, or search filter."
+                  onOpenStudent={(id) => {
+                    const student = students.find(s => s.id === id || s.studentId === id);
+                    if (!student) return;
+                    setRightPanel({
+                      isOpen: true,
+                      type: 'student-report',
+                      title: `Student Dossier: ${student.name}`,
+                      data: student
+                    });
+                  }}
+                />
               )}
             </div>
           )}
@@ -3799,7 +3748,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   <p className="text-xs text-[#64748B]">Real-time submissions received via website 4-stepper registration with complete candidate details</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ViewSwitcher tab="registrations" defaultMode="list" />
+                  <ViewSwitcher tab="registrations" defaultMode="grid" />
                 </div>
               </div>
 
@@ -3929,93 +3878,33 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   </div>
                 </div>
               ) : (
-                /* Small Icons / Card Box Grid (Grid View) */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredRegistrations.map((reg) => {
+                <BatchGroupCards
+                  batches={registrationBatchGroups}
+                  studentLabel="application"
+                  emptyTitle="No registration batches found"
+                  emptyHint="Try adjusting the college or search filter."
+                  onOpenStudent={(id) => {
+                    const reg = registrationsList.find(r => r.regId === id || r.id === id);
+                    if (!reg) return;
                     const candidateName = reg.studentName || reg.name || 'Candidate';
-                    const candidateId = reg.regId || reg.id;
-                    const candidateDomain = reg.domain || reg.courseInterest || 'Technical Track';
-                    const candidateStatus = reg.stepStatus || reg.status || 'Pending Verification';
-                    const candidateDate = reg.created_at ? new Date(reg.created_at).toLocaleDateString('en-IN') : (reg.startDate || 'Recent');
-
-                    return (
-                      <div
-                        key={candidateId}
-                        onClick={() => setRightPanel({
-                          isOpen: true,
-                          type: 'student-report',
-                          title: `Registration Review: ${candidateName}`,
-                          data: {
-                            id: candidateId,
-                            name: candidateName,
-                            email: reg.email,
-                            phone: reg.phone,
-                            college: reg.college,
-                            degree: reg.degree,
-                            domain: candidateDomain,
-                            status: candidateStatus,
-                            startDate: candidateDate
-                          }
-                        })}
-                        className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs hover:border-black transition cursor-pointer flex flex-col justify-between space-y-3"
-                      >
-                        <div className="space-y-2.5">
-                          <div className="flex items-center justify-between">
-                            <span className="border border-[#E2E8F0] bg-[#F8FAFC] text-[#0F172A] px-2 py-0.5 rounded text-[11.5px] font-bold tracking-wider uppercase font-mono">
-                              {candidateId}
-                            </span>
-                            <span className={`text-[11.5px] font-bold px-2 py-0.5 rounded border ${
-                              candidateStatus.toLowerCase().includes('approved')
-                                ? 'bg-black text-white border-black'
-                                : candidateStatus.toLowerCase().includes('reject')
-                                ? 'bg-red-50 text-red-700 border-red-200'
-                                : 'bg-slate-50 text-slate-800 border-slate-200'
-                            }`}>
-                              {candidateStatus}
-                            </span>
-                          </div>
-
-                          <div>
-                            <h4 className="font-bold text-base text-[#0F172A] break-words">{candidateName}</h4>
-                            <p className="text-xs text-[#64748B] mt-0.5 break-words">{reg.college || 'College Not Specified'}</p>
-                          </div>
-
-                          <div className="pt-2 border-t border-[#F1F5F9] text-xs space-y-1 text-[#475569]">
-                            <p><span className="font-semibold text-black">Program:</span> {candidateDomain}</p>
-                            <p><span className="font-semibold text-black">Applied:</span> {candidateDate}</p>
-                            <p><span className="font-semibold text-black">Phone:</span> {reg.phone || '—'}</p>
-                            <p><span className="font-semibold text-black">Email:</span> {reg.email || '—'}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-2 border-t border-[#F1F5F9]" onClick={(e) => e.stopPropagation()}>
-                          {candidateStatus !== 'Approved & Verified' ? (
-                            <button
-                              type="button"
-                              onClick={() => handleApproveRegistration(reg)}
-                              className="flex-1 py-2 rounded-xl bg-[#000000] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <span>Approve</span>
-                              <ArrowUpRight size={13} />
-                            </button>
-                          ) : (
-                            <span className="flex-1 py-2 text-center text-xs font-bold text-black bg-slate-100 rounded-xl">
-                              Approved
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteRegistration(reg)}
-                            className="p-2 rounded-xl border border-slate-200 hover:bg-red-50 text-slate-500 hover:text-red-600 transition cursor-pointer"
-                            title="Delete Candidate Registration"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                    setRightPanel({
+                      isOpen: true,
+                      type: 'student-report',
+                      title: `Registration Review: ${candidateName}`,
+                      data: {
+                        id: reg.regId || reg.id,
+                        name: candidateName,
+                        email: reg.email,
+                        phone: reg.phone,
+                        college: reg.college,
+                        degree: reg.degree,
+                        domain: reg.domain || reg.courseInterest || 'Technical Track',
+                        status: reg.stepStatus || reg.status || 'Pending Verification',
+                        startDate: reg.created_at ? new Date(reg.created_at).toLocaleDateString('en-IN') : (reg.startDate || 'Recent')
+                      }
+                    });
+                  }}
+                />
               )}
             </div>
           )}

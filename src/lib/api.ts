@@ -951,7 +951,8 @@ export async function createStudentInDb(studentData: any) {
     domain: cleanDomain,
     startDate: studentData.startDate || '2026-10-25',
     endDate: studentData.endDate || '2027-01-25',
-    duration: studentData.duration || '3 Months'
+    duration: studentData.duration || '3 Months',
+    createdAt: studentData.createdAt || new Date().toISOString()
   };
 
   addStudentToRegistry(normalizedData);
@@ -1150,9 +1151,10 @@ export async function submitRegistrationToDb(data: any) {
     startDate: data.startDate || '2026-10-25',
     endDate: data.endDate || '2027-01-25',
     duration: data.duration || '3 Months',
+    createdAt: data.createdAt || new Date().toISOString(),
     status: 'active',
     paymentStatus: data.paymentStatus || 'Pending Admin Decision',
-    feePaid: data.feePaid || '₹0',
+    feePaid: data.feePaid || '?0',
     feeTotal: data.feeTotal || 'To Be Decided by Admin'
   });
 

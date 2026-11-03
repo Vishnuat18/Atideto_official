@@ -542,23 +542,8 @@ export default function Navigation() {
             </div>
           ) : (
             <Link
-              to="/admin"
-              onClick={() => {
-                const adminUser = {
-                  uid: 'usr-admin-01',
-                  id: 1,
-                  name: 'Administrator',
-                  email: 'admin@atideto.in',
-                  role: 'admin',
-                  provider: 'local'
-                };
-                try {
-                  localStorage.setItem('atideto_sql_user', JSON.stringify(adminUser));
-                  localStorage.setItem('atideto_dashboard_mode', 'admin');
-                  window.dispatchEvent(new Event('atideto_auth_change'));
-                } catch { /* ignore */ }
-              }}
-              onMouseEnter={() => preloadRoute('/admin')}
+              to="/login"
+              onMouseEnter={() => preloadRoute('/login')}
               className="hidden sm:inline-flex kingfress-btn font-sans"
               aria-label="Login"
             >

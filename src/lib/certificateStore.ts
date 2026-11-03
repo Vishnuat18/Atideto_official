@@ -31,6 +31,7 @@ export interface StudentCohortRecord {
   certId: string;
   offerNo: string;
   issueDate: string;
+  createdAt?: string;
   status: 'active' | 'completed' | 'revoked';
   
   // Completion tracking fields
@@ -1769,6 +1770,7 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         offerNo: existing.offerNo || raw.offerNo || '',
         attendanceCertId: existing.attendanceCertId || raw.attendanceCertId || '',
         issueDate: existing.issueDate || raw.issueDate || '2026-10-14',
+        createdAt: existing.createdAt || (raw as any).createdAt || '',
         status: existing.status || (raw.status as any) || 'active',
         tools: (existing.tools && existing.tools.length > 0) ? existing.tools : (raw.tools || ['React', 'Node.js', 'Express', 'MongoDB']),
         area: (existing.area && existing.area.length > 0) ? existing.area : (raw.area || ['Full Stack', 'Web Development']),
@@ -1835,6 +1837,7 @@ export function deduplicateAndMergeStudents(list: (Partial<StudentCohortRecord> 
         offerNo: raw.offerNo || '',
         attendanceCertId: raw.attendanceCertId || '',
         issueDate: raw.issueDate || raw.startDate || '2026-10-14',
+        createdAt: (raw as any).createdAt || '',
         status: (raw.status as any) || 'active',
         tools: (raw.tools && raw.tools.length > 0) ? raw.tools : ['React', 'Node.js', 'Express', 'MongoDB'],
         area: (raw.area && raw.area.length > 0) ? raw.area : ['Full Stack', 'Web Development'],
