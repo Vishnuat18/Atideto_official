@@ -189,26 +189,11 @@ export default function MobileNativeMenu() {
 
                 {/* 5. Profile / Login */}
                 <Link
-                  to={currentUser ? (currentUser.role === 'admin' ? '/admin' : '/dashboard') : '/admin'}
+                  to={currentUser ? (currentUser.role === 'admin' ? '/admin' : '/dashboard') : '/login'}
                   onClick={() => {
-                    if (!currentUser) {
-                      const adminUser = {
-                        uid: 'usr-admin-01',
-                        id: 1,
-                        name: 'Administrator',
-                        email: 'admin@atideto.in',
-                        role: 'admin',
-                        provider: 'local'
-                      };
-                      try {
-                        localStorage.setItem('atideto_sql_user', JSON.stringify(adminUser));
-                        localStorage.setItem('atideto_dashboard_mode', 'admin');
-                        window.dispatchEvent(new Event('atideto_auth_change'));
-                      } catch { /* ignore */ }
-                    }
                     setIsOpen(false);
                   }}
-                  onMouseEnter={() => preloadRoute('/admin')}
+                  onMouseEnter={() => preloadRoute(currentUser ? (currentUser.role === 'admin' ? '/admin' : '/dashboard') : '/login')}
                   className="flex flex-col items-center group cursor-pointer"
                 >
                   <div className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border transition-all active:scale-90 ${

@@ -86,24 +86,7 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
             >
               <Link
                 to={item.href}
-                onClick={() => {
-                  if (item.href === '/admin') {
-                    const adminUser = {
-                      uid: 'usr-admin-01',
-                      id: 1,
-                      name: 'Administrator',
-                      email: 'admin@atideto.in',
-                      role: 'admin',
-                      provider: 'local'
-                    };
-                    try {
-                      localStorage.setItem('atideto_sql_user', JSON.stringify(adminUser));
-                      localStorage.setItem('atideto_dashboard_mode', 'admin');
-                      window.dispatchEvent(new Event('atideto_auth_change'));
-                    } catch { /* ignore */ }
-                  }
-                  onClose();
-                }}
+                onClick={onClose}
                 onMouseEnter={() => preloadRoute(item.href)}
                 onTouchStart={() => preloadRoute(item.href)}
                 className={`flex items-center gap-3.5 px-4 py-3 rounded-lg text-sm transition-all duration-200 group ${

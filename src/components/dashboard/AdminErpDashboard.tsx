@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useMemo, useDeferredValue } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useDeferredValue } from 'react';
 import {
   Users,
   BookOpen,
@@ -282,7 +282,23 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
     } catch { /* ignore */ }
     return 'overview';
   });
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement | null>(null);
   const mainScrollRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
 
   // Always reset scroll to top on tab switch or mount - never retain scrolled down position
   useEffect(() => {
@@ -2816,7 +2832,11 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
   const handleLogout = async () => {
     localStorage.removeItem('atideto_sql_user');
     localStorage.removeItem('atideto_dashboard_mode');
-    await signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error('Error signing out of Firebase:', e);
+    }
     window.dispatchEvent(new Event('atideto_auth_change'));
     navigate('/login');
   };
@@ -2930,19 +2950,25 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
           </button>
 
           {/* User Profile Badge (Exact Reference Image 2) */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 sm:border-l sm:border-[#E2E8F0]">
+          <div ref={profileDropdownRef} className="relative flex items-center gap-1.5 sm:gap-2.5 pl-1.5 sm:pl-2 sm:border-l sm:border-[#E2E8F0]">
             <button
               type="button"
-              onClick={() => setActiveTab('settings')}
-              className="w-8 h-8 rounded-full bg-[#000000] text-white font-black text-xs flex items-center justify-center shadow-sm cursor-pointer active:scale-95 hover:ring-2 hover:ring-[#0066FF]/20 transition"
-              title="ERP Settings"
+              onClick={() => setIsProfileDropdownOpen(prev => !prev)}
+              className="flex items-center gap-2 group cursor-pointer text-left select-none"
+              title="Admin Profile Menu"
             >
-              {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              <div className="w-8 h-8 rounded-full bg-[#000000] text-white font-black text-xs flex items-center justify-center shadow-sm active:scale-95 group-hover:ring-2 group-hover:ring-[#0066FF]/20 transition shrink-0">
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="hidden sm:block text-left text-xs leading-tight">
+                <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{user?.name || 'Atideto Admin'}</p>
+                <p className="text-[#64748B] text-[11.5px] mt-0.5 font-medium flex items-center gap-1">
+                  <span>Enterprise ERP</span>
+                  <ChevronDown size={11} className={`transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180 text-[#0066FF]' : 'text-[#94A3B8]'}`} />
+                </p>
+              </div>
             </button>
-            <div className="hidden sm:block text-left text-xs leading-tight">
-              <p className="font-bold text-[#0F172A] leading-none truncate max-w-[120px]">{user?.name || 'Atideto Admin'}</p>
-              <p className="text-[#64748B] text-[11.5px] mt-0.5 font-medium">Enterprise ERP</p>
-            </div>
+
             <button 
               onClick={handleLogout}
               title="Sign Out"
@@ -2950,6 +2976,50 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
             >
               <LogOut size={16} />
             </button>
+
+            {/* Profile Dropdown Menu */}
+            {isProfileDropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl bg-white border border-[#E2E8F0] p-3 shadow-xl text-[#0F172A] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm shadow-sm shrink-0">
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-xs text-[#0F172A] truncate">{user?.name || 'Administrator'}</p>
+                    <p className="text-[10px] text-slate-500 truncate font-mono">{user?.email || 'admin@atideto.in'}</p>
+                    <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-blue-50 text-[#0066FF] border border-blue-200">
+                      Super Administrator
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('settings');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-xs font-semibold transition cursor-pointer text-left"
+                  >
+                    <SettingsIcon size={14} className="text-[#0066FF]" />
+                    <span>ERP Settings</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 text-xs font-semibold transition cursor-pointer text-left"
+                  >
+                    <LogOut size={14} className="text-red-500" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

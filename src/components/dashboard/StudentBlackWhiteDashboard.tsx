@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BookOpen,
   CalendarCheck,
@@ -805,7 +805,14 @@ export default function StudentBlackWhiteDashboard({ user: rawUser, onSwitchToAd
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('atideto_sql_user');
+    localStorage.removeItem('atideto_dashboard_mode');
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error('Error signing out:', e);
+    }
+    window.dispatchEvent(new Event('atideto_auth_change'));
     navigate('/login');
   };
 

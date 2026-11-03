@@ -259,22 +259,7 @@ export default function Login() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Direct bypass: automatically initialize admin session and open admin panel
-    const adminUser = {
-      uid: 'usr-admin-01',
-      id: 1,
-      name: 'Administrator',
-      email: 'admin@atideto.in',
-      role: 'admin',
-      provider: 'local'
-    };
-    try {
-      localStorage.setItem('atideto_sql_user', JSON.stringify(adminUser));
-      localStorage.setItem('atideto_dashboard_mode', 'admin');
-      window.dispatchEvent(new Event('atideto_auth_change'));
-    } catch { /* ignore */ }
-    navigate('/admin', { replace: true });
-  }, [navigate]);
+  }, []);
 
   // Cooldown countdown timer for resend
   useEffect(() => {
