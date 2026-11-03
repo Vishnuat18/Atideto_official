@@ -58,7 +58,7 @@ export default function PullMenu({ isOpen, onClose }: PullMenuProps) {
         { label: 'My Profile', href: '/profile' },
         { label: 'My Dashboard', href: '/dashboard' }
       ])
-    : NAV_ITEMS.map(item => item.href === '/login' ? { ...item, href: '/admin' } : item);
+    : NAV_ITEMS;
 
   return (
     <div className="w-full bg-[#0a0a0a]/97 backdrop-blur-2xl rounded-b-2xl overflow-hidden border border-white/[0.06]">
