@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
+  CalendarDays,
   Check,
   CheckCircle2,
+  Clock3,
   Copy,
   Download,
   Edit2,
@@ -47,14 +49,18 @@ import {
   fetchQrSubmissions,
   getQrFormUrl,
   markQrSubmissionImported,
+  submitQrForm,
   updateQrSubmission,
   type QrCampaign,
   type QrSubmission
 } from '@/lib/qrStore';
 import {
   calculateAutomaticEndDate,
-  calculateDurationFromDates
+  calculateDurationFromDates,
+  DEGREE_OPTIONS,
+  SPECIALIZATION_OPTIONS
 } from '@/constants/registrationOptions';
+import { STANDARD_DOMAINS } from '@/constants/internshipDomains';
 
 const emptyCreateForm = {
   collegeName: '',
@@ -63,6 +69,53 @@ const emptyCreateForm = {
   startDate: '',
   endDate: '',
   duration: ''
+};
+
+const COUNTRY_CODES = ['+91', '+1', '+44', '+61', '+971', '+65', '+49', '+33', '+81'];
+const MODES = ['Industrial Hybrid', 'Online', 'Offline / On-campus'];
+
+interface ManualStudentForm {
+  fullName: string;
+  gender: string;
+  email: string;
+  countryCode: string;
+  phone: string;
+  collegeName: string;
+  registerNo: string;
+  degree: string;
+  department: string;
+  academicBatch: string;
+  domain: string;
+  mode: string;
+  startDate: string;
+  endDate: string;
+  duration: string;
+  amount: string;
+}
+
+const emptyManualStudentForm = (campaign?: QrCampaign | null): ManualStudentForm => {
+  const start = campaign?.startDate || new Date().toISOString().slice(0, 10);
+  const end =
+    campaign?.endDate || calculateAutomaticEndDate(start, campaign?.duration || '30 Days');
+  const dur = campaign?.duration || calculateDurationFromDates(start, end);
+  return {
+    fullName: '',
+    gender: 'Male',
+    email: '',
+    countryCode: '+91',
+    phone: '',
+    collegeName: campaign?.collegeName || '',
+    registerNo: '',
+    degree: 'B.E',
+    department: 'Computer Science and Engineering',
+    academicBatch: campaign?.label || '2022 - 2026',
+    domain: 'Full Stack Web Development',
+    mode: 'Industrial Hybrid',
+    startDate: start,
+    endDate: end,
+    duration: dur,
+    amount: campaign?.amount ? String(campaign.amount) : ''
+  };
 };
 
 function formatRupees(value?: number): string {
@@ -211,6 +264,100 @@ export default function QrCodesPanel() {
       }
       return next;
     });
+  };
+
+  const [manualAddOpen, setManualAddOpen] = useState(false);
+  const [manualForm, setManualForm] = useState<ManualStudentForm>(() =>
+    emptyManualStudentForm(null)
+  );
+  const [savingManual, setSavingManual] = useState(false);
+
+  const openManualAddModal = () => {
+    setManualForm(emptyManualStudentForm(selected));
+    setManualAddOpen(true);
+  };
+
+  const handleManualDateChange = (field: 'startDate' | 'endDate', val: string) => {
+    setManualForm(prev => {
+      const next = { ...prev, [field]: val };
+      if (next.startDate && next.endDate) {
+        const auto = calculateDurationFromDates(next.startDate, next.endDate);
+        if (auto && auto !== '0 Days') {
+          next.duration = auto;
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleSaveManualStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+
+    const name = formatStudentName(manualForm.fullName);
+    if (name.split(' ').join('').length < 2) {
+      toast.error('Please enter the student full name');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(manualForm.email.trim())) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    if (manualForm.phone.replace(/\D/g, '').length < 7) {
+      toast.error('Please enter a valid mobile number');
+      return;
+    }
+    if (!manualForm.registerNo.trim()) {
+      toast.error('Please enter the register / roll number');
+      return;
+    }
+
+    setSavingManual(true);
+    try {
+      const amt = Number(manualForm.amount);
+      const fullPhone = `${manualForm.countryCode} ${manualForm.phone.replace(/\s+/g, '')}`.trim();
+      const sub = await submitQrForm({
+        qrId: selected.id,
+        fullName: name,
+        gender: manualForm.gender,
+        email: manualForm.email.trim().toLowerCase(),
+        countryCode: manualForm.countryCode,
+        phone: fullPhone,
+        collegeName: manualForm.collegeName.trim() || selected.collegeName,
+        degree: manualForm.degree.trim(),
+        department: manualForm.department.trim(),
+        registerNo: manualForm.registerNo.trim(),
+        academicBatch: manualForm.academicBatch.trim(),
+        domain: manualForm.domain.trim(),
+        mode: manualForm.mode,
+        startDate: manualForm.startDate || undefined,
+        endDate: manualForm.endDate || undefined,
+        duration: manualForm.duration.trim() || undefined,
+        amount: Number.isFinite(amt) && amt > 0 ? amt : selected.amount,
+        attendancePct: 100
+      });
+
+      setSubmissions(prev => [sub, ...prev]);
+      setSelected(prev =>
+        prev
+          ? { ...prev, submissionCount: (Number(prev.submissionCount) || 0) + 1 }
+          : prev
+      );
+      setCampaigns(prev =>
+        prev.map(c =>
+          c.id === selected.id
+            ? { ...c, submissionCount: (Number(c.submissionCount) || 0) + 1 }
+            : c
+        )
+      );
+      setManualAddOpen(false);
+      toast.success(`Student "${name}" added to ${selected.collegeName}!`);
+    } catch (err) {
+      console.error('Failed to add student manually:', err);
+      toast.error('Could not save the new student. Please try again.');
+    } finally {
+      setSavingManual(false);
+    }
   };
 
   const loadCampaigns = async (showSpinner = false) => {
@@ -1085,6 +1232,302 @@ export default function QrCodesPanel() {
         </div>
       )}
 
+      {/* Manual Student Add Modal */}
+      {manualAddOpen && selected && (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-5 sm:px-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-blue-700">
+                  <UserPlus size={12} />
+                  Manual Student Entry
+                </div>
+                <h3 className="mt-1 text-lg font-black text-slate-900 truncate">
+                  Add Student to {selected.collegeName}
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">
+                  Enter student details to add them directly to this QR / link submission list.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setManualAddOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Datalists for autocomplete */}
+            <datalist id="manual-degree-list">
+              {DEGREE_OPTIONS.map(d => (
+                <option key={d} value={d} />
+              ))}
+            </datalist>
+            <datalist id="manual-dept-list">
+              {SPECIALIZATION_OPTIONS.map(s => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+            <datalist id="manual-domain-list">
+              {STANDARD_DOMAINS.map(dom => (
+                <option key={dom} value={dom} />
+              ))}
+            </datalist>
+
+            {/* Modal Form */}
+            <form onSubmit={handleSaveManualStudent} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+              {/* Row 1: Full Name & Gender */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Sharma"
+                    value={manualForm.fullName}
+                    onChange={e => setManualForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    autoFocus
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Gender
+                  </label>
+                  <select
+                    value={manualForm.gender}
+                    onChange={e => setManualForm(prev => ({ ...prev, gender: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Email & Phone */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="student@example.com"
+                    value={manualForm.email}
+                    onChange={e => setManualForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Phone / Mobile *
+                  </label>
+                  <div className="mt-1 flex gap-1.5">
+                    <select
+                      value={manualForm.countryCode}
+                      onChange={e => setManualForm(prev => ({ ...prev, countryCode: e.target.value }))}
+                      className="rounded-xl border border-slate-300 bg-white px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:border-blue-600"
+                    >
+                      {COUNTRY_CODES.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="9876543210"
+                      value={manualForm.phone}
+                      onChange={e => setManualForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 3: College & Register No */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Register / Roll Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 711521104001"
+                    value={manualForm.registerNo}
+                    onChange={e => setManualForm(prev => ({ ...prev, registerNo: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    College Name
+                  </label>
+                  <input
+                    type="text"
+                    value={manualForm.collegeName}
+                    onChange={e => setManualForm(prev => ({ ...prev, collegeName: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              {/* Row 4: Degree & Department */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Degree
+                  </label>
+                  <input
+                    list="manual-degree-list"
+                    placeholder="e.g. B.E, B.Tech, BCA"
+                    value={manualForm.degree}
+                    onChange={e => setManualForm(prev => ({ ...prev, degree: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Department / Specialization
+                  </label>
+                  <input
+                    list="manual-dept-list"
+                    placeholder="e.g. Computer Science and Engineering"
+                    value={manualForm.department}
+                    onChange={e => setManualForm(prev => ({ ...prev, department: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              {/* Row 5: Batch, Domain, Mode */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Academic Batch
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2022 - 2026, Batch 1"
+                    value={manualForm.academicBatch}
+                    onChange={e => setManualForm(prev => ({ ...prev, academicBatch: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Domain / Track
+                  </label>
+                  <input
+                    list="manual-domain-list"
+                    placeholder="e.g. Full Stack Web Development"
+                    value={manualForm.domain}
+                    onChange={e => setManualForm(prev => ({ ...prev, domain: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Mode
+                  </label>
+                  <select
+                    value={manualForm.mode}
+                    onChange={e => setManualForm(prev => ({ ...prev, mode: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  >
+                    {MODES.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 6: Dates, Duration, Amount */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={manualForm.startDate}
+                    onChange={e => handleManualDateChange('startDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={manualForm.endDate}
+                    min={manualForm.startDate || undefined}
+                    onChange={e => handleManualDateChange('endDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Duration
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 1 Month"
+                    value={manualForm.duration}
+                    onChange={e => setManualForm(prev => ({ ...prev, duration: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                  {manualForm.startDate && manualForm.endDate && (
+                    <p className="mt-1 text-[10px] font-bold text-blue-600">Auto-calculated</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Internship Fee (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 15000"
+                    value={manualForm.amount}
+                    onChange={e => setManualForm(prev => ({ ...prev, amount: e.target.value }))}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setManualAddOpen(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingManual}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#0066FF] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {savingManual ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                  {savingManual ? 'Saving…' : 'Add Student to List'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Campaign drawer */}
       {selected && (
         <div className="fixed inset-0 z-[110] flex justify-end bg-black/40 backdrop-blur-[2px]">
@@ -1120,6 +1563,14 @@ export default function QrCodesPanel() {
               <div className="flex shrink-0 items-center gap-1.5">
                 {!detail && (
                   <>
+                    <button
+                      type="button"
+                      onClick={openManualAddModal}
+                      className="inline-flex items-center gap-1 rounded-lg bg-[#0066FF] px-2.5 py-1.5 text-[11px] font-bold text-white shadow-xs transition hover:bg-blue-700"
+                      title="Add a student manually to this list"
+                    >
+                      <Plus size={13} /> Add student
+                    </button>
                     <button
                       type="button"
                       onClick={async () => {
@@ -1239,9 +1690,9 @@ export default function QrCodesPanel() {
                     </div>
                   </div>
 
-                  {/* Search */}
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
+                  {/* Search and Add Student Button */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative min-w-[200px] flex-1">
                       <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         value={search}
@@ -1253,6 +1704,13 @@ export default function QrCodesPanel() {
                     <span className="rounded-lg bg-white px-2.5 py-2 text-[11px] font-black text-slate-500 ring-1 ring-slate-200">
                       {filteredSubmissions.length}
                     </span>
+                    <button
+                      type="button"
+                      onClick={openManualAddModal}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#0066FF] px-3.5 py-2.5 text-xs font-black text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
+                    >
+                      <Plus size={14} /> Add Student Manually
+                    </button>
                   </div>
 
                   {/* Submissions */}
@@ -1269,9 +1727,16 @@ export default function QrCodesPanel() {
                       </h3>
                       <p className="mt-1 text-xs font-medium text-slate-500">
                         {submissions.length === 0
-                          ? 'Share the QR or link with students — new entries appear here automatically.'
+                          ? 'Share the QR or link with students, or add student details manually.'
                           : 'Try a different name, email, or register number.'}
                       </p>
+                      <button
+                        type="button"
+                        onClick={openManualAddModal}
+                        className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-[#0066FF] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-blue-700"
+                      >
+                        <Plus size={14} /> Add Student Manually
+                      </button>
                     </div>
                   ) : (
                     <div className="space-y-2">
