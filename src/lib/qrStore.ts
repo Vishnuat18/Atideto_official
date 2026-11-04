@@ -14,6 +14,9 @@ export interface QrCampaign {
   collegeName: string;
   label?: string;
   amount?: number;
+  startDate?: string;
+  endDate?: string;
+  duration?: string;
   createdAt: string;
   createdBy?: string;
   submissionCount: number;
@@ -186,6 +189,9 @@ export async function createQrCampaign(input: {
   collegeName: string;
   label?: string;
   amount?: number;
+  startDate?: string;
+  endDate?: string;
+  duration?: string;
   createdBy?: string;
 }): Promise<QrCampaign> {
   const amount = Number(input.amount);
@@ -194,6 +200,9 @@ export async function createQrCampaign(input: {
     collegeName: input.collegeName.trim(),
     label: input.label?.trim() || '',
     amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
+    startDate: input.startDate || '',
+    endDate: input.endDate || '',
+    duration: input.duration || '',
     createdAt: new Date().toISOString(),
     createdBy: input.createdBy || '',
     submissionCount: 0,

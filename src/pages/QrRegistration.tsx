@@ -164,7 +164,19 @@ export default function QrRegistration() {
         setNotFound(true);
       } else {
         setCampaign(found);
-        setForm(prev => ({ ...prev, collegeName: found.collegeName || prev.collegeName }));
+        setForm(prev => {
+          const start = found.startDate || prev.startDate;
+          let end = found.endDate || prev.endDate;
+          if (found.startDate && !found.endDate && found.duration) {
+            end = calculateAutomaticEndDate(found.startDate, found.duration);
+          }
+          return {
+            ...prev,
+            collegeName: found.collegeName || prev.collegeName,
+            startDate: start,
+            endDate: end
+          };
+        });
       }
       setLoadingCampaign(false);
     })();
@@ -603,7 +615,15 @@ export default function QrRegistration() {
                     <input
                       type="date"
                       value={form.startDate}
-                      onChange={e => update({ startDate: e.target.value })}
+                      onChange={e => {
+                        const newStart = e.target.value;
+                        update({
+                          startDate: newStart,
+                          ...(form.endDate && newStart && form.endDate < newStart
+                            ? { endDate: calculateAutomaticEndDate(newStart, '30 Days') }
+                            : {})
+                        });
+                      }}
                       onClick={e => {
                         try {
                           e.currentTarget.showPicker?.();
@@ -640,14 +660,19 @@ export default function QrRegistration() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Duration (auto-calculated)</label>
+                  <div className="flex items-center justify-between">
+                    <label className={labelClass}>Duration (auto-calculated from dates)</label>
+                    {duration && duration !== '0 Days' && (
+                      <span className="text-[10px] font-black uppercase tracking-wider text-blue-600">Calculated</span>
+                    )}
+                  </div>
                   <div className="relative mt-1.5">
                     <input
-                      value={duration || 'Select both dates'}
+                      value={duration && duration !== '0 Days' ? duration : 'Select start and end dates'}
                       readOnly
-                      className={`${inputClass} cursor-default bg-slate-50 pr-10 font-bold text-slate-700`}
+                      className={`${inputClass} cursor-default bg-blue-50/50 pr-10 font-black text-blue-900 border-blue-200`}
                     />
-                    <Clock3 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Clock3 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-blue-500" />
                   </div>
                 </div>
                 <div>

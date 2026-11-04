@@ -51,9 +51,19 @@ import {
   type QrCampaign,
   type QrSubmission
 } from '@/lib/qrStore';
-import { calculateAutomaticEndDate } from '@/constants/registrationOptions';
+import {
+  calculateAutomaticEndDate,
+  calculateDurationFromDates
+} from '@/constants/registrationOptions';
 
-const emptyCreateForm = { collegeName: '', label: '', amount: '' };
+const emptyCreateForm = {
+  collegeName: '',
+  label: '',
+  amount: '',
+  startDate: '',
+  endDate: '',
+  duration: ''
+};
 
 function formatRupees(value?: number): string {
   const num = Number(value);
@@ -61,11 +71,23 @@ function formatRupees(value?: number): string {
   return `₹${num.toLocaleString('en-IN')}`;
 }
 
-function toStudentRecord(sub: QrSubmission, amount?: number): Partial<StudentCohortRecord> {
+function toStudentRecord(
+  sub: QrSubmission,
+  amount?: number,
+  options?: { batchLabel?: string; startDate?: string; endDate?: string; duration?: string }
+): Partial<StudentCohortRecord> {
   const id = sub.studentId || `AT-QR-${sub.id.toUpperCase()}`;
-  const batchEnd = sub.academicBatch.split(/[-–/]/).pop()?.trim() || '';
+  const batchLabel = options?.batchLabel || sub.academicBatch || '';
+  const batchEnd = batchLabel.split(/[-–/]/).pop()?.trim() || '';
   const fee = Number(amount ?? sub.amount);
   const hasFee = Number.isFinite(fee) && fee > 0;
+  const start = options?.startDate || sub.startDate || '';
+  const end = options?.endDate || sub.endDate || '';
+  const dur =
+    options?.duration ||
+    sub.duration ||
+    (start && end ? calculateDurationFromDates(start, end) : '');
+
   return {
     id,
     studentId: id,
@@ -77,13 +99,13 @@ function toStudentRecord(sub: QrSubmission, amount?: number): Partial<StudentCoh
     degree: sub.degree,
     department: sub.department,
     gradYear: batchEnd,
-    academicBatch: sub.academicBatch,
+    academicBatch: batchLabel,
     gender: sub.gender,
     course: sub.domain,
     domain: sub.domain,
-    startDate: sub.startDate,
-    endDate: sub.endDate,
-    duration: sub.duration,
+    startDate: start,
+    endDate: end,
+    duration: dur,
     createdAt: sub.submittedAt || new Date().toISOString(),
     mentor: 'Atideto Internship Team',
     attendance: Number(sub.attendancePct) || 100,
@@ -137,6 +159,59 @@ export default function QrCodesPanel() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [importingId, setImportingId] = useState('');
   const [importingAllId, setImportingAllId] = useState('');
+
+  const [importModalCampaign, setImportModalCampaign] = useState<QrCampaign | null>(null);
+  const [importModalForm, setImportModalForm] = useState<{
+    batchLabel: string;
+    startDate: string;
+    endDate: string;
+    duration: string;
+    amount: string;
+  }>({
+    batchLabel: '',
+    startDate: '',
+    endDate: '',
+    duration: '',
+    amount: ''
+  });
+  const [importingBatch, setImportingBatch] = useState(false);
+
+  const openImportModal = (campaign: QrCampaign) => {
+    setImportModalCampaign(campaign);
+    setImportModalForm({
+      batchLabel: campaign.label || 'Batch 1',
+      startDate: campaign.startDate || '',
+      endDate: campaign.endDate || '',
+      duration: campaign.duration || '',
+      amount: campaign.amount ? String(campaign.amount) : ''
+    });
+  };
+
+  const handleCreateDateChange = (field: 'startDate' | 'endDate', val: string) => {
+    setCreateForm(prev => {
+      const next = { ...prev, [field]: val };
+      if (next.startDate && next.endDate) {
+        const auto = calculateDurationFromDates(next.startDate, next.endDate);
+        if (auto && auto !== '0 Days') {
+          next.duration = auto;
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleImportModalDateChange = (field: 'startDate' | 'endDate', val: string) => {
+    setImportModalForm(prev => {
+      const next = { ...prev, [field]: val };
+      if (next.startDate && next.endDate) {
+        const auto = calculateDurationFromDates(next.startDate, next.endDate);
+        if (auto && auto !== '0 Days') {
+          next.duration = auto;
+        }
+      }
+      return next;
+    });
+  };
 
   const loadCampaigns = async (showSpinner = false) => {
     if (showSpinner) setRefreshing(true);
@@ -249,7 +324,10 @@ export default function QrCodesPanel() {
       const campaign = await createQrCampaign({
         collegeName: createForm.collegeName,
         label: createForm.label,
-        amount: Number.isFinite(amount) && amount > 0 ? amount : undefined
+        amount: Number.isFinite(amount) && amount > 0 ? amount : undefined,
+        startDate: createForm.startDate || undefined,
+        endDate: createForm.endDate || undefined,
+        duration: createForm.duration.trim() || undefined
       });
       setCampaigns(prev => [campaign, ...prev]);
       setCreateOpen(false);
@@ -309,11 +387,105 @@ export default function QrCodesPanel() {
     toast.success('QR campaign deleted');
   };
 
+  const importSubmissionsWithOptions = async (
+    campaign: QrCampaign,
+    options: {
+      batchLabel?: string;
+      startDate?: string;
+      endDate?: string;
+      duration?: string;
+      amount?: number;
+    }
+  ) => {
+    const list = await fetchQrSubmissions(campaign.id);
+    const pending = list.filter(sub => !sub.imported);
+    if (pending.length === 0) {
+      toast.info(`All students from "${campaign.collegeName}" are already in the student list.`);
+      return;
+    }
+
+    let registry: StudentCohortRecord[] = [];
+    const imported: QrSubmission[] = [];
+    const effectiveAmount =
+      options.amount !== undefined && !isNaN(options.amount) ? options.amount : campaign.amount;
+
+    for (const sub of pending) {
+      const studentId = sub.studentId || `AT-QR-${sub.id.toUpperCase()}`;
+      const record = {
+        ...toStudentRecord(sub, effectiveAmount, options),
+        id: studentId,
+        studentId
+      };
+      registry = addStudentToRegistry(record);
+      registry = updateStudentInRegistry(studentId, {
+        college: sub.collegeName,
+        academicBatch: options.batchLabel || sub.academicBatch,
+        startDate: options.startDate || sub.startDate,
+        endDate: options.endDate || sub.endDate,
+        duration:
+          options.duration ||
+          sub.duration ||
+          (options.startDate && options.endDate
+            ? calculateDurationFromDates(options.startDate, options.endDate)
+            : ''),
+        feeTotal: effectiveAmount ? formatRupees(effectiveAmount) : undefined,
+        department: sub.department,
+        gender: sub.gender,
+        mode: sub.mode,
+        registerNumber: sub.registerNo || studentId,
+        name: sub.fullName,
+        createdAt: sub.submittedAt || new Date().toISOString()
+      });
+      await markQrSubmissionImported(sub, studentId);
+      imported.push({ ...sub, studentId, imported: true });
+    }
+
+    await persistRegistry(registry);
+    const importedById = new Map(imported.map(sub => [sub.id, sub]));
+    setSubmissions(prev =>
+      prev.map(sub => {
+        const next = importedById.get(sub.id);
+        return next ? { ...sub, studentId: next.studentId, imported: true } : sub;
+      })
+    );
+    toast.success(
+      `Imported ${imported.length} student${imported.length === 1 ? '' : 's'} from ${campaign.collegeName} into Student Directory!`
+    );
+    await loadCampaigns();
+  };
+
+  const handleConfirmBatchImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importModalCampaign) return;
+
+    setImportingBatch(true);
+    try {
+      const amt = Number(importModalForm.amount);
+      await importSubmissionsWithOptions(importModalCampaign, {
+        batchLabel: importModalForm.batchLabel.trim() || undefined,
+        startDate: importModalForm.startDate || undefined,
+        endDate: importModalForm.endDate || undefined,
+        duration: importModalForm.duration.trim() || undefined,
+        amount: Number.isFinite(amt) && amt > 0 ? amt : undefined
+      });
+      setImportModalCampaign(null);
+    } catch (err) {
+      toast.error('Could not import students');
+      console.error(err);
+    } finally {
+      setImportingBatch(false);
+    }
+  };
+
   const importSubmissions = async (
     list: QrSubmission[],
     amount: number | undefined,
     sourceLabel: string
   ) => {
+    if (selected) {
+      openImportModal(selected);
+      return;
+    }
     const pending = list.filter(sub => !sub.imported);
     if (pending.length === 0) {
       toast.success(`All students from ${sourceLabel} are already in the student list`);
@@ -359,16 +531,7 @@ export default function QrCodesPanel() {
   };
 
   const handleImportAllForCampaign = async (campaign: QrCampaign) => {
-    setImportingAllId(campaign.id);
-    try {
-      const list = await fetchQrSubmissions(campaign.id);
-      await importSubmissions(list, campaign.amount, campaign.collegeName);
-      await loadCampaigns();
-    } catch {
-      toast.error('Could not import the students from this QR campaign');
-    } finally {
-      setImportingAllId('');
-    }
+    openImportModal(campaign);
   };
 
   const handleImport = async (sub: QrSubmission) => {
@@ -584,6 +747,21 @@ export default function QrCodesPanel() {
                 </span>
               </div>
 
+              {/* Dates & duration if configured */}
+              {(campaign.startDate || campaign.endDate || campaign.duration) && (
+                <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                  <span className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-700">
+                    {campaign.startDate ? new Date(campaign.startDate).toLocaleDateString() : 'Start'}
+                    {campaign.endDate ? ` → ${new Date(campaign.endDate).toLocaleDateString()}` : ''}
+                  </span>
+                  {campaign.duration && (
+                    <span className="rounded-md bg-blue-50 px-2 py-0.5 font-bold text-blue-700">
+                      {campaign.duration}
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className="mt-4 flex items-end justify-between">
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Submissions</p>
@@ -596,54 +774,54 @@ export default function QrCodesPanel() {
                 </p>
               </div>
 
-              <div className="mt-4 flex items-center gap-1.5 border-t border-slate-100 pt-3">
+              <div className="mt-4 space-y-2 border-t border-slate-100 pt-3">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openCampaign(campaign)}
+                    className="flex-1 rounded-xl bg-slate-900 px-3 py-2 text-[11.5px] font-black text-white transition hover:bg-slate-800"
+                  >
+                    View students
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyLink(campaign.id)}
+                    title="Copy registration link"
+                    className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    <Link2 size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadPoster(campaign)}
+                    title="Download QR poster"
+                    className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    {posterBusyId === campaign.id ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <Download size={15} />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCampaign(campaign)}
+                    title="Delete campaign"
+                    className="rounded-xl border border-slate-200 p-2 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => openCampaign(campaign)}
-                  className="flex-1 rounded-lg bg-slate-900 px-3 py-2 text-[11.5px] font-black text-white transition hover:bg-slate-800"
+                  onClick={() => openImportModal(campaign)}
+                  disabled={(Number(campaign.submissionCount) || 0) === 0}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 px-3 py-2 text-[11.5px] font-black text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  title="Import these students directly into the Student Directory and batch card"
                 >
-                  View students
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleImportAllForCampaign(campaign)}
-                  disabled={importingAllId === campaign.id || (Number(campaign.submissionCount) || 0) === 0}
-                  title="Import all students from this QR into the student list"
-                  className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {importingAllId === campaign.id ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <UserPlus size={15} />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCopyLink(campaign.id)}
-                  title="Copy registration link"
-                  className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                >
-                  <Link2 size={15} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDownloadPoster(campaign)}
-                  title="Download QR poster"
-                  className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-                >
-                  {posterBusyId === campaign.id ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <Download size={15} />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteCampaign(campaign)}
-                  title="Delete campaign"
-                  className="rounded-lg border border-slate-200 p-2 text-slate-400 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-                >
-                  <Trash2 size={15} />
+                  <UserPlus size={14} className="text-emerald-600" />
+                  Import to Student List ({Number(campaign.submissionCount) || 0})
                 </button>
               </div>
             </div>
@@ -716,6 +894,45 @@ export default function QrCodesPanel() {
                   Applied as the total internship fee when students from this QR are imported.
                 </p>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    From date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={createForm.startDate}
+                    onChange={e => handleCreateDateChange('startDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    To date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={createForm.endDate}
+                    min={createForm.startDate || undefined}
+                    onChange={e => handleCreateDateChange('endDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                  Duration (optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 1 Month, 15 Days (auto-calculated from dates)"
+                  value={createForm.duration}
+                  onChange={e => setCreateForm(prev => ({ ...prev, duration: e.target.value }))}
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-semibold text-slate-900 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-2">
@@ -736,6 +953,135 @@ export default function QrCodesPanel() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Import to Student List Modal */}
+      {importModalCampaign && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                  <UserPlus size={12} />
+                  Import to Student List
+                </div>
+                <h3 className="mt-1 text-lg font-black text-slate-900 truncate">
+                  {importModalCampaign.collegeName}
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">
+                  Import {importModalCampaign.submissionCount} student{Number(importModalCampaign.submissionCount) === 1 ? '' : 's'} into ERP cohort & batch card
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImportModalCampaign(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmBatchImport} className="mt-5 space-y-4">
+              <div>
+                <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                  Batch Name / Label (optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Batch 1, Dec-Jan Cohort"
+                  value={importModalForm.batchLabel}
+                  onChange={e =>
+                    setImportModalForm(prev => ({ ...prev, batchLabel: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    From Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={importModalForm.startDate}
+                    onChange={e => handleImportModalDateChange('startDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    To Date (optional)
+                  </label>
+                  <input
+                    type="date"
+                    value={importModalForm.endDate}
+                    min={importModalForm.startDate || undefined}
+                    onChange={e => handleImportModalDateChange('endDate', e.target.value)}
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Duration (optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 1 Month, 15 Days"
+                    value={importModalForm.duration}
+                    onChange={e =>
+                      setImportModalForm(prev => ({ ...prev, duration: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                  {importModalForm.startDate && importModalForm.endDate && (
+                    <p className="mt-1 text-[10px] font-bold text-blue-600">Auto-calculated from dates</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Internship Fee (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 15000"
+                    value={importModalForm.amount}
+                    onChange={e =>
+                      setImportModalForm(prev => ({ ...prev, amount: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 p-3 text-[11px] text-slate-600">
+                These students will appear at the top of the Student Directory and be grouped under their batch card for <strong>{importModalCampaign.collegeName}</strong>.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setImportModalCampaign(null)}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={importingBatch}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {importingBatch ? <Loader2 size={13} className="animate-spin" /> : <UserPlus size={13} />}
+                  {importingBatch ? 'Importing…' : 'Import to Student List'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

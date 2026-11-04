@@ -114,7 +114,11 @@ import {
 } from '@/lib/api';
 import { CertificateGeneratorDrawer } from './CertificateGeneratorDrawer';
 import QrCodesPanel from './QrCodesPanel';
-import BatchGroupCards, { groupRegistrationsIntoBatches, groupStudentsIntoBatches } from './BatchGroupCards';
+import BatchGroupCards, {
+  groupRegistrationsIntoBatches,
+  groupStudentsIntoBatches,
+  type BatchUpdatePayload
+} from './BatchGroupCards';
 import GraphicalRepresentationAnalytics from './GraphicalRepresentationAnalytics';
 import { FinanceHub } from './FinanceHub';
 import { 
@@ -254,16 +258,33 @@ const normalizeStaffRecords = (records: any[]): any[] => {
 
 // Newest additions/joins float to the top of every student list.
 const studentRecency = (student: any): number => {
+  if (!student) return 0;
   const candidates = [
-    student?.createdAt,
-    student?.submittedAt,
-    student?.startDate,
-    student?.issueDate
+    student.createdAt,
+    student.created_at,
+    student.submittedAt,
+    student.submitted_at,
+    student.registeredAt,
+    student.registered_at,
+    student.joinedAt,
+    student.joined_at,
+    student.startDate,
+    student.start_date,
+    student.issueDate,
+    student.date,
+    student.timestamp
   ];
   for (const candidate of candidates) {
     if (!candidate) continue;
     const time = new Date(candidate).getTime();
-    if (Number.isFinite(time)) return time;
+    if (Number.isFinite(time) && time > 0) return time;
+  }
+  if (typeof student.id === 'string') {
+    const match = student.id.match(/\d{10,13}/);
+    if (match) {
+      const num = Number(match[0]);
+      if (num > 1000000000) return num < 10000000000 ? num * 1000 : num;
+    }
   }
   return 0;
 };
@@ -1591,6 +1612,66 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
     );
   };
 
+  const handleUpdateBatch = async (payload: BatchUpdatePayload) => {
+    const { studentIds, updates } = payload;
+    if (!studentIds.length) return;
+
+    const studentIdSet = new Set(studentIds.map(id => String(id).toLowerCase()));
+
+    let formattedFee = updates.price?.trim();
+    if (formattedFee && !formattedFee.startsWith('₹') && !isNaN(Number(formattedFee.replace(/[^\d.]/g, '')))) {
+      const num = Number(formattedFee.replace(/[^\d.]/g, ''));
+      if (num > 0) formattedFee = '₹' + num.toLocaleString('en-IN');
+    }
+
+    const patch: Partial<StudentCohortRecord> = {};
+    if (updates.batchLabel !== undefined && updates.batchLabel !== '') patch.academicBatch = updates.batchLabel;
+    if (updates.startDate !== undefined && updates.startDate !== '') patch.startDate = updates.startDate;
+    if (updates.endDate !== undefined && updates.endDate !== '') patch.endDate = updates.endDate;
+    if (updates.duration !== undefined && updates.duration !== '') patch.duration = updates.duration;
+    if (formattedFee) patch.feeTotal = formattedFee;
+
+    // 1. Update in students cohort registry and localStorage
+    const updatedCohort = bulkUpdateStudentsInRegistry(studentIds, patch);
+    setStudents(updatedCohort);
+    saveStoredStudents(updatedCohort);
+
+    // 2. Persist to Cloud & MySQL
+    try {
+      await saveCloudStudents(updatedCohort);
+    } catch (e) {
+      console.warn('Batch update cloud sync notice:', e);
+    }
+
+    for (const sId of studentIds) {
+      try {
+        await updateStudentInDb(sId, patch);
+      } catch (e) {
+        // DB best effort
+      }
+    }
+
+    // 3. Also update registrations list if any match
+    setRegistrationsList(prev =>
+      prev.map(r => {
+        const id = String(r.regId || r.id || '').toLowerCase();
+        if (studentIdSet.has(id)) {
+          return {
+            ...r,
+            academicBatch: updates.batchLabel || r.academicBatch,
+            startDate: updates.startDate || r.startDate,
+            endDate: updates.endDate || r.endDate,
+            duration: updates.duration || r.duration,
+            feeTotal: formattedFee || r.feeTotal
+          };
+        }
+        return r;
+      })
+    );
+
+    toast.success('Updated batch details for ' + studentIds.length + ' student' + (studentIds.length === 1 ? '' : 's'));
+  };
+
   // Dynamic filter option lists with merged canonical options
   const safeStudentsList = useMemo(() => (Array.isArray(students) ? students : []), [students]);
   const availableColleges = useMemo(() => ['All Colleges', ...Array.from(new Set(
@@ -1626,7 +1707,9 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
       email.includes(q) ||
       phone.includes(q) ||
       id.includes(q) ||
+      colStr.toLowerCase().includes(q) ||
       (colStr && normalizeCollege(colStr).toLowerCase().includes(q)) ||
+      (colStr && normalizeCollege(colStr).toLowerCase().includes(normalizeCollege(q).toLowerCase())) ||
       (degStr && degStr.toLowerCase().includes(q)) ||
       (domStr && normalizeDomain(domStr).toLowerCase().includes(q));
     
@@ -1662,8 +1745,17 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
     const deg = toSearchText(r.degree);
     const dom = toSearchText(r.domain || r.courseInterest || r.course_interest);
 
+    const colStr = String(r.college || '');
     const matchesSearch = !q ||
-      name.includes(q) || email.includes(q) || phone.includes(q) || id.includes(q) || col.includes(q) || deg.includes(q) || dom.includes(q);
+      name.includes(q) ||
+      email.includes(q) ||
+      phone.includes(q) ||
+      id.includes(q) ||
+      col.includes(q) ||
+      (colStr && normalizeCollege(colStr).toLowerCase().includes(q)) ||
+      (colStr && normalizeCollege(colStr).toLowerCase().includes(normalizeCollege(q).toLowerCase())) ||
+      deg.includes(q) ||
+      dom.includes(q);
 
     const matchesCollege = filterCollege === 'All Colleges' || 
       toSearchText(normalizeCollege(r.college)) === toSearchText(normalizeCollege(filterCollege));
@@ -3790,6 +3882,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   studentLabel="student"
                   emptyTitle="No student batches found"
                   emptyHint="Try adjusting the college, domain, or search filter."
+                  onUpdateBatch={handleUpdateBatch}
                   onOpenStudent={(id) => {
                     const student = students.find(s => s.id === id || s.studentId === id);
                     if (!student) return;
@@ -3953,6 +4046,7 @@ export default function AdminErpDashboard({ user: rawUser, onSwitchToStudent }: 
                   studentLabel="application"
                   emptyTitle="No registration batches found"
                   emptyHint="Try adjusting the college or search filter."
+                  onUpdateBatch={handleUpdateBatch}
                   onOpenStudent={(id) => {
                     const reg = registrationsList.find(r => r.regId === id || r.id === id);
                     if (!reg) return;

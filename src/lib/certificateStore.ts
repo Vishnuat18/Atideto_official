@@ -1191,7 +1191,7 @@ export function normalizeCollege(college?: string): string {
   const clean = String(college).trim().replace(/[\s,]+$/, '');
   const lower = clean.toLowerCase();
 
-  if (lower.includes('mahendra')) {
+  if (lower.includes('mahendra') || lower.includes('mahindra')) {
     return 'Mahendra College of Engineering';
   }
   if (lower.includes('anna univ')) {
